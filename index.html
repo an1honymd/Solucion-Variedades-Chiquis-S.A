@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+        content="Sistema de gestión de clientes de Variedades Chiquis">
+
+    <title>Variedades Chiquis | Gestión de Clientes</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="cliente.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         FONDO / CONTENEDOR
+    ====================================================== -->
+
+    <div class="app">
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-brand">
+
+                <div class="brand-logo">
+                    VC
+                </div>
+
+                <div>
+                    <strong>Variedades</strong>
+                    <span>Chiquis</span>
+                </div>
+
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <p class="nav-title">MENÚ PRINCIPAL</p>
+
+                <button class="nav-item active" type="button">
+                    <span class="nav-icon">⌂</span>
+                    <span>Clientes</span>
+                </button>
+
+                <button class="nav-item" type="button" id="btnNavEstadisticas">
+                    <span class="nav-icon">▥</span>
+                    <span>Estadísticas</span>
+                </button>
+
+                <p class="nav-title">HERRAMIENTAS</p>
+
+                <button class="nav-item" type="button" id="btnExportarNav">
+                    <span class="nav-icon">↓</span>
+                    <span>Exportar datos</span>
+                </button>
+
+                <button class="nav-item" type="button" id="btnImportarNav">
+                    <span class="nav-icon">↑</span>
+                    <span>Importar datos</span>
+                </button>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <div class="storage-status">
+                    <span class="status-dot"></span>
+
+                    <div>
+                        <strong>Datos locales</strong>
+                        <small>Guardado automático</small>
+                    </div>
+                </div>
+
+                <button
+                    class="theme-button"
+                    id="btnTema"
+                    type="button"
+                    title="Cambiar tema">
+
+                    <span id="themeIcon">☾</span>
+                    <span>Modo oscuro</span>
+
+                </button>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =================================================
+             CONTENIDO PRINCIPAL
+        ================================================== -->
+
+        <main class="main-content">
+
+            <!-- HEADER -->
+
+            <header class="top-header">
+
+                <div class="mobile-brand">
+
+                    <button
+                        class="menu-button"
+                        id="btnMenu"
+                        type="button"
+                        aria-label="Abrir menú">
+
+                        ☰
+
+                    </button>
+
+                    <div class="mobile-logo">
+                        VC
+                    </div>
+
+                </div>
+
+                <div class="welcome">
+
+                    <span class="eyebrow">
+                        PANEL DE ADMINISTRACIÓN
+                    </span>
+
+                    <h1>
+                        Gestión de clientes
+                    </h1>
+
+                    <p>
+                        Administra y consulta la información de tus clientes.
+                    </p>
+
+                </div>
+
+                <div class="header-actions">
+
+                    <button
+                        class="icon-button"
+                        id="btnTemaDesktop"
+                        type="button"
+                        title="Cambiar tema">
+
+                        ☾
+
+                    </button>
+
+                    <button
+                        class="btn btn-primary"
+                        id="btnNuevo"
+                        type="button">
+
+                        <span class="plus-icon">+</span>
+                        Nuevo cliente
+
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- =================================================
+                 ESTADÍSTICAS
+            ================================================== -->
+
+            <section class="stats-grid">
+
+                <article class="stat-card stat-card-main">
+
+                    <div class="stat-card-icon">
+                        👥
+                    </div>
+
+                    <div class="stat-card-content">
+
+                        <span>Total de clientes</span>
+
+                        <strong id="statTotal">
+                            0
+                        </strong>
+
+                        <small>
+                            Clientes registrados
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-card-icon minorista-icon">
+                        🛍️
+                    </div>
+
+                    <div class="stat-card-content">
+
+                        <span>Minoristas</span>
+
+                        <strong id="statMinorista">
+                            0
+                        </strong>
+
+                        <small id="porcentajeMinorista">
+                            0% del total
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-card-icon mayorista-icon">
+                        📦
+                    </div>
+
+                    <div class="stat-card-content">
+
+                        <span>Mayoristas</span>
+
+                        <strong id="statMayorista">
+                            0
+                        </strong>
+
+                        <small id="porcentajeMayorista">
+                            0% del total
+                        </small>
+
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card">
+
+                    <div class="stat-card-icon active-icon">
+                        ●
+                    </div>
+
+                    <div class="stat-card-content">
+
+                        <span>Registros visibles</span>
+
+                        <strong id="statVisibles">
+                            0
+                        </strong>
+
+                        <small>
+                            Según búsqueda y filtros
+                        </small>
+
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- =================================================
+                 BARRA DE HERRAMIENTAS
+            ================================================== -->
+
+            <section class="toolbar-card">
+
+                <div class="toolbar-top">
+
+                    <div>
+
+                        <h2>
+                            Directorio de clientes
+                        </h2>
+
+                        <p id="resultadoTexto">
+                            Mostrando todos los clientes
+                        </p>
+
+                    </div>
+
+                    <div class="toolbar-actions">
+
+                        <button
+                            class="secondary-button"
+                            id="btnExportar"
+                            type="button">
+
+                            ↓ Exportar
+
+                        </button>
+
+                        <button
+                            class="secondary-button"
+                            id="btnImportar"
+                            type="button">
+
+                            ↑ Importar
+
+                        </button>
+
+                        <input
+                            type="file"
+                            id="inputImportar"
+                            accept=".json"
+                            hidden>
+
+                    </div>
+
+                </div>
+
+
+                <div class="toolbar-bottom">
+
+                    <div class="search-box">
+
+                        <span class="search-icon">
+                            ⌕
+                        </span>
+
+                        <input
+                            type="search"
+                            id="searchInput"
+                            placeholder="Buscar por nombre, teléfono, correo o NIT..."
+                            autocomplete="off">
+
+                        <button
+                            type="button"
+                            class="clear-search"
+                            id="btnLimpiarBusqueda"
+                            title="Limpiar búsqueda">
+
+                            ×
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="filter-container">
+
+                        <button
+                            class="filter-button active"
+                            data-filter="todos"
+                            type="button">
+
+                            Todos
+                            <span id="countTodos">0</span>
+
+                        </button>
+
+                        <button
+                            class="filter-button"
+                            data-filter="minorista"
+                            type="button">
+
+                            🛍️ Minoristas
+                            <span id="countMinoristas">0</span>
+
+                        </button>
+
+                        <button
+                            class="filter-button"
+                            data-filter="mayorista"
+                            type="button">
+
+                            📦 Mayoristas
+                            <span id="countMayoristas">0</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 TABLA
+            ================================================== -->
+
+            <section class="table-card">
+
+                <div class="table-responsive">
+
+                    <table class="clientes-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Cliente</th>
+
+                                <th>Tipo</th>
+
+                                <th>Contacto</th>
+
+                                <th>Información</th>
+
+                                <th>Registro</th>
+
+                                <th class="actions-header">
+                                    Acciones
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- ESTADO VACÍO -->
+
+                <div
+                    class="empty-state"
+                    id="emptyState"
+                    hidden>
+
+                    <div class="empty-illustration">
+                        👥
+                    </div>
+
+                    <h2 id="emptyTitle">
+                        No hay clientes registrados
+                    </h2>
+
+                    <p id="emptyDescription">
+                        Comienza agregando tu primer cliente.
+                    </p>
+
+                    <button
+                        class="btn btn-primary"
+                        id="btnNuevoVacio"
+                        type="button">
+
+                        + Registrar cliente
+
+                    </button>
+
+                </div>
+
+
+                <!-- FOOTER TABLA -->
+
+                <div class="table-footer">
+
+                    <span id="tableFooterText">
+                        0 clientes
+                    </span>
+
+                    <span>
+                        Datos almacenados localmente
+                    </span>
+
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 TARJETA DE AYUDA
+            ================================================== -->
+
+            <section class="help-card">
+
+                <div class="help-icon">
+                    💡
+                </div>
+
+                <div>
+
+                    <strong>
+                        Consejo rápido
+                    </strong>
+
+                    <p>
+                        Puedes buscar clientes utilizando su nombre,
+                        teléfono, correo electrónico o NIT.
+                    </p>
+
+                </div>
+
+                <div class="keyboard-shortcuts">
+
+                    <span>
+                        Nuevo cliente
+                        <kbd>Ctrl</kbd>
+                        <kbd>N</kbd>
+                    </span>
+
+                    <span>
+                        Buscar
+                        <kbd>Ctrl</kbd>
+                        <kbd>K</kbd>
+                    </span>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- =====================================================
+         OVERLAY
+    ====================================================== -->
+
+    <div
+        class="overlay"
+        id="overlay"
+        hidden>
+    </div>
+
+
+    <!-- =====================================================
+         PANEL CLIENTE
+    ====================================================== -->
+
+    <aside
+        class="panel"
+        id="panel"
+        aria-hidden="true">
+
+        <form
+            id="clienteForm"
+            novalidate>
+
+            <div class="panel-header">
+
+                <div>
+
+                    <span class="panel-eyebrow">
+                        CLIENTE
+                    </span>
+
+                    <h2 id="panelTitulo">
+                        Nuevo cliente
+                    </h2>
+
+                    <p>
+                        Completa la información solicitada.
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    id="btnCerrarPanel"
+                    aria-label="Cerrar">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <input
+                type="hidden"
+                id="clienteId">
+
+
+            <!-- TIPO -->
+
+            <div class="form-section">
+
+                <div class="section-heading">
+
+                    <span class="section-number">
+                        01
+                    </span>
+
+                    <div>
+                        <strong>
+                            Tipo de cliente
+                        </strong>
+
+                        <small>
+                            Selecciona la categoría
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="tipo-toggle">
+
+                    <input
+                        type="radio"
+                        name="tipo"
+                        id="tipoMinorista"
+                        value="minorista"
+                        checked>
+
+                    <label
+                        for="tipoMinorista"
+                        class="tipo-opcion">
+
+                        <span class="tipo-opcion-icon">
+                            🛍️
+                        </span>
+
+                        <span>
+                            <strong>Minorista</strong>
+                            <small>Compra personal</small>
+                        </span>
+
+                    </label>
+
+
+                    <input
+                        type="radio"
+                        name="tipo"
+                        id="tipoMayorista"
+                        value="mayorista">
+
+                    <label
+                        for="tipoMayorista"
+                        class="tipo-opcion">
+
+                        <span class="tipo-opcion-icon">
+                            📦
+                        </span>
+
+                        <span>
+                            <strong>Mayorista</strong>
+                            <small>Compra por volumen</small>
+                        </span>
+
+                    </label>
+
+                </div>
+
+                <p
+                    class="field-hint"
+                    id="tipoHint">
+
+                    Compra para uso personal, en unidades sueltas.
+
+                </p>
+
+            </div>
+
+
+            <!-- DATOS PERSONALES -->
+
+            <div class="form-section">
+
+                <div class="section-heading">
+
+                    <span class="section-number">
+                        02
+                    </span>
+
+                    <div>
+                        <strong>
+                            Información personal
+                        </strong>
+
+                        <small>
+                            Datos principales del cliente
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label
+                        for="nombre"
+                        class="field-label">
+
+                        Nombre completo
+                        <span>*</span>
+
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon">
+                            👤
+                        </span>
+
+                        <input
+                            type="text"
+                            id="nombre"
+                            placeholder="Ej. Ana Lucía Pérez"
+                            maxlength="100">
+
+                    </div>
+
+                </div>
+
+
+                <div class="field-row">
+
+                    <div class="field">
+
+                        <label
+                            for="telefono"
+                            class="field-label">
+
+                            Teléfono
+                            <span>*</span>
+
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                ☎
+                            </span>
+
+                            <input
+                                type="tel"
+                                id="telefono"
+                                placeholder="5555-1234"
+                                maxlength="20">
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label
+                            for="email"
+                            class="field-label">
+
+                            Correo electrónico
+
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">
+                                @
+                            </span>
+
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="cliente@correo.com"
+                                maxlength="120">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="field"
+                    id="campoDpi">
+
+                    <label
+                        for="dpi"
+                        class="field-label">
+
+                        DPI
+
+                    </label>
+
+                    <div class="input-wrapper">
+
+                        <span class="input-icon">
+                            ID
+                        </span>
+
+                        <input
+                            type="text"
+                            id="dpi"
+                            placeholder="0000 00000 0000"
+                            maxlength="20">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- DIRECCIÓN -->
+
+            <div class="form-section">
+
+                <div class="section-heading">
+
+                    <span class="section-number">
+                        03
+                    </span>
+
+                    <div>
+                        <strong>
+                            Entrega
+                        </strong>
+
+                        <small>
+                            Información para entregas
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label
+                        for="direccion"
+                        class="field-label">
+
+                        Dirección de entrega
+
+                    </label>
+
+                    <div class="textarea-wrapper">
+
+                        <span class="textarea-icon">
+                            📍
+                        </span>
+
+                        <textarea
+                            id="direccion"
+                            placeholder="Zona, calle, avenida, referencia..."
+                            rows="3"
+                            maxlength="300"></textarea>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- MAYORISTA -->
+
+            <div
+                class="form-section wholesale-section"
+                id="camposMayorista"
+                hidden>
+
+                <div class="section-heading">
+
+                    <span class="section-number">
+                        04
+                    </span>
+
+                    <div>
+                        <strong>
+                            Información comercial
+                        </strong>
+
+                        <small>
+                            Datos exclusivos para mayoristas
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="field-row">
+
+                    <div class="field">
+
+                        <label
+                            for="nit"
+                            class="field-label">
+
+                            NIT
+                            <span>*</span>
+
+                        </label>
+
+                        <input
+                            type="text"
+                            id="nit"
+                            placeholder="1234567-8"
+                            maxlength="20">
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label
+                            for="descuento"
+                            class="field-label">
+
+                            Descuento
+
+                        </label>
+
+                        <div class="input-suffix">
+
+                            <input
+                                type="number"
+                                id="descuento"
+                                min="0"
+                                max="100"
+                                value="0">
+
+                            <span>%</span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label
+                        for="limiteCredito"
+                        class="field-label">
+
+                        Límite de crédito
+
+                    </label>
+
+                    <div class="input-prefix">
+
+                        <span>Q</span>
+
+                        <input
+                            type="number"
+                            id="limiteCredito"
+                            min="0"
+                            step="0.01"
+                            value="0">
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- NOTAS -->
+
+            <div class="form-section">
+
+                <div class="section-heading">
+
+                    <span class="section-number">
+                        05
+                    </span>
+
+                    <div>
+                        <strong>
+                            Notas
+                        </strong>
+
+                        <small>
+                            Información interna
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label
+                        for="notas"
+                        class="field-label">
+
+                        Notas internas
+
+                    </label>
+
+                    <textarea
+                        id="notas"
+                        rows="3"
+                        maxlength="300"
+                        placeholder="Preferencias, horarios, observaciones..."></textarea>
+
+                    <div class="character-counter">
+                        <span id="notasCounter">0</span>/300
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FOOTER -->
+
+            <div class="panel-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="btnCancelar">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary">
+
+                    <span>✓</span>
+                    Guardar cliente
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </aside>
+
+
+    <!-- =====================================================
+         MODAL DETALLE
+    ====================================================== -->
+
+    <dialog id="dialogDetalle">
+
+        <div class="detail-modal">
+
+            <button
+                class="modal-close"
+                id="btnCerrarDetalle"
+                type="button">
+
+                ×
+
+            </button>
+
+            <div
+                class="detail-avatar"
+                id="detalleAvatar">
+
+                AP
+
+            </div>
+
+            <h2 id="detalleNombre">
+                Cliente
+            </h2>
+
+            <span
+                class="detail-badge"
+                id="detalleTipo">
+
+                Minorista
+
+            </span>
+
+
+            <div class="detail-grid">
+
+                <div class="detail-item">
+
+                    <span>📞 Teléfono</span>
+
+                    <strong id="detalleTelefono">
+                        -
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>✉ Correo</span>
+
+                    <strong id="detalleEmail">
+                        -
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>📍 Dirección</span>
+
+                    <strong id="detalleDireccion">
+                        -
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>📅 Registrado</span>
+
+                    <strong id="detalleFecha">
+                        -
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Identificación</span>
+
+                    <strong id="detalleIdentificacion">
+                        -
+                    </strong>
+
+                </div>
+
+                <div class="detail-item">
+
+                    <span>Información comercial</span>
+
+                    <strong id="detalleComercial">
+                        -
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="detail-notes"
+                id="detalleNotasContainer">
+
+                <span>📝 Notas</span>
+
+                <p id="detalleNotas">
+                    Sin notas registradas.
+                </p>
+
+            </div>
+
+
+            <div class="detail-actions">
+
+                <button
+                    class="btn btn-secondary"
+                    id="btnEditarDetalle"
+                    type="button">
+
+                    ✎ Editar
+
+                </button>
+
+                <button
+                    class="btn btn-whatsapp"
+                    id="btnWhatsApp"
+                    type="button">
+
+                    💬 WhatsApp
+
+                </button>
+
+                <button
+                    class="btn btn-primary"
+                    id="btnLlamar"
+                    type="button">
+
+                    ☎ Llamar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </dialog>
+
+
+    <!-- =====================================================
+         MODAL ELIMINAR
+    ====================================================== -->
+
+    <dialog id="dialogEliminar">
+
+        <div class="delete-modal">
+
+            <div class="delete-icon">
+                ⚠️
+            </div>
+
+            <h2>
+                ¿Eliminar cliente?
+            </h2>
+
+            <p>
+                Estás a punto de eliminar a
+                <strong id="dialogNombreCliente"></strong>.
+            </p>
+
+            <span class="delete-warning">
+                Esta acción no se puede deshacer.
+            </span>
+
+            <div class="dialog-actions">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="btnCancelarEliminar">
+
+                    Cancelar
+
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-danger"
+                    id="btnConfirmarEliminar">
+
+                    Eliminar cliente
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </dialog>
+
+
+    <!-- =====================================================
+         MODAL CONFIGURACIÓN
+    ====================================================== -->
+
+    <dialog id="dialogOpciones">
+
+        <div class="options-modal">
+
+            <div class="modal-heading">
+
+                <div>
+                    <span class="panel-eyebrow">
+                        ADMINISTRACIÓN
+                    </span>
+
+                    <h2>
+                        Herramientas
+                    </h2>
+                </div>
+
+                <button
+                    class="modal-close"
+                    id="btnCerrarOpciones"
+                    type="button">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <button
+                class="option-item"
+                id="btnCargarEjemplos"
+                type="button">
+
+                <span>✨</span>
+
+                <div>
+                    <strong>Cargar datos de ejemplo</strong>
+                    <small>Agrega clientes de prueba al sistema.</small>
+                </div>
+
+            </button>
+
+
+            <button
+                class="option-item"
+                id="btnExportarOpciones"
+                type="button">
+
+                <span>📥</span>
+
+                <div>
+                    <strong>Exportar respaldo</strong>
+                    <small>Descarga todos los clientes en formato JSON.</small>
+                </div>
+
+            </button>
+
+
+            <button
+                class="option-item danger-option"
+                id="btnEliminarTodos"
+                type="button">
+
+                <span>🗑️</span>
+
+                <div>
+                    <strong>Eliminar todos los clientes</strong>
+                    <small>Esta acción eliminará todos los registros.</small>
+                </div>
+
+            </button>
+
+        </div>
+
+    </dialog>
+
+
+    <!-- =====================================================
+         TOAST
+    ====================================================== -->
+
+    <div
+        class="toast"
+        id="toast"
+        role="status">
+
+        <span class="toast-icon" id="toastIcon">
+            ✓
+        </span>
+
+        <span id="toastMessage">
+            Operación realizada.
+        </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         BOTÓN FLOTANTE
+    ====================================================== -->
+
+    <button
+        class="floating-button"
+        id="btnFloating"
+        type="button"
+        title="Nuevo cliente">
+
+        +
+
+    </button>
+
+
+    <script src="cliente.js"></script>
+
+</body>
+
+</html>
