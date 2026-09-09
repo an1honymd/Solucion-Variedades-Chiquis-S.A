@@ -1,258 +1,1059 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('DOMContentLoaded', () => {
+    // ============================================================
+    // VARIEDADES CHIQUIS - CLIENTES Y PEDIDOS
+    // ============================================================
 
-    /* ==================== PEDIDOS ==================== */
-    const btnNavClientes = document.getElementById("btnNavClientes");
-    const btnNavPedidos = document.getElementById("btnNavPedidos");
-    const clientesToolbar = document.getElementById("clientesToolbar");
-    const clientesTableSection = document.getElementById("clientesTableSection");
-    const pedidosView = document.getElementById("pedidosView");
-    const pedidosStats = document.getElementById("pedidosStats");
-    const tituloPrincipal = document.getElementById("tituloPrincipal");
-    const descripcionPrincipal = document.getElementById("descripcionPrincipal");
-    const textoBtnNuevo = document.getElementById("textoBtnNuevo");
+    const $ = (id) => document.getElementById(id);
 
-    const btnNuevoPedido = document.getElementById("btnNuevoPedido");
-    const btnNuevoPedidoVacio = document.getElementById("btnNuevoPedidoVacio");
-    const pedidoPanel = document.getElementById("pedidoPanel");
-    const pedidoForm = document.getElementById("pedidoForm");
-    const btnCerrarPedidoPanel = document.getElementById("btnCerrarPedidoPanel");
-    const btnCancelarPedido = document.getElementById("btnCancelarPedido");
-    const pedidoPanelTitulo = document.getElementById("pedidoPanelTitulo");
-    const pedidoId = document.getElementById("pedidoId");
-    const pedidoNumero = document.getElementById("pedidoNumero");
-    const pedidoFecha = document.getElementById("pedidoFecha");
-    const pedidoCliente = document.getElementById("pedidoCliente");
-    const pedidoOrigen = document.getElementById("pedidoOrigen");
-    const pedidoEstado = document.getElementById("pedidoEstado");
-    const productosPedido = document.getElementById("productosPedido");
-    const btnAgregarProducto = document.getElementById("btnAgregarProducto");
-    const pedidoSubtotal = document.getElementById("pedidoSubtotal");
-    const pedidoDescuento = document.getElementById("pedidoDescuento");
-    const pedidoTotal = document.getElementById("pedidoTotal");
-    const pedidoDireccion = document.getElementById("pedidoDireccion");
-    const pedidoNotas = document.getElementById("pedidoNotas");
+    const on = (id, event, fn) => {
+        const el = $(id);
+        if (el) el.addEventListener(event, fn);
+        return el;
+    };
 
-    const pedidosBody = document.getElementById("pedidosBody");
-    const emptyPedidos = document.getElementById("emptyPedidos");
-    const searchPedidos = document.getElementById("searchPedidos");
-    const btnLimpiarPedidos = document.getElementById("btnLimpiarPedidos");
-    const resultadoPedidos = document.getElementById("resultadoPedidos");
-    const footerPedidos = document.getElementById("footerPedidos");
+    // ============================================================
+    // ELEMENTOS PRINCIPALES
+    // ============================================================
 
-    const statPedidos = document.getElementById("statPedidos");
-    const statPedidosPendientes = document.getElementById("statPedidosPendientes");
-    const statPedidosEntregados = document.getElementById("statPedidosEntregados");
-    const statVentas = document.getElementById("statVentas");
+    const overlay = $('overlay');
+    const panel = $('panel');
+    const clienteForm = $('clienteForm');
+    const pedidoPanel = $('pedidoPanel');
+    const pedidoForm = $('pedidoForm');
 
-    const countPedidosTodos = document.getElementById("countPedidosTodos");
-    const countPedidosPendientes = document.getElementById("countPedidosPendientes");
-    const countPedidosPreparando = document.getElementById("countPedidosPreparando");
-    const countPedidosEntregados = document.getElementById("countPedidosEntregados");
+    // ============================================================
+    // ESTADO
+    // ============================================================
 
-    const dialogPedidoDetalle = document.getElementById("dialogPedidoDetalle");
-    const btnCerrarPedidoDetalle = document.getElementById("btnCerrarPedidoDetalle");
-    const detallePedidoNumero = document.getElementById("detallePedidoNumero");
-    const detallePedidoEstado = document.getElementById("detallePedidoEstado");
-    const detallePedidoCliente = document.getElementById("detallePedidoCliente");
-    const detallePedidoTelefono = document.getElementById("detallePedidoTelefono");
-    const detallePedidoFecha = document.getElementById("detallePedidoFecha");
-    const detallePedidoOrigen = document.getElementById("detallePedidoOrigen");
-    const detallePedidoDireccion = document.getElementById("detallePedidoDireccion");
-    const detallePedidoTotal = document.getElementById("detallePedidoTotal");
-    const detallePedidoProductos = document.getElementById("detallePedidoProductos");
-    const detallePedidoNotas = document.getElementById("detallePedidoNotas");
-    const btnEditarPedidoDetalle = document.getElementById("btnEditarPedidoDetalle");
-    const btnWhatsAppPedido = document.getElementById("btnWhatsAppPedido");
-    const btnEliminarPedidoDetalle = document.getElementById("btnEliminarPedidoDetalle");
-
+    let clientes = cargarClientes();
     let pedidos = cargarPedidos();
+
+    let clienteDetalle = null;
+    let clienteAEliminar = null;
     let pedidoDetalleActual = null;
-    let filtroPedidoActual = "todos";
+    let filtroPedido = 'todos';
+
+    // ============================================================
+    // UTILIDADES
+    // ============================================================
+
+    function escaparHTML(valor) {
+        return String(valor ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function dinero(valor) {
+        return 'Q' + Number(valor || 0).toFixed(2);
+    }
+
+    function generarId(prefijo = '') {
+        return prefijo + Date.now() + Math.random().toString(36).slice(2, 8);
+    }
+
+    function formatearFecha(fecha) {
+        if (!fecha) return 'Sin fecha';
+
+        const d = new Date(fecha);
+
+        if (Number.isNaN(d.getTime())) {
+            return 'Sin fecha';
+        }
+
+        return d.toLocaleDateString('es-GT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+
+    function formatearFechaHora(fecha) {
+        if (!fecha) return 'Sin fecha';
+
+        const d = new Date(fecha);
+
+        if (Number.isNaN(d.getTime())) {
+            return 'Sin fecha';
+        }
+
+        return d.toLocaleString('es-GT', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function fechaActualInput() {
+        const d = new Date();
+
+        d.setMinutes(
+            d.getMinutes() - d.getTimezoneOffset()
+        );
+
+        return d.toISOString().slice(0, 16);
+    }
+
+    function toast(mensaje, tipo = 'success') {
+        const contenedor = $('toast');
+
+        if (contenedor) {
+            const icono = $('toastIcon');
+            const texto = $('toastMessage');
+
+            if (texto) {
+                texto.textContent = mensaje;
+            }
+
+            if (icono) {
+                icono.textContent = tipo === 'error' ? '!' : '✓';
+            }
+
+            contenedor.classList.add('show');
+
+            clearTimeout(window.__toastTimer);
+
+            window.__toastTimer = setTimeout(() => {
+                contenedor.classList.remove('show');
+            }, 3000);
+
+            return;
+        }
+
+        const t = document.createElement('div');
+
+        t.textContent = mensaje;
+
+        t.style.cssText = `
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 99999;
+            padding: 14px 18px;
+            border-radius: 10px;
+            background: ${tipo === 'error' ? '#b42318' : '#16794b'};
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,.2);
+        `;
+
+        document.body.appendChild(t);
+
+        setTimeout(() => {
+            t.remove();
+        }, 3000);
+    }
+
+    // ============================================================
+    // LOCAL STORAGE - CLIENTES
+    // ============================================================
+
+    function cargarClientes() {
+        try {
+            const datos = JSON.parse(
+                localStorage.getItem('clientesChiquis') || '[]'
+            );
+
+            return Array.isArray(datos) ? datos : [];
+
+        } catch (e) {
+            console.error(e);
+            return [];
+        }
+    }
+
+    function guardarClientes() {
+        try {
+            localStorage.setItem(
+                'clientesChiquis',
+                JSON.stringify(clientes)
+            );
+
+            return true;
+
+        } catch (e) {
+            console.error(
+                'No se pudieron guardar los clientes:',
+                e
+            );
+
+            toast(
+                'No se pudieron guardar los clientes.',
+                'error'
+            );
+
+            return false;
+        }
+    }
+
+    // ============================================================
+    // LOCAL STORAGE - PEDIDOS
+    // ============================================================
 
     function cargarPedidos() {
         try {
-            const datos = localStorage.getItem("pedidosChiquis");
-            return datos
-                ? (Array.isArray(JSON.parse(datos))
-                    ? JSON.parse(datos)
-                    : [])
-                : [];
+            const datos = JSON.parse(
+                localStorage.getItem('pedidosChiquis') || '[]'
+            );
+
+            return Array.isArray(datos) ? datos : [];
+
         } catch (e) {
-            console.error("Error cargando pedidos:", e);
+            console.error(e);
             return [];
         }
     }
 
     function guardarPedidos() {
-        localStorage.setItem(
-            "pedidosChiquis",
-            JSON.stringify(pedidos)
+        try {
+            localStorage.setItem(
+                'pedidosChiquis',
+                JSON.stringify(pedidos)
+            );
+
+            return true;
+
+        } catch (e) {
+            console.error(
+                'No se pudieron guardar los pedidos:',
+                e
+            );
+
+            toast(
+                'No se pudieron guardar los pedidos.',
+                'error'
+            );
+
+            return false;
+        }
+    }
+
+    // ============================================================
+    // CLIENTES
+    // ============================================================
+
+    function obtenerTipoCliente() {
+        const mayorista = $('tipoMayorista');
+
+        return mayorista && mayorista.checked
+            ? 'mayorista'
+            : 'minorista';
+    }
+
+    function actualizarCamposTipo() {
+        const mayorista = $('tipoMayorista')?.checked;
+        const campos = $('camposMayorista');
+        const hint = $('tipoHint');
+        const descuento = $('descuento');
+
+        if (campos) {
+            campos.hidden = !mayorista;
+        }
+
+        if (descuento) {
+            descuento.disabled = !mayorista;
+        }
+
+        if (!mayorista && descuento) {
+            descuento.value = '0';
+        }
+
+        if (hint) {
+            hint.textContent = mayorista
+                ? 'Cliente que realiza compras por volumen y puede recibir descuento.'
+                : 'Compra para uso personal, en unidades sueltas.';
+        }
+    }
+
+    function limpiarErrores() {
+        document
+            .querySelectorAll('.error-message')
+            .forEach(e => e.remove());
+
+        document
+            .querySelectorAll('.error')
+            .forEach(e => e.classList.remove('error'));
+    }
+
+    function mostrarError(elemento, mensaje) {
+        if (!elemento) return;
+
+        elemento.classList.add('error');
+
+        const error = document.createElement('div');
+
+        error.className = 'error-message';
+        error.textContent = mensaje;
+
+        elemento.parentElement?.appendChild(error);
+    }
+
+    function validarCliente() {
+        limpiarErrores();
+
+        let valido = true;
+
+        const nombre = $('nombre');
+        const telefono = $('telefono');
+        const email = $('email');
+        const nit = $('nit');
+        const descuento = $('descuento');
+
+        const mayorista =
+            $('tipoMayorista')?.checked;
+
+        // NOMBRE
+        if (
+            !nombre?.value.trim() ||
+            nombre.value.trim().length < 3
+        ) {
+            mostrarError(
+                nombre,
+                'Ingrese un nombre válido.'
+            );
+
+            valido = false;
+        }
+
+        // TELÉFONO
+        const telefonoLimpio =
+            (telefono?.value || '').replace(/\D/g, '');
+
+        if (!telefonoLimpio) {
+            mostrarError(
+                telefono,
+                'Ingrese el número de teléfono.'
+            );
+
+            valido = false;
+
+        } else if (telefonoLimpio.length < 8) {
+            mostrarError(
+                telefono,
+                'Ingrese un teléfono válido.'
+            );
+
+            valido = false;
+        }
+
+        // EMAIL
+        if (email?.value.trim()) {
+            const correcto =
+                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                    .test(email.value.trim());
+
+            if (!correcto) {
+                mostrarError(
+                    email,
+                    'Ingrese un correo válido.'
+                );
+
+                valido = false;
+            }
+        }
+
+        // NIT MAYORISTA
+        if (
+            mayorista &&
+            !nit?.value.trim()
+        ) {
+            mostrarError(
+                nit,
+                'El NIT es obligatorio para mayoristas.'
+            );
+
+            valido = false;
+        }
+
+        // DESCUENTO
+        const desc =
+            Number(descuento?.value || 0);
+
+        if (desc < 0 || desc > 100) {
+            mostrarError(
+                descuento,
+                'El descuento debe estar entre 0 y 100.'
+            );
+
+            valido = false;
+        }
+
+        if (!valido) {
+            toast(
+                'Revisa los campos marcados.',
+                'error'
+            );
+        }
+
+        return valido;
+    }
+
+    // ============================================================
+    // ABRIR PANEL CLIENTE
+    // ============================================================
+
+    function abrirPanelCliente(cliente = null) {
+        if (!panel || !clienteForm) {
+            return;
+        }
+
+        if (overlay) {
+            overlay.hidden = false;
+        }
+
+        panel.classList.add('is-open');
+        panel.setAttribute(
+            'aria-hidden',
+            'false'
+        );
+
+        clienteForm.reset();
+
+        limpiarErrores();
+
+        if ($('clienteId')) {
+            $('clienteId').value =
+                cliente?.id || '';
+        }
+
+        if ($('panelTitulo')) {
+            $('panelTitulo').textContent =
+                cliente
+                    ? 'Editar cliente'
+                    : 'Nuevo cliente';
+        }
+
+        if (cliente) {
+
+            if ($('nombre')) {
+                $('nombre').value =
+                    cliente.nombre || '';
+            }
+
+            if ($('telefono')) {
+                $('telefono').value =
+                    cliente.telefono || '';
+            }
+
+            if ($('email')) {
+                $('email').value =
+                    cliente.email || '';
+            }
+
+            if ($('direccion')) {
+                $('direccion').value =
+                    cliente.direccion || '';
+            }
+
+            if ($('dpi')) {
+                $('dpi').value =
+                    cliente.dpi || '';
+            }
+
+            if ($('nit')) {
+                $('nit').value =
+                    cliente.nit || '';
+            }
+
+            if ($('descuento')) {
+                $('descuento').value =
+                    cliente.descuento ?? 0;
+            }
+
+            if ($('limiteCredito')) {
+                $('limiteCredito').value =
+                    cliente.limiteCredito ?? 0;
+            }
+
+            if ($('notas')) {
+                $('notas').value =
+                    cliente.notas || '';
+            }
+
+            if (
+                cliente.tipo === 'mayorista'
+            ) {
+                if ($('tipoMayorista')) {
+                    $('tipoMayorista').checked = true;
+                }
+
+            } else {
+                if ($('tipoMinorista')) {
+                    $('tipoMinorista').checked = true;
+                }
+            }
+
+        } else {
+
+            if ($('tipoMinorista')) {
+                $('tipoMinorista').checked = true;
+            }
+
+            if ($('descuento')) {
+                $('descuento').value = 0;
+            }
+
+            if ($('limiteCredito')) {
+                $('limiteCredito').value = 0;
+            }
+        }
+
+        actualizarCamposTipo();
+        actualizarContadorNotas();
+
+        setTimeout(() => {
+            $('nombre')?.focus();
+        }, 100);
+    }
+
+    // ============================================================
+    // CERRAR PANEL CLIENTE
+    // ============================================================
+
+    function cerrarPanelCliente() {
+        if (!panel) return;
+
+        panel.classList.remove('is-open');
+
+        panel.setAttribute(
+            'aria-hidden',
+            'true'
+        );
+
+        if (
+            !pedidoPanel?.classList.contains('is-open')
+        ) {
+            if (overlay) {
+                overlay.hidden = true;
+            }
+        }
+    }
+
+    // ============================================================
+    // GUARDAR CLIENTE
+    // ============================================================
+
+    function guardarClienteDesdeFormulario(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (!validarCliente()) {
+            return;
+        }
+
+        const id =
+            $('clienteId')?.value ||
+            generarId('cliente-');
+
+        const existente =
+            clientes.find(c => c.id === id);
+
+        const tipo =
+            obtenerTipoCliente();
+
+        const datos = {
+            id: id,
+
+            tipo: tipo,
+
+            nombre:
+                $('nombre')?.value.trim() || '',
+
+            telefono:
+                $('telefono')?.value.trim() || '',
+
+            email:
+                $('email')?.value.trim() || '',
+
+            direccion:
+                $('direccion')?.value.trim() || '',
+
+            dpi:
+                $('dpi')?.value.trim() || '',
+
+            nit:
+                $('nit')?.value.trim() || '',
+
+            descuento:
+                tipo === 'mayorista'
+                    ? Number(
+                        $('descuento')?.value || 0
+                    )
+                    : 0,
+
+            limiteCredito:
+                Number(
+                    $('limiteCredito')?.value || 0
+                ),
+
+            notas:
+                $('notas')?.value.trim() || '',
+
+            fecha:
+                existente?.fecha ||
+                new Date().toISOString()
+        };
+
+        if (existente) {
+
+            clientes =
+                clientes.map(c =>
+                    c.id === id
+                        ? datos
+                        : c
+                );
+
+            toast(
+                'Cliente actualizado correctamente.'
+            );
+
+        } else {
+
+            clientes.push(datos);
+
+            toast(
+                'Cliente registrado correctamente.'
+            );
+        }
+
+        if (guardarClientes()) {
+            mostrarClientes();
+            cargarClientesEnSelect();
+            cerrarPanelCliente();
+        }
+    }
+
+    // ============================================================
+    // MOSTRAR CLIENTES
+    // ============================================================
+
+    function mostrarClientes(lista = clientes) {
+        const tbody = $('tablaBody');
+
+        if (!tbody) {
+            return;
+        }
+
+        tbody.innerHTML = '';
+
+        const empty =
+            $('emptyState');
+
+        if (empty) {
+            empty.hidden =
+                lista.length !== 0;
+        }
+
+        lista.forEach(cliente => {
+
+            const tr =
+                document.createElement('tr');
+
+            const tipo =
+                cliente.tipo === 'mayorista'
+                    ? 'Mayorista'
+                    : 'Minorista';
+
+            tr.innerHTML = `
+                <td>
+                    <div class="cliente-nombre">
+                        <strong>
+                            ${escaparHTML(cliente.nombre)}
+                        </strong>
+
+                        <small>
+                            ${escaparHTML(
+                                cliente.telefono || ''
+                            )}
+                        </small>
+                    </div>
+                </td>
+
+                <td>
+                    <span class="tipo-cliente">
+                        ${tipo}
+                    </span>
+                </td>
+
+                <td>
+                    ${escaparHTML(
+                        cliente.email || '—'
+                    )}
+                </td>
+
+                <td>
+                    ${escaparHTML(
+                        cliente.nit || '—'
+                    )}
+                </td>
+
+                <td>
+                    ${Number(
+                        cliente.descuento || 0
+                    )}%
+                </td>
+
+                <td>
+                    ${formatearFecha(
+                        cliente.fecha
+                    )}
+                </td>
+
+                <td>
+                    <div class="acciones">
+
+                        <button
+                            type="button"
+                            class="btn-accion btn-ver"
+                            data-id="${cliente.id}">
+                            👁
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn-accion btn-editar"
+                            data-id="${cliente.id}">
+                            ✏
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn-accion btn-eliminar"
+                            data-id="${cliente.id}">
+                            🗑
+                        </button>
+
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        actualizarEstadisticasClientes();
+        actualizarContadoresClientes();
+
+        const resultado =
+            $('resultadoTexto');
+
+        const footer =
+            $('tableFooterText');
+
+        if (resultado) {
+            resultado.textContent =
+                `${lista.length} ${
+                    lista.length === 1
+                        ? 'cliente'
+                        : 'clientes'
+                }`;
+        }
+
+        if (footer) {
+            footer.textContent =
+                `${lista.length} de ${clientes.length} clientes`;
+        }
+    }
+
+    // ============================================================
+    // ESTADÍSTICAS CLIENTES
+    // ============================================================
+
+    function actualizarEstadisticasClientes() {
+
+        const total =
+            clientes.length;
+
+        const minoristas =
+            clientes.filter(
+                c => c.tipo !== 'mayorista'
+            ).length;
+
+        const mayoristas =
+            clientes.filter(
+                c => c.tipo === 'mayorista'
+            ).length;
+
+        if ($('statTotal')) {
+            $('statTotal').textContent =
+                total;
+        }
+
+        if ($('statMinorista')) {
+            $('statMinorista').textContent =
+                minoristas;
+        }
+
+        if ($('statMayorista')) {
+            $('statMayorista').textContent =
+                mayoristas;
+        }
+
+        if ($('statVisibles')) {
+            $('statVisibles').textContent =
+                total;
+        }
+
+        if ($('porcentajeMinorista')) {
+            $('porcentajeMinorista').textContent =
+                total
+                    ? Math.round(
+                        minoristas * 100 / total
+                    ) + '% del total'
+                    : '0% del total';
+        }
+
+        if ($('porcentajeMayorista')) {
+            $('porcentajeMayorista').textContent =
+                total
+                    ? Math.round(
+                        mayoristas * 100 / total
+                    ) + '% del total'
+                    : '0% del total';
+        }
+    }
+
+    // ============================================================
+    // CONTADORES CLIENTES
+    // ============================================================
+
+    function actualizarContadoresClientes() {
+
+        if ($('countTodos')) {
+            $('countTodos').textContent =
+                clientes.length;
+        }
+
+        if ($('countMinoristas')) {
+            $('countMinoristas').textContent =
+                clientes.filter(
+                    c => c.tipo !== 'mayorista'
+                ).length;
+        }
+
+        if ($('countMayoristas')) {
+            $('countMayoristas').textContent =
+                clientes.filter(
+                    c => c.tipo === 'mayorista'
+                ).length;
+        }
+    }
+
+    // ============================================================
+    // DETALLE CLIENTE
+    // ============================================================
+
+    function mostrarDetalleCliente(cliente) {
+
+        clienteDetalle = cliente;
+
+        if ($('detalleAvatar')) {
+            $('detalleAvatar').textContent =
+                (cliente.nombre || 'C')
+                    .charAt(0)
+                    .toUpperCase();
+        }
+
+        if ($('detalleNombre')) {
+            $('detalleNombre').textContent =
+                cliente.nombre || '—';
+        }
+
+        if ($('detalleTipo')) {
+            $('detalleTipo').textContent =
+                cliente.tipo === 'mayorista'
+                    ? 'Mayorista'
+                    : 'Minorista';
+        }
+
+        if ($('detalleTelefono')) {
+            $('detalleTelefono').textContent =
+                cliente.telefono || '—';
+        }
+
+        if ($('detalleEmail')) {
+            $('detalleEmail').textContent =
+                cliente.email || '—';
+        }
+
+        if ($('detalleDireccion')) {
+            $('detalleDireccion').textContent =
+                cliente.direccion || '—';
+        }
+
+        if ($('detalleFecha')) {
+            $('detalleFecha').textContent =
+                formatearFecha(cliente.fecha);
+        }
+
+        if ($('detalleIdentificacion')) {
+            $('detalleIdentificacion').textContent =
+                `DPI: ${cliente.dpi || '—'} | NIT: ${cliente.nit || '—'}`;
+        }
+
+        if ($('detalleComercial')) {
+            $('detalleComercial').textContent =
+                `Descuento: ${
+                    Number(cliente.descuento || 0)
+                }% | Crédito: ${
+                    dinero(cliente.limiteCredito || 0)
+                }`;
+        }
+
+        if ($('detalleNotas')) {
+            $('detalleNotas').textContent =
+                cliente.notas ||
+                'Sin notas registradas.';
+        }
+
+        $('dialogDetalle')?.showModal();
+    }
+
+    // ============================================================
+    // ELIMINAR CLIENTE
+    // ============================================================
+
+    function eliminarCliente(cliente) {
+
+        if (!cliente) {
+            return;
+        }
+
+        if (
+            !confirm(
+                `¿Deseas eliminar al cliente "${cliente.nombre}"?`
+            )
+        ) {
+            return;
+        }
+
+        clientes =
+            clientes.filter(
+                c => c.id !== cliente.id
+            );
+
+        guardarClientes();
+
+        mostrarClientes();
+
+        cargarClientesEnSelect();
+
+        toast(
+            'Cliente eliminado correctamente.'
         );
     }
 
-    function generarNumeroPedido() {
-        const siguiente = pedidos.length + 1;
+    // ============================================================
+    // PEDIDOS
+    // ============================================================
 
-        return "PED-" +
-            String(siguiente).padStart(4, "0");
+    function numeroPedido() {
+
+        let max = 0;
+
+        pedidos.forEach(p => {
+
+            const n =
+                parseInt(
+                    String(
+                        p.numero || ''
+                    ).replace(/\D/g, ''),
+                    10
+                );
+
+            if (!Number.isNaN(n)) {
+                max = Math.max(max, n);
+            }
+        });
+
+        return (
+            'PED-' +
+            String(max + 1).padStart(4, '0')
+        );
     }
 
-    function dinero(valor) {
-        return "Q" +
-            Number(valor || 0).toFixed(2);
-    }
-
-    function fechaInputActual() {
-
-        const ahora = new Date();
-
-        const local =
-            new Date(
-                ahora.getTime() -
-                ahora.getTimezoneOffset() * 60000
-            );
-
-        return local
-            .toISOString()
-            .slice(0, 16);
-    }
+    // ============================================================
+    // CLIENTES EN SELECT DE PEDIDOS
+    // ============================================================
 
     function cargarClientesEnSelect(
-        clienteSeleccionado = ""
+        seleccionado = ''
     ) {
 
-        pedidoCliente.innerHTML =
+        const select =
+            $('pedidoCliente');
+
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML =
             '<option value="">Seleccione un cliente</option>';
 
         clientes.forEach(c => {
 
-            const option =
-                document.createElement("option");
+            const op =
+                document.createElement('option');
 
-            option.value = c.id;
+            op.value = c.id;
 
-            option.textContent =
-                c.nombre +
-                " — " +
-                c.telefono;
+            op.textContent =
+                `${c.nombre} — ${
+                    c.telefono ||
+                    'sin teléfono'
+                }`;
 
-            if (c.id === clienteSeleccionado) {
-                option.selected = true;
+            if (
+                String(c.id) ===
+                String(seleccionado)
+            ) {
+                op.selected = true;
             }
 
-            pedidoCliente.appendChild(option);
-
+            select.appendChild(op);
         });
-
     }
 
-    function calcularTotalesPedido() {
-
-        let subtotal = 0;
-
-        productosPedido
-            .querySelectorAll(
-                ".producto-pedido-row"
-            )
-            .forEach(row => {
-
-                const cantidad =
-                    Number(
-                        row.querySelector(
-                            ".producto-cantidad"
-                        )?.value || 0
-                    );
-
-                const precio =
-                    Number(
-                        row.querySelector(
-                            ".producto-precio"
-                        )?.value || 0
-                    );
-
-                subtotal +=
-                    cantidad * precio;
-
-                const subtotalEl =
-                    row.querySelector(
-                        ".producto-subtotal"
-                    );
-
-                if (subtotalEl) {
-
-                    subtotalEl.value =
-                        dinero(
-                            cantidad * precio
-                        );
-
-                }
-
-            });
-
-        const cliente =
-            clientes.find(
-                c =>
-                    c.id ===
-                    pedidoCliente.value
-            );
-
-        const porcentaje =
-            cliente?.tipo === "mayorista"
-                ? Number(
-                    cliente.descuento || 0
-                )
-                : 0;
-
-        const descuentoMonto =
-            subtotal * porcentaje / 100;
-
-        const total =
-            subtotal -
-            descuentoMonto;
-
-        pedidoSubtotal.textContent =
-            dinero(subtotal);
-
-        pedidoDescuento.textContent =
-            dinero(descuentoMonto);
-
-        pedidoTotal.textContent =
-            dinero(total);
-
-        return {
-            subtotal,
-            descuento: descuentoMonto,
-            total,
-            porcentaje
-        };
-    }
+    // ============================================================
+    // AGREGAR PRODUCTO AL PEDIDO
+    // ============================================================
 
     function agregarFilaProducto(
         producto = {}
     ) {
 
+        const contenedor =
+            $('productosPedido');
+
+        if (!contenedor) {
+            return;
+        }
+
         const row =
-            document.createElement("div");
+            document.createElement('div');
 
         row.className =
-            "producto-pedido-row";
+            'producto-pedido-row';
 
         row.innerHTML = `
             <div>
                 <label>Producto</label>
+
                 <input
                     type="text"
                     class="producto-nombre"
-                    maxlength="100"
                     placeholder="Ej. Camisa"
                     value="${escaparHTML(
-                        producto.nombre || ""
-                    )}"
-                >
+                        producto.nombre || ''
+                    )}">
             </div>
 
             <div>
                 <label>Cantidad</label>
+
                 <input
                     type="number"
                     class="producto-cantidad"
@@ -260,12 +1061,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     step="1"
                     value="${Number(
                         producto.cantidad || 1
-                    )}"
-                >
+                    )}">
             </div>
 
             <div>
                 <label>Precio unitario</label>
+
                 <input
                     type="number"
                     class="producto-precio"
@@ -273,12 +1074,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     step="0.01"
                     value="${Number(
                         producto.precio || 0
-                    )}"
-                >
+                    )}">
             </div>
 
             <div>
                 <label>Subtotal</label>
+
                 <input
                     type="text"
                     class="producto-subtotal"
@@ -290,282 +1091,416 @@ document.addEventListener("DOMContentLoaded", function () {
                         Number(
                             producto.precio || 0
                         )
-                    )}"
-                >
+                    )}">
             </div>
 
             <div>
                 <button
                     type="button"
                     class="btn-quitar-producto"
-                    title="Quitar producto"
-                >
+                    title="Quitar producto">
                     ×
                 </button>
             </div>
         `;
 
-        productosPedido.appendChild(row);
+        contenedor.appendChild(row);
 
         row
-            .querySelectorAll("input")
+            .querySelectorAll(
+                '.producto-cantidad, .producto-precio'
+            )
             .forEach(input => {
 
                 input.addEventListener(
-                    "input",
+                    'input',
                     calcularTotalesPedido
                 );
-
             });
 
         row
             .querySelector(
-                ".btn-quitar-producto"
+                '.btn-quitar-producto'
             )
-            .addEventListener(
-                "click",
+            ?.addEventListener(
+                'click',
                 () => {
 
                     row.remove();
 
                     calcularTotalesPedido();
-
                 }
             );
 
         calcularTotalesPedido();
     }
 
+    // ============================================================
+    // OBTENER PRODUCTOS
+    // ============================================================
+
+    function obtenerProductosPedido() {
+
+        return [
+            ...document.querySelectorAll(
+                '#productosPedido .producto-pedido-row'
+            )
+        ]
+
+        .map(row => ({
+
+            nombre:
+                row
+                    .querySelector(
+                        '.producto-nombre'
+                    )
+                    ?.value.trim() || '',
+
+            cantidad:
+                Number(
+                    row
+                        .querySelector(
+                            '.producto-cantidad'
+                        )
+                        ?.value || 0
+                ),
+
+            precio:
+                Number(
+                    row
+                        .querySelector(
+                            '.producto-precio'
+                        )
+                        ?.value || 0
+                )
+        }))
+
+        .filter(
+            p =>
+                p.nombre &&
+                p.cantidad > 0 &&
+                p.precio >= 0
+        );
+    }
+
+    // ============================================================
+    // CALCULAR TOTALES
+    // ============================================================
+
+    function calcularTotalesPedido() {
+
+        let subtotal = 0;
+
+        document
+            .querySelectorAll(
+                '#productosPedido .producto-pedido-row'
+            )
+            .forEach(row => {
+
+                const cantidad =
+                    Number(
+                        row
+                            .querySelector(
+                                '.producto-cantidad'
+                            )
+                            ?.value || 0
+                    );
+
+                const precio =
+                    Number(
+                        row
+                            .querySelector(
+                                '.producto-precio'
+                            )
+                            ?.value || 0
+                    );
+
+                const sub =
+                    cantidad * precio;
+
+                subtotal += sub;
+
+                const campo =
+                    row.querySelector(
+                        '.producto-subtotal'
+                    );
+
+                if (campo) {
+                    campo.value =
+                        dinero(sub);
+                }
+            });
+
+        const cliente =
+            clientes.find(
+                c =>
+                    String(c.id) ===
+                    String(
+                        $('pedidoCliente')?.value
+                    )
+            );
+
+        const porcentaje =
+            cliente?.tipo === 'mayorista'
+                ? Number(
+                    cliente.descuento || 0
+                )
+                : 0;
+
+        const descuento =
+            subtotal * porcentaje / 100;
+
+        const total =
+            subtotal - descuento;
+
+        if ($('pedidoSubtotal')) {
+            $('pedidoSubtotal').textContent =
+                dinero(subtotal);
+        }
+
+        if ($('pedidoDescuento')) {
+            $('pedidoDescuento').textContent =
+                dinero(descuento);
+        }
+
+        if ($('pedidoTotal')) {
+            $('pedidoTotal').textContent =
+                dinero(total);
+        }
+
+        return {
+            subtotal,
+            descuento,
+            total,
+            porcentaje
+        };
+    }
+
+    // ============================================================
+    // ABRIR PANEL PEDIDO
+    // ============================================================
+
     function abrirPanelPedido(
-        modo = "nuevo",
         pedido = null
     ) {
 
-        overlay.hidden = false;
+        if (
+            !pedidoPanel ||
+            !pedidoForm
+        ) {
+            return;
+        }
+
+        if (overlay) {
+            overlay.hidden = false;
+        }
 
         pedidoPanel.classList.add(
-            "is-open"
+            'is-open'
         );
 
         pedidoPanel.setAttribute(
-            "aria-hidden",
-            "false"
+            'aria-hidden',
+            'false'
         );
 
-        if (modo === "nuevo") {
+        if ($('pedidoPanelTitulo')) {
+            $('pedidoPanelTitulo').textContent =
+                pedido
+                    ? 'Editar pedido'
+                    : 'Nuevo pedido';
+        }
 
-            pedidoPanelTitulo.textContent =
-                "Nuevo pedido";
+        if ($('pedidoId')) {
+            $('pedidoId').value =
+                pedido?.id || '';
+        }
 
-            pedidoId.value = "";
+        if ($('pedidoNumero')) {
+            $('pedidoNumero').value =
+                pedido?.numero ||
+                numeroPedido();
+        }
 
-            pedidoNumero.value =
-                generarNumeroPedido();
-
-            pedidoFecha.value =
-                fechaInputActual();
-
-            pedidoEstado.value =
-                "pendiente";
-
-            pedidoOrigen.value =
-                "WhatsApp";
-
-            cargarClientesEnSelect("");
-
-            pedidoDireccion.value =
-                "";
-
-            pedidoNotas.value =
-                "";
-
-            productosPedido.innerHTML =
-                "";
-
-            agregarFilaProducto();
-
-        } else if (pedido) {
-
-            pedidoPanelTitulo.textContent =
-                "Editar pedido";
-
-            pedidoId.value =
-                pedido.id;
-
-            pedidoNumero.value =
-                pedido.numero;
-
-            pedidoFecha.value =
-                pedido.fecha
+        if ($('pedidoFecha')) {
+            $('pedidoFecha').value =
+                pedido?.fecha
                     ? new Date(
                         pedido.fecha
                     )
                         .toISOString()
                         .slice(0, 16)
-                    : fechaInputActual();
+                    : fechaActualInput();
+        }
 
-            pedidoEstado.value =
-                pedido.estado ||
-                "pendiente";
+        if ($('pedidoOrigen')) {
+            $('pedidoOrigen').value =
+                pedido?.origen ||
+                'WhatsApp';
+        }
 
-            pedidoOrigen.value =
-                pedido.origen ||
-                "WhatsApp";
+        if ($('pedidoEstado')) {
+            $('pedidoEstado').value =
+                pedido?.estado ||
+                'pendiente';
+        }
 
-            cargarClientesEnSelect(
-                pedido.clienteId
+        if ($('pedidoDireccion')) {
+            $('pedidoDireccion').value =
+                pedido?.direccion || '';
+        }
+
+        if ($('pedidoNotas')) {
+            $('pedidoNotas').value =
+                pedido?.notas || '';
+        }
+
+        cargarClientesEnSelect(
+            pedido?.clienteId || ''
+        );
+
+        if ($('productosPedido')) {
+            $('productosPedido').innerHTML = '';
+        }
+
+        if (
+            pedido?.productos &&
+            pedido.productos.length
+        ) {
+
+            pedido.productos.forEach(
+                producto => {
+                    agregarFilaProducto(
+                        producto
+                    );
+                }
             );
 
-            pedidoDireccion.value =
-                pedido.direccion || "";
+        } else {
 
-            pedidoNotas.value =
-                pedido.notas || "";
-
-            productosPedido.innerHTML =
-                "";
-
-            (pedido.productos || [])
-                .forEach(
-                    p =>
-                        agregarFilaProducto(p)
-                );
-
-            if (
-                !pedido.productos ||
-                pedido.productos.length === 0
-            ) {
-
-                agregarFilaProducto();
-
-            }
-
+            agregarFilaProducto();
         }
 
         calcularTotalesPedido();
     }
 
+    // ============================================================
+    // CERRAR PANEL PEDIDO
+    // ============================================================
+
     function cerrarPanelPedido() {
 
-        pedidoPanel.classList.remove(
-            "is-open"
+        pedidoPanel?.classList.remove(
+            'is-open'
         );
 
-        pedidoPanel.setAttribute(
-            "aria-hidden",
-            "true"
+        pedidoPanel?.setAttribute(
+            'aria-hidden',
+            'true'
         );
 
         if (
-            !panel.classList.contains(
-                "is-open"
+            !panel?.classList.contains(
+                'is-open'
             )
         ) {
-
-            overlay.hidden = true;
-
+            if (overlay) {
+                overlay.hidden = true;
+            }
         }
-
     }
 
-    function obtenerPedidoFormulario() {
+    // ============================================================
+    // GUARDAR PEDIDO
+    // ============================================================
+
+    function guardarPedidoDesdeFormulario(e) {
+
+        e.preventDefault();
+        e.stopPropagation();
 
         const clienteId =
-            pedidoCliente.value;
+            $('pedidoCliente')?.value;
+
+        const fecha =
+            $('pedidoFecha')?.value;
+
+        const productos =
+            obtenerProductosPedido();
+
+        // CLIENTE
+        if (!clienteId) {
+
+            toast(
+                'Selecciona un cliente para el pedido.',
+                'error'
+            );
+
+            $('pedidoCliente')?.focus();
+
+            return;
+        }
+
+        // FECHA
+        if (!fecha) {
+
+            toast(
+                'Ingresa la fecha del pedido.',
+                'error'
+            );
+
+            $('pedidoFecha')?.focus();
+
+            return;
+        }
+
+        // PRODUCTOS
+        if (!productos.length) {
+
+            toast(
+                'Agrega al menos un producto con nombre y cantidad.',
+                'error'
+            );
+
+            return;
+        }
 
         const cliente =
             clientes.find(
                 c =>
-                    c.id === clienteId
+                    String(c.id) ===
+                    String(clienteId)
             );
 
         if (!cliente) {
 
-            mostrarToast(
-                "Seleccione un cliente.",
-                "error"
+            toast(
+                'El cliente seleccionado no existe.',
+                'error'
             );
 
-            return null;
-
-        }
-
-        const productos = [];
-
-        productosPedido
-            .querySelectorAll(
-                ".producto-pedido-row"
-            )
-            .forEach(row => {
-
-                const nombre =
-                    row.querySelector(
-                        ".producto-nombre"
-                    )?.value.trim();
-
-                const cantidad =
-                    Number(
-                        row.querySelector(
-                            ".producto-cantidad"
-                        )?.value || 0
-                    );
-
-                const precio =
-                    Number(
-                        row.querySelector(
-                            ".producto-precio"
-                        )?.value || 0
-                    );
-
-                if (
-                    nombre &&
-                    cantidad > 0
-                ) {
-
-                    productos.push({
-                        nombre,
-                        cantidad,
-                        precio,
-                        subtotal:
-                            cantidad * precio
-                    });
-
-                }
-
-            });
-
-        if (
-            productos.length === 0
-        ) {
-
-            mostrarToast(
-                "Agregue al menos un producto.",
-                "error"
-            );
-
-            return null;
-
+            return;
         }
 
         const totales =
             calcularTotalesPedido();
 
-        return {
+        const id =
+            $('pedidoId')?.value ||
+            generarId('pedido-');
 
-            id:
-                pedidoId.value ||
-                "pedido-" +
-                Date.now(),
+        const existente =
+            pedidos.find(
+                p => p.id === id
+            );
+
+        const datos = {
+
+            id,
 
             numero:
-                pedidoNumero.value,
-
-            fecha:
-                pedidoFecha.value
-                    ? new Date(
-                        pedidoFecha.value
-                    ).toISOString()
-                    : new Date().toISOString(),
+                $('pedidoNumero')?.value ||
+                numeroPedido(),
 
             clienteId:
                 cliente.id,
@@ -574,15 +1509,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 cliente.nombre,
 
             clienteTelefono:
-                cliente.telefono,
+                cliente.telefono || '',
 
-            origen:
-                pedidoOrigen.value,
-
-            estado:
-                pedidoEstado.value,
-
-            productos,
+            productos:
+                productos.map(p => ({
+                    ...p,
+                    subtotal:
+                        p.cantidad *
+                        p.precio
+                })),
 
             subtotal:
                 totales.subtotal,
@@ -596,229 +1531,127 @@ document.addEventListener("DOMContentLoaded", function () {
             total:
                 totales.total,
 
+            fecha:
+                new Date(fecha).toISOString(),
+
+            origen:
+                $('pedidoOrigen')?.value ||
+                'WhatsApp',
+
+            estado:
+                $('pedidoEstado')?.value ||
+                'pendiente',
+
             direccion:
-                pedidoDireccion.value.trim(),
+                $('pedidoDireccion')
+                    ?.value.trim() || '',
 
             notas:
-                pedidoNotas.value.trim()
-
+                $('pedidoNotas')
+                    ?.value.trim() || ''
         };
-    }
 
-    pedidoCliente.addEventListener(
-        "change",
-        calcularTotalesPedido
-    );
+        if (existente) {
 
-    btnAgregarProducto.addEventListener(
-        "click",
-        function () {
+            pedidos =
+                pedidos.map(p =>
+                    p.id === id
+                        ? datos
+                        : p
+                );
 
-            agregarFilaProducto();
-
-        }
-    );
-
-    btnNuevoPedido.addEventListener(
-        "click",
-        function () {
-
-            abrirPanelPedido(
-                "nuevo"
+            toast(
+                'Pedido actualizado correctamente.'
             );
 
-        }
-    );
+        } else {
 
-    btnNuevoPedidoVacio.addEventListener(
-        "click",
-        function () {
+            pedidos.push(datos);
 
-            abrirPanelPedido(
-                "nuevo"
+            toast(
+                'Pedido registrado correctamente.'
             );
-
         }
-    );
 
-    btnCerrarPedidoPanel.addEventListener(
-        "click",
-        cerrarPanelPedido
-    );
-
-    btnCancelarPedido.addEventListener(
-        "click",
-        cerrarPanelPedido
-    );
-
-    pedidoForm.addEventListener(
-        "submit",
-        function (evento) {
-
-            evento.preventDefault();
-
-            const pedido =
-                obtenerPedidoFormulario();
-
-            if (!pedido) {
-                return;
-            }
-
-            const indice =
-                pedidos.findIndex(
-                    p =>
-                        p.id ===
-                        pedido.id
-                );
-
-            if (indice >= 0) {
-
-                pedidos[indice] =
-                    pedido;
-
-                mostrarToast(
-                    "Pedido actualizado correctamente."
-                );
-
-            } else {
-
-                pedidos.push(
-                    pedido
-                );
-
-                mostrarToast(
-                    "Pedido registrado correctamente."
-                );
-
-            }
-
-            guardarPedidos();
-
-            cerrarPanelPedido();
+        if (guardarPedidos()) {
 
             mostrarPedidos();
 
             actualizarEstadisticasPedidos();
 
+            cerrarPanelPedido();
         }
-    );
-
-    function obtenerNombreEstado(
-        estado
-    ) {
-
-        const nombres = {
-
-            pendiente:
-                "Pendiente",
-
-            preparando:
-                "Preparando",
-
-            entregado:
-                "Entregado",
-
-            cancelado:
-                "Cancelado"
-
-        };
-
-        return nombres[estado] ||
-            estado;
-
     }
 
-    function claseEstado(
-        estado
-    ) {
+    // ============================================================
+    // ESTADO DEL PEDIDO
+    // ============================================================
 
-        return (
-            "estado-pedido estado-" +
-            estado
-        );
+    function estadoTexto(estado) {
 
+        return {
+
+            pendiente: 'Pendiente',
+
+            preparando: 'Preparando',
+
+            entregado: 'Entregado',
+
+            cancelado: 'Cancelado'
+
+        }[estado] ||
+            estado ||
+            'Pendiente';
     }
 
-    function formatearFechaPedido(
-        fecha
-    ) {
-
-        if (!fecha) {
-            return "—";
-        }
-
-        const date =
-            new Date(fecha);
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-
-            return "—";
-
-        }
-
-        return date.toLocaleString(
-            "es-GT",
-            {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
-
-    }
+    // ============================================================
+    // MOSTRAR PEDIDOS
+    // ============================================================
 
     function mostrarPedidos() {
 
-        if (!pedidosBody) {
+        const tbody =
+            $('pedidosBody');
+
+        if (!tbody) {
             return;
         }
 
+        tbody.innerHTML = '';
+
         const texto =
-            searchPedidos?.value
-                .trim()
-                .toLowerCase() || "";
+            (
+                $('searchPedidos')
+                    ?.value || ''
+            )
+                .toLowerCase()
+                .trim();
 
         let lista =
-            pedidos.filter(
-                pedido => {
+            pedidos.filter(p => {
 
-                    const coincideEstado =
-                        filtroPedidoActual ===
-                        "todos" ||
-                        pedido.estado ===
-                        filtroPedidoActual;
+                const estadoOk =
+                    filtroPedido === 'todos' ||
+                    p.estado === filtroPedido;
 
-                    const contenido =
-                        (
-                            pedido.numero +
-                            " " +
-                            pedido.clienteNombre +
-                            " " +
-                            pedido.clienteTelefono +
-                            " " +
-                            pedido.origen
-                        )
-                            .toLowerCase();
+                const contenido =
+                    `${p.numero} ${
+                        p.clienteNombre || ''
+                    } ${
+                        p.clienteTelefono || ''
+                    } ${
+                        p.origen || ''
+                    }`
+                        .toLowerCase();
 
-                    const coincideBusqueda =
+                return (
+                    estadoOk &&
+                    (
                         !texto ||
-                        contenido.includes(
-                            texto
-                        );
-
-                    return (
-                        coincideEstado &&
-                        coincideBusqueda
-                    );
-
-                }
-            );
+                        contenido.includes(texto)
+                    )
+                );
+            });
 
         lista.sort(
             (a, b) =>
@@ -826,530 +1659,129 @@ document.addEventListener("DOMContentLoaded", function () {
                 new Date(a.fecha)
         );
 
-        pedidosBody.innerHTML =
-            "";
+        const empty =
+            $('emptyPedidos');
 
-        if (
-            lista.length === 0
-        ) {
-
-            if (emptyPedidos) {
-                emptyPedidos.hidden =
-                    false;
-            }
-
-        } else {
-
-            if (emptyPedidos) {
-                emptyPedidos.hidden =
-                    true;
-            }
-
-            lista.forEach(
-                pedido => {
-
-                    const tr =
-                        document.createElement(
-                            "tr"
-                        );
-
-                    tr.innerHTML = `
-                        <td>
-                            <strong>
-                                ${escaparHTML(
-                                    pedido.numero
-                                )}
-                            </strong>
-                        </td>
-
-                        <td>
-                            <div class="pedido-cliente">
-                                <strong>
-                                    ${escaparHTML(
-                                        pedido.clienteNombre ||
-                                        "Sin cliente"
-                                    )}
-                                </strong>
-                                <small>
-                                    ${escaparHTML(
-                                        pedido.clienteTelefono ||
-                                        ""
-                                    )}
-                                </small>
-                            </div>
-                        </td>
-
-                        <td>
-                            ${formatearFechaPedido(
-                                pedido.fecha
-                            )}
-                        </td>
-
-                        <td>
-                            ${escaparHTML(
-                                pedido.origen ||
-                                "—"
-                            )}
-                        </td>
-
-                        <td>
-                            <span class="${claseEstado(
-                                pedido.estado
-                            )}">
-                                ${obtenerNombreEstado(
-                                    pedido.estado
-                                )}
-                            </span>
-                        </td>
-
-                        <td>
-                            <strong>
-                                ${dinero(
-                                    pedido.total
-                                )}
-                            </strong>
-                        </td>
-
-                        <td>
-                            <div class="acciones-pedido">
-
-                                <button
-                                    type="button"
-                                    class="btn-accion btn-ver-pedido"
-                                    data-id="${pedido.id}"
-                                    title="Ver pedido"
-                                >
-                                    👁
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="btn-accion btn-editar-pedido"
-                                    data-id="${pedido.id}"
-                                    title="Editar pedido"
-                                >
-                                    ✏
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="btn-accion btn-eliminar-pedido"
-                                    data-id="${pedido.id}"
-                                    title="Eliminar pedido"
-                                >
-                                    🗑
-                                </button>
-
-                            </div>
-                        </td>
-                    `;
-
-                    pedidosBody.appendChild(
-                        tr
-                    );
-
-                }
-            );
-
+        if (empty) {
+            empty.hidden =
+                lista.length !== 0;
         }
 
-        if (resultadoPedidos) {
+        lista.forEach(p => {
 
-            resultadoPedidos.textContent =
-                lista.length +
-                (
+            const tr =
+                document.createElement('tr');
+
+            const productos =
+                (p.productos || [])
+                    .map(
+                        x =>
+                            `${x.nombre} (${x.cantidad})`
+                    )
+                    .join(', ');
+
+            tr.innerHTML = `
+
+                <td>
+                    <strong>
+                        ${escaparHTML(
+                            p.numero
+                        )}
+                    </strong>
+                </td>
+
+                <td>
+                    ${escaparHTML(
+                        p.clienteNombre ||
+                        'Sin cliente'
+                    )}
+                </td>
+
+                <td>
+                    ${escaparHTML(
+                        productos ||
+                        'Sin productos'
+                    )}
+                </td>
+
+                <td>
+                    <strong>
+                        ${dinero(p.total)}
+                    </strong>
+                </td>
+
+                <td>
+                    ${formatearFechaHora(
+                        p.fecha
+                    )}
+                </td>
+
+                <td>
+                    <span
+                        class="estado-pedido estado-${escaparHTML(
+                            p.estado
+                        )}">
+                        ${estadoTexto(
+                            p.estado
+                        )}
+                    </span>
+                </td>
+
+                <td>
+
+                    <div class="acciones-pedido">
+
+                        <button
+                            type="button"
+                            class="btn-accion btn-ver-pedido"
+                            data-id="${p.id}">
+                            👁
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn-accion btn-editar-pedido"
+                            data-id="${p.id}">
+                            ✏
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn-accion btn-eliminar-pedido"
+                            data-id="${p.id}">
+                            🗑
+                        </button>
+
+                    </div>
+
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        if ($('resultadoPedidos')) {
+
+            $('resultadoPedidos')
+                .textContent =
+                `${lista.length} ${
                     lista.length === 1
-                        ? " pedido"
-                        : " pedidos"
-                );
-
+                        ? 'pedido'
+                        : 'pedidos'
+                }`;
         }
 
-        if (footerPedidos) {
+        if ($('footerPedidos')) {
 
-            footerPedidos.textContent =
-                lista.length +
-                " de " +
-                pedidos.length +
-                " pedidos";
-
+            $('footerPedidos')
+                .textContent =
+                `${lista.length} de ${pedidos.length} pedidos`;
         }
-
     }
 
-    pedidosBody.addEventListener(
-        "click",
-        function (evento) {
-
-            const boton =
-                evento.target.closest(
-                    "button[data-id]"
-                );
-
-            if (!boton) {
-                return;
-            }
-
-            const id =
-                boton.dataset.id;
-
-            const pedido =
-                pedidos.find(
-                    p =>
-                        p.id === id
-                );
-
-            if (!pedido) {
-                return;
-            }
-
-            if (
-                boton.classList.contains(
-                    "btn-ver-pedido"
-                )
-            ) {
-
-                mostrarDetallePedido(
-                    pedido
-                );
-
-            }
-
-            if (
-                boton.classList.contains(
-                    "btn-editar-pedido"
-                )
-            ) {
-
-                abrirPanelPedido(
-                    "editar",
-                    pedido
-                );
-
-            }
-
-            if (
-                boton.classList.contains(
-                    "btn-eliminar-pedido"
-                )
-            ) {
-
-                eliminarPedido(
-                    pedido
-                );
-
-            }
-
-        }
-    );
-
-    function eliminarPedido(
-        pedido
-    ) {
-
-        const confirmar =
-            confirm(
-                `¿Desea eliminar el pedido ${pedido.numero}?`
-            );
-
-        if (!confirmar) {
-            return;
-        }
-
-        pedidos =
-            pedidos.filter(
-                p =>
-                    p.id !==
-                    pedido.id
-            );
-
-        guardarPedidos();
-
-        mostrarPedidos();
-
-        actualizarEstadisticasPedidos();
-
-        if (
-            pedidoDetalleActual?.id ===
-            pedido.id &&
-            dialogPedidoDetalle.open
-        ) {
-
-            dialogPedidoDetalle.close();
-
-        }
-
-        mostrarToast(
-            "Pedido eliminado correctamente."
-        );
-
-    }
-
-    function mostrarDetallePedido(
-        pedido
-    ) {
-
-        pedidoDetalleActual =
-            pedido;
-
-        const cliente =
-            clientes.find(
-                c =>
-                    c.id ===
-                    pedido.clienteId
-            );
-
-        detallePedidoNumero.textContent =
-            pedido.numero;
-
-        detallePedidoEstado.textContent =
-            obtenerNombreEstado(
-                pedido.estado
-            );
-
-        detallePedidoEstado.className =
-            claseEstado(
-                pedido.estado
-            );
-
-        detallePedidoCliente.textContent =
-            pedido.clienteNombre ||
-            cliente?.nombre ||
-            "Sin cliente";
-
-        detallePedidoTelefono.textContent =
-            pedido.clienteTelefono ||
-            cliente?.telefono ||
-            "—";
-
-        detallePedidoFecha.textContent =
-            formatearFechaPedido(
-                pedido.fecha
-            );
-
-        detallePedidoOrigen.textContent =
-            pedido.origen ||
-            "—";
-
-        detallePedidoDireccion.textContent =
-            pedido.direccion ||
-            "No especificada";
-
-        detallePedidoTotal.textContent =
-            dinero(
-                pedido.total
-            );
-
-        detallePedidoNotas.textContent =
-            pedido.notas ||
-            "Sin notas";
-
-        detallePedidoProductos.innerHTML =
-            "";
-
-        (pedido.productos || [])
-            .forEach(
-                producto => {
-
-                    const item =
-                        document.createElement(
-                            "div"
-                        );
-
-                    item.className =
-                        "detalle-producto";
-
-                    item.innerHTML = `
-                        <div>
-                            <strong>
-                                ${escaparHTML(
-                                    producto.nombre
-                                )}
-                            </strong>
-
-                            <small>
-                                ${producto.cantidad}
-                                ×
-                                ${dinero(
-                                    producto.precio
-                                )}
-                            </small>
-                        </div>
-
-                        <strong>
-                            ${dinero(
-                                producto.subtotal
-                            )}
-                        </strong>
-                    `;
-
-                    detallePedidoProductos
-                        .appendChild(item);
-
-                }
-            );
-
-        dialogPedidoDetalle.showModal();
-
-    }
-
-    btnCerrarPedidoDetalle.addEventListener(
-        "click",
-        function () {
-
-            dialogPedidoDetalle.close();
-
-        }
-    );
-
-    btnEditarPedidoDetalle.addEventListener(
-        "click",
-        function () {
-
-            if (
-                !pedidoDetalleActual
-            ) {
-
-                return;
-
-            }
-
-            dialogPedidoDetalle.close();
-
-            abrirPanelPedido(
-                "editar",
-                pedidoDetalleActual
-            );
-
-        }
-    );
-
-    btnEliminarPedidoDetalle.addEventListener(
-        "click",
-        function () {
-
-            if (
-                !pedidoDetalleActual
-            ) {
-
-                return;
-
-            }
-
-            const pedido =
-                pedidoDetalleActual;
-
-            dialogPedidoDetalle.close();
-
-            eliminarPedido(
-                pedido
-            );
-
-        }
-    );
-
-    btnWhatsAppPedido.addEventListener(
-        "click",
-        function () {
-
-            if (
-                !pedidoDetalleActual
-            ) {
-
-                return;
-
-            }
-
-            const pedido =
-                pedidoDetalleActual;
-
-            const telefono =
-                (
-                    pedido.clienteTelefono ||
-                    ""
-                ).replace(
-                    /\D/g,
-                    ""
-                );
-
-            if (!telefono) {
-
-                mostrarToast(
-                    "El cliente no tiene teléfono registrado.",
-                    "error"
-                );
-
-                return;
-
-            }
-
-            let mensaje =
-                `Hola ${pedido.clienteNombre || ""},%0A%0A`;
-
-            mensaje +=
-                `Le compartimos el detalle de su pedido ${pedido.numero}:%0A%0A`;
-
-            (pedido.productos || [])
-                .forEach(
-                    producto => {
-
-                        mensaje +=
-                            `• ${producto.nombre} — ` +
-                            `${producto.cantidad} x ` +
-                            `${dinero(
-                                producto.precio
-                            )} = ` +
-                            `${dinero(
-                                producto.subtotal
-                            )}%0A`;
-
-                    }
-                );
-
-            mensaje +=
-                `%0ASubtotal: ${dinero(
-                    pedido.subtotal
-                )}`;
-
-            if (
-                Number(
-                    pedido.descuento || 0
-                ) > 0
-            ) {
-
-                mensaje +=
-                    `%0ADescuento: ${dinero(
-                        pedido.descuento
-                    )}`;
-
-            }
-
-            mensaje +=
-                `%0ATotal: ${dinero(
-                    pedido.total
-                )}`;
-
-            if (
-                pedido.direccion
-            ) {
-
-                mensaje +=
-                    `%0ADirección: ${encodeURIComponent(
-                        pedido.direccion
-                    )}`;
-
-            }
-
-            mensaje +=
-                `%0A%0AGracias por su compra.`;
-
-            window.open(
-                `https://wa.me/502${telefono}?text=${mensaje}`,
-                "_blank"
-            );
-
-        }
-    );
+    // ============================================================
+    // ESTADÍSTICAS PEDIDOS
+    // ============================================================
 
     function actualizarEstadisticasPedidos() {
 
@@ -1358,141 +1790,323 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const pendientes =
             pedidos.filter(
-                p =>
-                    p.estado ===
-                    "pendiente"
+                p => p.estado === 'pendiente'
             ).length;
 
         const preparando =
             pedidos.filter(
-                p =>
-                    p.estado ===
-                    "preparando"
+                p => p.estado === 'preparando'
             ).length;
 
         const entregados =
             pedidos.filter(
-                p =>
-                    p.estado ===
-                    "entregado"
+                p => p.estado === 'entregado'
             ).length;
 
         const ventas =
             pedidos
                 .filter(
-                    p =>
-                        p.estado !==
-                        "cancelado"
+                    p => p.estado !== 'cancelado'
                 )
                 .reduce(
-                    (
-                        acumulado,
-                        p
-                    ) =>
-                        acumulado +
-                        Number(
-                            p.total || 0
-                        ),
+                    (s, p) =>
+                        s +
+                        Number(p.total || 0),
                     0
                 );
 
-        if (statPedidos) {
-            statPedidos.textContent =
+        if ($('statPedidos')) {
+            $('statPedidos').textContent =
                 total;
         }
 
-        if (
-            statPedidosPendientes
-        ) {
-
-            statPedidosPendientes.textContent =
+        if ($('statPedidosPendientes')) {
+            $('statPedidosPendientes')
+                .textContent =
                 pendientes;
-
         }
 
-        if (
-            statPedidosEntregados
-        ) {
-
-            statPedidosEntregados.textContent =
+        if ($('statPedidosEntregados')) {
+            $('statPedidosEntregados')
+                .textContent =
                 entregados;
-
         }
 
-        if (statVentas) {
-
-            statVentas.textContent =
+        if ($('statVentas')) {
+            $('statVentas').textContent =
                 dinero(ventas);
-
         }
 
-        if (countPedidosTodos) {
-
-            countPedidosTodos.textContent =
+        if ($('countPedidosTodos')) {
+            $('countPedidosTodos')
+                .textContent =
                 total;
-
         }
 
-        if (
-            countPedidosPendientes
-        ) {
-
-            countPedidosPendientes.textContent =
+        if ($('countPedidosPendientes')) {
+            $('countPedidosPendientes')
+                .textContent =
                 pendientes;
-
         }
 
-        if (
-            countPedidosPreparando
-        ) {
-
-            countPedidosPreparando.textContent =
+        if ($('countPedidosPreparando')) {
+            $('countPedidosPreparando')
+                .textContent =
                 preparando;
-
         }
 
-        if (
-            countPedidosEntregados
-        ) {
-
-            countPedidosEntregados.textContent =
+        if ($('countPedidosEntregados')) {
+            $('countPedidosEntregados')
+                .textContent =
                 entregados;
-
         }
-
     }
 
-    function cambiarVista(
-        vista
-    ) {
+    // ============================================================
+    // DETALLE PEDIDO
+    // ============================================================
+
+    function mostrarDetallePedido(pedido) {
+
+        pedidoDetalleActual =
+            pedido;
+
+        if ($('detallePedidoNumero')) {
+            $('detallePedidoNumero')
+                .textContent =
+                pedido.numero;
+        }
+
+        if ($('detallePedidoEstado')) {
+
+            $('detallePedidoEstado')
+                .textContent =
+                estadoTexto(
+                    pedido.estado
+                );
+
+            $('detallePedidoEstado')
+                .className =
+                `detail-badge estado-${pedido.estado}`;
+        }
+
+        if ($('detallePedidoCliente')) {
+            $('detallePedidoCliente')
+                .textContent =
+                pedido.clienteNombre ||
+                '—';
+        }
+
+        if ($('detallePedidoTelefono')) {
+            $('detallePedidoTelefono')
+                .textContent =
+                pedido.clienteTelefono ||
+                '—';
+        }
+
+        if ($('detallePedidoFecha')) {
+            $('detallePedidoFecha')
+                .textContent =
+                formatearFechaHora(
+                    pedido.fecha
+                );
+        }
+
+        if ($('detallePedidoOrigen')) {
+            $('detallePedidoOrigen')
+                .textContent =
+                pedido.origen || '—';
+        }
+
+        if ($('detallePedidoDireccion')) {
+            $('detallePedidoDireccion')
+                .textContent =
+                pedido.direccion ||
+                'No especificada';
+        }
+
+        if ($('detallePedidoTotal')) {
+            $('detallePedidoTotal')
+                .textContent =
+                dinero(pedido.total);
+        }
+
+        if ($('detallePedidoNotas')) {
+            $('detallePedidoNotas')
+                .textContent =
+                pedido.notas ||
+                'Sin notas registradas.';
+        }
+
+        const cont =
+            $('detallePedidoProductos');
+
+        if (cont) {
+
+            cont.innerHTML = '';
+
+            (pedido.productos || [])
+                .forEach(p => {
+
+                    const item =
+                        document.createElement('div');
+
+                    item.className =
+                        'detalle-producto';
+
+                    item.innerHTML = `
+
+                        <div>
+
+                            <strong>
+                                ${escaparHTML(
+                                    p.nombre
+                                )}
+                            </strong>
+
+                            <small>
+                                ${p.cantidad}
+                                ×
+                                ${dinero(p.precio)}
+                            </small>
+
+                        </div>
+
+                        <strong>
+                            ${dinero(
+                                p.subtotal
+                            )}
+                        </strong>
+                    `;
+
+                    cont.appendChild(item);
+                });
+        }
+
+        $('dialogPedidoDetalle')
+            ?.showModal();
+    }
+
+    // ============================================================
+    // ELIMINAR PEDIDO
+    // ============================================================
+
+    function eliminarPedido(pedido) {
+
+        if (!pedido) {
+            return;
+        }
 
         if (
-            vista ===
-            "pedidos"
+            !confirm(
+                `¿Deseas eliminar el pedido ${pedido.numero}?`
+            )
         ) {
+            return;
+        }
 
+        pedidos =
+            pedidos.filter(
+                p => p.id !== pedido.id
+            );
+
+        guardarPedidos();
+
+        mostrarPedidos();
+
+        actualizarEstadisticasPedidos();
+
+        toast(
+            'Pedido eliminado correctamente.'
+        );
+    }
+
+    // ============================================================
+    // NAVEGACIÓN
+    // ============================================================
+
+    function cambiarVista(vista) {
+
+        const clientesToolbar =
+            $('clientesToolbar');
+
+        const clientesTable =
+            $('clientesTableSection');
+
+        const pedidosView =
+            $('pedidosView');
+
+        const pedidosStats =
+            $('pedidosStats');
+
+        const titulo =
+            $('tituloPrincipal');
+
+        const descripcion =
+            $('descripcionPrincipal');
+
+        const textoNuevo =
+            $('textoBtnNuevo');
+
+        const esPedidos =
+            vista === 'pedidos';
+
+        if (clientesToolbar) {
             clientesToolbar.hidden =
-                true;
+                esPedidos;
+        }
 
-            clientesTableSection.hidden =
-                true;
+        if (clientesTable) {
+            clientesTable.hidden =
+                esPedidos;
+        }
 
+        if (pedidosView) {
             pedidosView.hidden =
-                false;
+                !esPedidos;
+        }
 
-            if (pedidosStats) {
-                pedidosStats.hidden =
-                    false;
-            }
+        if (pedidosStats) {
+            pedidosStats.hidden =
+                !esPedidos;
+        }
 
-            tituloPrincipal.textContent =
-                "Pedidos";
+        if (titulo) {
+            titulo.textContent =
+                esPedidos
+                    ? 'Gestión de pedidos'
+                    : 'Gestión de clientes';
+        }
 
-            descripcionPrincipal.textContent =
-                "Centraliza y administra todos los pedidos de Variedades Chiquis.";
+        if (descripcion) {
+            descripcion.textContent =
+                esPedidos
+                    ? 'Centraliza y administra los pedidos recibidos por teléfono y WhatsApp.'
+                    : 'Administra clientes y centraliza los pedidos recibidos por teléfono y WhatsApp.';
+        }
 
-            textoBtnNuevo.textContent =
-                "Nuevo pedido";
+        if (textoNuevo) {
+            textoNuevo.textContent =
+                esPedidos
+                    ? 'Nuevo pedido'
+                    : 'Nuevo cliente';
+        }
+
+        $('btnNavClientes')
+            ?.classList.toggle(
+                'active',
+                !esPedidos
+            );
+
+        $('btnNavPedidos')
+            ?.classList.toggle(
+                'active',
+                esPedidos
+            );
+
+        if (esPedidos) {
+
+            cargarClientesEnSelect();
 
             mostrarPedidos();
 
@@ -1500,1219 +2114,660 @@ document.addEventListener("DOMContentLoaded", function () {
 
         } else {
 
-            clientesToolbar.hidden =
-                false;
-
-            clientesTableSection.hidden =
-                false;
-
-            pedidosView.hidden =
-                true;
-
-            if (pedidosStats) {
-                pedidosStats.hidden =
-                    true;
-            }
-
-            tituloPrincipal.textContent =
-                "Clientes";
-
-            descripcionPrincipal.textContent =
-                "Administra la información de los clientes de Variedades Chiquis.";
-
-            textoBtnNuevo.textContent =
-                "Nuevo cliente";
-
+            mostrarClientes();
         }
-
     }
 
-    btnNavClientes.addEventListener(
-        "click",
-        function () {
+    // ============================================================
+    // CONTADOR DE NOTAS
+    // ============================================================
 
-            cambiarVista(
-                "clientes"
-            );
+    function actualizarContadorNotas() {
 
+        if (
+            $('notasCounter') &&
+            $('notas')
+        ) {
+
+            $('notasCounter')
+                .textContent =
+                $('notas').value.length;
         }
+    }
+
+    // ============================================================
+    // EVENTOS DE CLIENTES
+    // ============================================================
+
+    on(
+        'clienteForm',
+        'submit',
+        guardarClienteDesdeFormulario
     );
 
-    btnNavPedidos.addEventListener(
-        "click",
-        function () {
-
-            cambiarVista(
-                "pedidos"
-            );
-
-        }
+    on(
+        'tipoMinorista',
+        'change',
+        actualizarCamposTipo
     );
 
-    searchPedidos.addEventListener(
-        "input",
-        mostrarPedidos
+    on(
+        'tipoMayorista',
+        'change',
+        actualizarCamposTipo
     );
 
-    btnLimpiarPedidos.addEventListener(
-        "click",
-        function () {
-
-            searchPedidos.value =
-                "";
-
-            filtroPedidoActual =
-                "todos";
-
-            document
-                .querySelectorAll(
-                    ".filtro-pedido"
-                )
-                .forEach(
-                    boton =>
-                        boton.classList.remove(
-                            "active"
-                        )
-                );
-
-            const primero =
-                document.querySelector(
-                    '.filtro-pedido[data-filtro="todos"]'
-                );
-
-            if (primero) {
-                primero.classList.add(
-                    "active"
-                );
-            }
-
-            mostrarPedidos();
-
-        }
+    on(
+        'notas',
+        'input',
+        actualizarContadorNotas
     );
 
-    document
-        .querySelectorAll(
-            ".filtro-pedido"
-        )
-        .forEach(
-            boton => {
-
-                boton.addEventListener(
-                    "click",
-                    function () {
-
-                        filtroPedidoActual =
-                            this.dataset.filtro ||
-                            "todos";
-
-                        document
-                            .querySelectorAll(
-                                ".filtro-pedido"
-                            )
-                            .forEach(
-                                b =>
-                                    b.classList.remove(
-                                        "active"
-                                    )
-                            );
-
-                        this.classList.add(
-                            "active"
-                        );
-
-                        mostrarPedidos();
-
-                    }
-                );
-
-            }
-        );
-
-    const btnExportarPedidos =
-        document.getElementById(
-            "btnExportarPedidos"
-        );
-
-    if (
-        btnExportarPedidos
-    ) {
-
-        btnExportarPedidos.addEventListener(
-            "click",
-            function () {
-
-                if (
-                    pedidos.length ===
-                    0
-                ) {
-
-                    mostrarToast(
-                        "No hay pedidos para exportar.",
-                        "error"
-                    );
-
-                    return;
-
-                }
-
-                const datos =
-                    JSON.stringify(
-                        pedidos,
-                        null,
-                        2
-                    );
-
-                const blob =
-                    new Blob(
-                        [datos],
-                        {
-                            type:
-                                "application/json"
-                        }
-                    );
-
-                const url =
-                    URL.createObjectURL(
-                        blob
-                    );
-
-                const enlace =
-                    document.createElement(
-                        "a"
-                    );
-
-                enlace.href =
-                    url;
-
-                enlace.download =
-                    "pedidos-variedades-chiquis.json";
-
-                enlace.click();
-
-                URL.revokeObjectURL(
-                    url
-                );
-
-                mostrarToast(
-                    "Pedidos exportados correctamente."
-                );
-
-            }
-        );
-
-    }
-
-
-    /* ==================== CLIENTES ==================== */
-
-    let clientes =
-        cargarClientes();
-
-    let clienteDetalle =
-        null;
-
-    let clienteAEliminar =
-        null;
-
-
-    function cargarClientes() {
-
-        try {
-
-            const datos =
-                localStorage.getItem(
-                    "clientesChiquis"
-                );
-
-            return datos
-                ? (
-                    Array.isArray(
-                        JSON.parse(
-                            datos
-                        )
-                    )
-                        ? JSON.parse(
-                            datos
-                        )
-                        : []
-                )
-                : [];
-
-        } catch (error) {
-
-            console.error(
-                "Error cargando clientes:",
-                error
-            );
-
-            return [];
-
-        }
-
-    }
-
-
-    function guardarClientes() {
-
-        localStorage.setItem(
-            "clientesChiquis",
-            JSON.stringify(
-                clientes
-            )
-        );
-
-    }
-
-
-    function escaparHTML(
-        texto
-    ) {
-
-        return String(
-            texto ?? ""
-        )
-            .replace(
-                /&/g,
-                "&amp;"
-            )
-            .replace(
-                /</g,
-                "&lt;"
-            )
-            .replace(
-                />/g,
-                "&gt;"
-            )
-            .replace(
-                /"/g,
-                "&quot;"
-            )
-            .replace(
-                /'/g,
-                "&#039;"
-            );
-
-    }
-
-
-    function formatearFecha(
-        fecha
-    ) {
-
-        if (!fecha) {
-            return "—";
-        }
-
-        const date =
-            new Date(
-                fecha
-            );
-
-        if (
-            Number.isNaN(
-                date.getTime()
-            )
-        ) {
-
-            return "—";
-
-        }
-
-        return date.toLocaleDateString(
-            "es-GT",
-            {
-                day:
-                    "2-digit",
-                month:
-                    "2-digit",
-                year:
-                    "numeric"
-            }
-        );
-
-    }
-
-
-    function mostrarClientes(
-        lista = clientes
-    ) {
-
-        const tbody =
-            document.getElementById(
-                "clientesBody"
-            );
-
-        const empty =
-            document.getElementById(
-                "emptyClientes"
-            );
-
-        const resultado =
-            document.getElementById(
-                "resultado"
-            );
-
-        const footer =
-            document.getElementById(
-                "footer"
-            );
-
-
-        if (!tbody) {
-            return;
-        }
-
-
-        tbody.innerHTML =
-            "";
-
-
-        if (
-            lista.length ===
-            0
-        ) {
-
-            if (empty) {
-                empty.hidden =
-                    false;
-            }
-
-        } else {
-
-            if (empty) {
-                empty.hidden =
-                    true;
-            }
-
-
-            lista.forEach(
-                cliente => {
-
-                    const tr =
-                        document.createElement(
-                            "tr"
-                        );
-
-
-                    const tipoTexto =
-                        cliente.tipo ===
-                        "mayorista"
-                            ? "Mayorista"
-                            : "Minorista";
-
-
-                    tr.innerHTML = `
-
-                        <td>
-
-                            <div class="cliente-nombre">
-
-                                <strong>
-                                    ${escaparHTML(
-                                        cliente.nombre
-                                    )}
-                                </strong>
-
-                                <small>
-                                    ${escaparHTML(
-                                        cliente.telefono ||
-                                        ""
-                                    )}
-                                </small>
-
-                            </div>
-
-                        </td>
-
-
-                        <td>
-
-                            <span class="tipo-cliente ${cliente.tipo === "mayorista"
-                                ? "tipo-mayorista"
-                                : "tipo-minorista"}">
-
-                                ${tipoTexto}
-
-                            </span>
-
-                        </td>
-
-
-                        <td>
-                            ${escaparHTML(
-                                cliente.email ||
-                                "—"
-                            )}
-                        </td>
-
-
-                        <td>
-                            ${escaparHTML(
-                                cliente.nit ||
-                                "—"
-                            )}
-                        </td>
-
-
-                        <td>
-                            ${cliente.descuento
-                                ? cliente.descuento + "%"
-                                : "0%"}
-                        </td>
-
-
-                        <td>
-                            ${formatearFecha(
-                                cliente.fecha
-                            )}
-                        </td>
-
-
-                        <td>
-
-                            <div class="acciones">
-
-                                <button
-                                    type="button"
-                                    class="btn-accion btn-ver"
-                                    data-id="${cliente.id}"
-                                    title="Ver cliente"
-                                >
-                                    👁
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    class="btn-accion btn-editar"
-                                    data-id="${cliente.id}"
-                                    title="Editar cliente"
-                                >
-                                    ✏
-                                </button>
-
-
-                                <button
-                                    type="button"
-                                    class="btn-accion btn-eliminar"
-                                    data-id="${cliente.id}"
-                                    title="Eliminar cliente"
-                                >
-                                    🗑
-                                </button>
-
-                            </div>
-
-                        </td>
-
-                    `;
-
-
-                    tbody.appendChild(
-                        tr
-                    );
-
-                }
-            );
-
-        }
-
-
-        if (resultado) {
-
-            resultado.textContent =
-                lista.length +
-                (
-                    lista.length === 1
-                        ? " cliente"
-                        : " clientes"
-                );
-
-        }
-
-
-        if (footer) {
-
-            footer.textContent =
-                lista.length +
-                " de " +
-                clientes.length +
-                " clientes";
-
-        }
-
-
-        actualizarEstadisticas();
-
-    }
-
-
-    function actualizarEstadisticas() {
-
-        const total =
-            clientes.length;
-
-        const mayoristas =
-            clientes.filter(
-                cliente =>
-                    cliente.tipo ===
-                    "mayorista"
-            ).length;
-
-        const minoristas =
-            clientes.filter(
-                cliente =>
-                    cliente.tipo !==
-                    "mayorista"
-            ).length;
-
-
-        const statTotal =
-            document.getElementById(
-                "statTotal"
-            );
-
-        const statMayoristas =
-            document.getElementById(
-                "statMayoristas"
-            );
-
-        const statMinoristas =
-            document.getElementById(
-                "statMinoristas"
-            );
-
-
-        if (statTotal) {
-            statTotal.textContent =
-                total;
-        }
-
-        if (
-            statMayoristas
-        ) {
-
-            statMayoristas.textContent =
-                mayoristas;
-
-        }
-
-        if (
-            statMinoristas
-        ) {
-
-            statMinoristas.textContent =
-                minoristas;
-
-        }
-
-    }
-
-
-    const searchInput =
-        document.getElementById(
-            "searchInput"
-        );
-
-
-    if (searchInput) {
-
-        searchInput.addEventListener(
-            "input",
-            function () {
-
-                const texto =
-                    this.value
-                        .trim()
-                        .toLowerCase();
-
-
-                const filtrados =
-                    clientes.filter(
-                        cliente => {
-
-                            const contenido =
-                                (
-                                    cliente.nombre +
-                                    " " +
-                                    cliente.telefono +
-                                    " " +
-                                    (
-                                        cliente.email ||
-                                        ""
-                                    ) +
-                                    " " +
-                                    (
-                                        cliente.nit ||
-                                        ""
-                                    ) +
-                                    " " +
-                                    (
-                                        cliente.dpi ||
-                                        ""
-                                    )
-                                )
-                                    .toLowerCase();
-
-
-                            return contenido.includes(
-                                texto
-                            );
-
-                        }
-                    );
-
-
-                mostrarClientes(
-                    filtrados
-                );
-
-            }
-        );
-
-    }
-
-
-    const btnNuevo =
-        document.getElementById(
-            "btnNuevo"
-        );
-
-    const btnNuevoVacio =
-        document.getElementById(
-            "btnNuevoVacio"
-        );
-
-    const btnFloating =
-        document.getElementById(
-            "btnFloating"
-        );
-
-    const panel =
-        document.getElementById(
-            "panel"
-        );
-
-    const overlay =
-        document.getElementById(
-            "overlay"
-        );
-
-    const clienteForm =
-        document.getElementById(
-            "clienteForm"
-        );
-
-    const panelTitulo =
-        document.getElementById(
-            "panelTitulo"
-        );
-
-    const clienteId =
-        document.getElementById(
-            "clienteId"
-        );
-
-    const nombre =
-        document.getElementById(
-            "nombre"
-        );
-
-    const tipo =
-        document.getElementById(
-            "tipo"
-        );
-
-    const telefono =
-        document.getElementById(
-            "telefono"
-        );
-
-    const email =
-        document.getElementById(
-            "email"
-        );
-
-    const dpi =
-        document.getElementById(
-            "dpi"
-        );
-
-    const nit =
-        document.getElementById(
-            "nit"
-        );
-
-    const direccion =
-        document.getElementById(
-            "direccion"
-        );
-
-    const descuento =
-        document.getElementById(
-            "descuento"
-        );
-
-    const limiteCredito =
-        document.getElementById(
-            "limiteCredito"
-        );
-
-    const notas =
-        document.getElementById(
-            "notas"
-        );
-
-    const notasCounter =
-        document.getElementById(
-            "notasCounter"
-        );
-
-    const btnCerrarPanel =
-        document.getElementById(
-            "btnCerrarPanel"
-        );
-
-    const btnCancelar =
-        document.getElementById(
-            "btnCancelar"
-        );
-
-    const btnGuardar =
-        document.getElementById(
-            "btnGuardar"
-        );
-
-    const btnTema =
-        document.getElementById(
-            "btnTema"
-        );
-
-    const btnTemaDesktop =
-        document.getElementById(
-            "btnTemaDesktop"
-        );
-
-    const themeIcon =
-        document.getElementById(
-            "themeIcon"
-        );
-
-    const btnMenu =
-        document.getElementById(
-            "btnMenu"
-        );
-
-    const sidebar =
-        document.getElementById(
-            "sidebar"
-        );
-
-    const btnExportar =
-        document.getElementById(
-            "btnExportar"
-        );
-
-    const btnExportarNav =
-        document.getElementById(
-            "btnExportarNav"
-        );
-
-    const btnImportar =
-        document.getElementById(
-            "btnImportar"
-        );
-
-    const btnImportarNav =
-        document.getElementById(
-            "btnImportarNav"
-        );
-
-    const inputImportar =
-        document.getElementById(
-            "inputImportar"
-        );
-
-    const dialogDetalle =
-        document.getElementById(
-            "dialogDetalle"
-        );
-
-    const btnCerrarDetalle =
-        document.getElementById(
-            "btnCerrarDetalle"
-        );
-
-    const btnEditarDetalle =
-        document.getElementById(
-            "btnEditarDetalle"
-        );
-
-    const btnLlamar =
-        document.getElementById(
-            "btnLlamar"
-        );
-
-    const btnWhatsApp =
-        document.getElementById(
-            "btnWhatsApp"
-        );
-
-    const detalleNombre =
-        document.getElementById(
-            "detalleNombre"
-        );
-
-    const detalleTipo =
-        document.getElementById(
-            "detalleTipo"
-        );
-
-    const detalleTelefono =
-        document.getElementById(
-            "detalleTelefono"
-        );
-
-    const detalleEmail =
-        document.getElementById(
-            "detalleEmail"
-        );
-
-    const detalleDpi =
-        document.getElementById(
-            "detalleDpi"
-        );
-
-    const detalleNit =
-        document.getElementById(
-            "detalleNit"
-        );
-
-    const detalleDireccion =
-        document.getElementById(
-            "detalleDireccion"
-        );
-
-    const detalleDescuento =
-        document.getElementById(
-            "detalleDescuento"
-        );
-
-    const detalleLimiteCredito =
-        document.getElementById(
-            "detalleLimiteCredito"
-        );
-
-    const detalleNotas =
-        document.getElementById(
-            "detalleNotas"
-        );
-
-    const dialogEliminar =
-        document.getElementById(
-            "dialogEliminar"
-        );
-
-    const dialogNombreCliente =
-        document.getElementById(
-            "dialogNombreCliente"
-        );
-
-    const btnCancelarEliminar =
-        document.getElementById(
-            "btnCancelarEliminar"
-        );
-
-    const btnConfirmarEliminar =
-        document.getElementById(
-            "btnConfirmarEliminar"
-        );
-
-
-    function mostrarToast(
-        mensaje,
-        tipoMensaje = "success"
-    ) {
-
-        const toast =
-            document.createElement(
-                "div"
-            );
-
-        toast.className =
-            "toast " +
-            tipoMensaje;
-
-        toast.textContent =
-            mensaje;
-
-        document.body.appendChild(
-            toast
-        );
-
-        setTimeout(
-            function () {
-
-                toast.classList.add(
-                    "show"
-                );
-
-            },
-            10
-        );
-
-        setTimeout(
-            function () {
-
-                toast.classList.remove(
-                    "show"
-                );
-
-                setTimeout(
-                    () =>
-                        toast.remove(),
-                    300
-                );
-
-            },
-            3000
-        );
-
-    }
-
-
-    function abrirPanel(
-        modo = "nuevo",
-        cliente = null
-    ) {
-
-        overlay.hidden =
-            false;
-
-        panel.classList.add(
-            "is-open"
-        );
-
-        panel.setAttribute(
-            "aria-hidden",
-            "false"
-        );
-
-
-        if (
-            modo ===
-            "nuevo"
-        ) {
-
-            panelTitulo.textContent =
-                "Nuevo cliente";
-
-            clienteForm.reset();
-
-            clienteId.value =
-                "";
-
-            tipo.value =
-                "minorista";
-
-            descuento.value =
-                "0";
-
-            limiteCredito.value =
-                "0";
-
-        } else if (
-            cliente
-        ) {
-
-            panelTitulo.textContent =
-                "Editar cliente";
-
-            clienteId.value =
-                cliente.id;
-
-            nombre.value =
-                cliente.nombre ||
-                "";
-
-            tipo.value =
-                cliente.tipo ||
-                "minorista";
-
-            telefono.value =
-                cliente.telefono ||
-                "";
-
-            email.value =
-                cliente.email ||
-                "";
-
-            dpi.value =
-                cliente.dpi ||
-                "";
-
-            nit.value =
-                cliente.nit ||
-                "";
-
-            direccion.value =
-                cliente.direccion ||
-                "";
-
-            descuento.value =
-                cliente.descuento ||
-                "0";
-
-            limiteCredito.value =
-                cliente.limiteCredito ||
-                "0";
-
-            notas.value =
-                cliente.notas ||
-                "";
-
-        }
-
-        actualizarCamposTipo();
-
-        actualizarContadorNotas();
-
-        setTimeout(
-            () => nombre.focus(),
-            100
-        );
-
-    }
-
-
-    function cerrarPanel() {
-
-        panel.classList.remove(
-            "is-open"
-        );
-
-        panel.setAttribute(
-            "aria-hidden",
-            "true"
-        );
-
-        if (
-            !pedidoPanel.classList.contains(
-                "is-open"
-            )
-        ) {
-
-            overlay.hidden =
-                true;
-
-        }
-
-    }
-
-
-    /*
-     * IMPORTANTE:
-     * Esta es la parte corregida.
-     * btnNuevo ya fue declarado antes
-     * de crear este listener.
-     */
-
-    btnNuevo.addEventListener(
-        "click",
-        function () {
+    on(
+        'btnNuevo',
+        'click',
+        () => {
 
             if (
-                pedidosView &&
-                !pedidosView.hidden
+                $('pedidosView') &&
+                !$('pedidosView').hidden
             ) {
 
-                abrirPanelPedido(
-                    "nuevo"
-                );
+                abrirPanelPedido();
 
             } else {
 
-                abrirPanel(
-                    "nuevo"
-                );
-
+                abrirPanelCliente();
             }
-
         }
     );
 
-
-    if (btnNuevoVacio) {
-
-        btnNuevoVacio.addEventListener(
-            "click",
-            function () {
-
-                abrirPanel(
-                    "nuevo"
-                );
-
-            }
-        );
-
-    }
-
-
-    if (btnFloating) {
-
-        btnFloating.addEventListener(
-            "click",
-            function () {
-
-                if (
-                    pedidosView &&
-                    !pedidosView.hidden
-                ) {
-
-                    abrirPanelPedido(
-                        "nuevo"
-                    );
-
-                } else {
-
-                    abrirPanel(
-                        "nuevo"
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    btnCerrarPanel.addEventListener(
-        "click",
-        cerrarPanel
+    on(
+        'btnNuevoVacio',
+        'click',
+        () => abrirPanelCliente()
     );
 
-
-    btnCancelar.addEventListener(
-        "click",
-        cerrarPanel
-    );
-
-
-    /*
-     * Overlay corregido.
-     * Primero revisa si está abierto
-     * el panel de pedidos.
-     */
-
-    overlay.addEventListener(
-        "click",
-        function () {
+    on(
+        'btnFloating',
+        'click',
+        () => {
 
             if (
-                pedidoPanel.classList.contains(
-                    "is-open"
+                $('pedidosView') &&
+                !$('pedidosView').hidden
+            ) {
+
+                abrirPanelPedido();
+
+            } else {
+
+                abrirPanelCliente();
+            }
+        }
+    );
+
+    on(
+        'btnCerrarPanel',
+        'click',
+        cerrarPanelCliente
+    );
+
+    on(
+        'btnCancelar',
+        'click',
+        cerrarPanelCliente
+    );
+
+    // ============================================================
+    // ACCIONES DE TABLA CLIENTES
+    // ============================================================
+
+    on(
+        'tablaBody',
+        'click',
+        e => {
+
+            const btn =
+                e.target.closest(
+                    'button[data-id]'
+                );
+
+            if (!btn) {
+                return;
+            }
+
+            const cliente =
+                clientes.find(
+                    c =>
+                        String(c.id) ===
+                        String(btn.dataset.id)
+                );
+
+            if (!cliente) {
+                return;
+            }
+
+            if (
+                btn.classList.contains(
+                    'btn-ver'
+                )
+            ) {
+
+                mostrarDetalleCliente(
+                    cliente
+                );
+            }
+
+            if (
+                btn.classList.contains(
+                    'btn-editar'
+                )
+            ) {
+
+                abrirPanelCliente(
+                    cliente
+                );
+            }
+
+            if (
+                btn.classList.contains(
+                    'btn-eliminar'
+                )
+            ) {
+
+                eliminarCliente(
+                    cliente
+                );
+            }
+        }
+    );
+
+    // ============================================================
+    // BUSCADOR CLIENTES
+    // ============================================================
+
+    on(
+        'searchInput',
+        'input',
+        e => {
+
+            const q =
+                e.target.value
+                    .toLowerCase()
+                    .trim();
+
+            const filtrados =
+                clientes.filter(c =>
+                    `${c.nombre} ${
+                        c.telefono
+                    } ${
+                        c.email || ''
+                    } ${
+                        c.nit || ''
+                    } ${
+                        c.dpi || ''
+                    }`
+                        .toLowerCase()
+                        .includes(q)
+                );
+
+            mostrarClientes(
+                filtrados
+            );
+        }
+    );
+
+    on(
+        'btnLimpiarBusqueda',
+        'click',
+        () => {
+
+            if ($('searchInput')) {
+                $('searchInput').value =
+                    '';
+            }
+
+            mostrarClientes();
+        }
+    );
+
+    // ============================================================
+    // DETALLE CLIENTE
+    // ============================================================
+
+    on(
+        'btnCerrarDetalle',
+        'click',
+        () =>
+            $('dialogDetalle')
+                ?.close()
+    );
+
+    on(
+        'btnEditarDetalle',
+        'click',
+        () => {
+
+            if (!clienteDetalle) {
+                return;
+            }
+
+            $('dialogDetalle')
+                ?.close();
+
+            abrirPanelCliente(
+                clienteDetalle
+            );
+        }
+    );
+
+    on(
+        'btnLlamar',
+        'click',
+        () => {
+
+            if (
+                clienteDetalle?.telefono
+            ) {
+
+                window.location.href =
+                    `tel:${clienteDetalle.telefono}`;
+            }
+        }
+    );
+
+    on(
+        'btnWhatsApp',
+        'click',
+        () => {
+
+            if (
+                !clienteDetalle?.telefono
+            ) {
+                return;
+            }
+
+            const numero =
+                clienteDetalle.telefono
+                    .replace(/\D/g, '');
+
+            window.open(
+                `https://wa.me/502${numero}`,
+                '_blank'
+            );
+        }
+    );
+
+    // ============================================================
+    // EVENTOS PEDIDOS
+    // ============================================================
+
+    on(
+        'pedidoForm',
+        'submit',
+        guardarPedidoDesdeFormulario
+    );
+
+    on(
+        'pedidoCliente',
+        'change',
+        calcularTotalesPedido
+    );
+
+    on(
+        'btnAgregarProducto',
+        'click',
+        () => agregarFilaProducto()
+    );
+
+    on(
+        'btnNuevoPedido',
+        'click',
+        () => abrirPanelPedido()
+    );
+
+    on(
+        'btnNuevoPedidoVacio',
+        'click',
+        () => abrirPanelPedido()
+    );
+
+    on(
+        'btnCerrarPedidoPanel',
+        'click',
+        cerrarPanelPedido
+    );
+
+    on(
+        'btnCancelarPedido',
+        'click',
+        cerrarPanelPedido
+    );
+
+    // ============================================================
+    // ACCIONES TABLA PEDIDOS
+    // ============================================================
+
+    on(
+        'pedidosBody',
+        'click',
+        e => {
+
+            const btn =
+                e.target.closest(
+                    'button[data-id]'
+                );
+
+            if (!btn) {
+                return;
+            }
+
+            const pedido =
+                pedidos.find(
+                    p =>
+                        String(p.id) ===
+                        String(btn.dataset.id)
+                );
+
+            if (!pedido) {
+                return;
+            }
+
+            if (
+                btn.classList.contains(
+                    'btn-ver-pedido'
+                )
+            ) {
+
+                mostrarDetallePedido(
+                    pedido
+                );
+            }
+
+            if (
+                btn.classList.contains(
+                    'btn-editar-pedido'
+                )
+            ) {
+
+                abrirPanelPedido(
+                    pedido
+                );
+            }
+
+            if (
+                btn.classList.contains(
+                    'btn-eliminar-pedido'
+                )
+            ) {
+
+                eliminarPedido(
+                    pedido
+                );
+            }
+        }
+    );
+
+    // ============================================================
+    // BUSCADOR PEDIDOS
+    // ============================================================
+
+    on(
+        'searchPedidos',
+        'input',
+        mostrarPedidos
+    );
+
+    on(
+        'btnLimpiarPedidos',
+        'click',
+        () => {
+
+            if ($('searchPedidos')) {
+                $('searchPedidos').value =
+                    '';
+            }
+
+            filtroPedido = 'todos';
+
+            document
+                .querySelectorAll(
+                    '.filtro-pedido'
+                )
+                .forEach(
+                    b =>
+                        b.classList.remove(
+                            'active'
+                        )
+                );
+
+            document
+                .querySelector(
+                    '.filtro-pedido[data-filtro="todos"]'
+                )
+                ?.classList.add(
+                    'active'
+                );
+
+            mostrarPedidos();
+        }
+    );
+
+    // ============================================================
+    // FILTROS PEDIDOS
+    // ============================================================
+
+    document
+        .querySelectorAll(
+            '.filtro-pedido'
+        )
+        .forEach(btn => {
+
+            btn.addEventListener(
+                'click',
+                () => {
+
+                    filtroPedido =
+                        btn.dataset.filtro ||
+                        'todos';
+
+                    document
+                        .querySelectorAll(
+                            '.filtro-pedido'
+                        )
+                        .forEach(
+                            b =>
+                                b.classList.remove(
+                                    'active'
+                                )
+                        );
+
+                    btn.classList.add(
+                        'active'
+                    );
+
+                    mostrarPedidos();
+                }
+            );
+        });
+
+    // ============================================================
+    // DETALLE PEDIDO
+    // ============================================================
+
+    on(
+        'btnCerrarPedidoDetalle',
+        'click',
+        () =>
+            $('dialogPedidoDetalle')
+                ?.close()
+    );
+
+    on(
+        'btnEditarPedidoDetalle',
+        'click',
+        () => {
+
+            if (
+                !pedidoDetalleActual
+            ) {
+                return;
+            }
+
+            $('dialogPedidoDetalle')
+                ?.close();
+
+            abrirPanelPedido(
+                pedidoDetalleActual
+            );
+        }
+    );
+
+    on(
+        'btnEliminarPedidoDetalle',
+        'click',
+        () => {
+
+            if (
+                !pedidoDetalleActual
+            ) {
+                return;
+            }
+
+            $('dialogPedidoDetalle')
+                ?.close();
+
+            eliminarPedido(
+                pedidoDetalleActual
+            );
+        }
+    );
+
+    // ============================================================
+    // WHATSAPP PEDIDO
+    // ============================================================
+
+    on(
+        'btnWhatsAppPedido',
+        'click',
+        () => {
+
+            if (
+                !pedidoDetalleActual
+                    ?.clienteTelefono
+            ) {
+
+                toast(
+                    'El cliente no tiene teléfono registrado.',
+                    'error'
+                );
+
+                return;
+            }
+
+            const p =
+                pedidoDetalleActual;
+
+            const telefono =
+                p.clienteTelefono
+                    .replace(/\D/g, '');
+
+            let mensaje =
+                `Hola ${
+                    p.clienteNombre || ''
+                },%0A%0A`;
+
+            mensaje +=
+                `Detalle del pedido ${
+                    p.numero
+                }:%0A%0A`;
+
+            (p.productos || [])
+                .forEach(x => {
+
+                    mensaje +=
+                        `• ${
+                            x.nombre
+                        } — ${
+                            x.cantidad
+                        } x ${
+                            dinero(x.precio)
+                        } = ${
+                            dinero(x.subtotal)
+                        }%0A`;
+                });
+
+            mensaje +=
+                `%0ATotal: ${
+                    dinero(p.total)
+                }`;
+
+            window.open(
+                `https://wa.me/502${telefono}?text=${mensaje}`,
+                '_blank'
+            );
+        }
+    );
+
+    // ============================================================
+    // NAVEGACIÓN
+    // ============================================================
+
+    on(
+        'btnNavClientes',
+        'click',
+        () =>
+            cambiarVista('clientes')
+    );
+
+    on(
+        'btnNavPedidos',
+        'click',
+        () =>
+            cambiarVista('pedidos')
+    );
+
+    on(
+        'btnNavEstadisticas',
+        'click',
+        () => {
+
+            if (
+                $('pedidosView') &&
+                !$('pedidosView').hidden
+            ) {
+
+                $('pedidosStats')
+                    ?.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+
+            } else {
+
+                document
+                    .querySelector(
+                        '.stats-grid'
+                    )
+                    ?.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+            }
+        }
+    );
+
+    // ============================================================
+    // OVERLAY
+    // ============================================================
+
+    on(
+        'overlay',
+        'click',
+        () => {
+
+            if (
+                pedidoPanel?.classList.contains(
+                    'is-open'
                 )
             ) {
 
@@ -2720,985 +2775,608 @@ document.addEventListener("DOMContentLoaded", function () {
 
             } else {
 
-                cerrarPanel();
-
+                cerrarPanelCliente();
             }
-
         }
     );
 
-
-    clienteForm.addEventListener(
-        "submit",
-        function (evento) {
-
-            evento.preventDefault();
-
-
-            const nombreValor =
-                nombre.value.trim();
-
-            const telefonoValor =
-                telefono.value.trim();
-
-
-            if (
-                !nombreValor
-            ) {
-
-                mostrarToast(
-                    "Ingrese el nombre del cliente.",
-                    "error"
-                );
-
-                nombre.focus();
-
-                return;
-
-            }
-
-
-            if (
-                !telefonoValor
-            ) {
-
-                mostrarToast(
-                    "Ingrese el número de teléfono.",
-                    "error"
-                );
-
-                telefono.focus();
-
-                return;
-
-            }
-
-
-            const cliente = {
-
-                id:
-                    clienteId.value ||
-                    "cliente-" +
-                    Date.now(),
-
-                nombre:
-                    nombreValor,
-
-                tipo:
-                    tipo.value,
-
-                telefono:
-                    telefonoValor,
-
-                email:
-                    email.value.trim(),
-
-                dpi:
-                    dpi.value.trim(),
-
-                nit:
-                    nit.value.trim(),
-
-                direccion:
-                    direccion.value.trim(),
-
-                descuento:
-                    Number(
-                        descuento.value ||
-                        0
-                    ),
-
-                limiteCredito:
-                    Number(
-                        limiteCredito.value ||
-                        0
-                    ),
-
-                notas:
-                    notas.value.trim(),
-
-                fecha:
-                    clienteId.value
-                        ? (
-                            clientes.find(
-                                c =>
-                                    c.id ===
-                                    clienteId.value
-                            )?.fecha ||
-                            new Date().toISOString()
-                        )
-                        : new Date().toISOString()
-
-            };
-
-
-            const indice =
-                clientes.findIndex(
-                    c =>
-                        c.id ===
-                        cliente.id
-                );
-
-
-            if (
-                indice >=
-                0
-            ) {
-
-                clientes[indice] =
-                    cliente;
-
-                mostrarToast(
-                    "Cliente actualizado correctamente."
-                );
-
-            } else {
-
-                clientes.push(
-                    cliente
-                );
-
-                mostrarToast(
-                    "Cliente agregado correctamente."
-                );
-
-            }
-
-
-            guardarClientes();
-
-            mostrarClientes();
-
-            cerrarPanel();
-
-            if (
-                pedidosView &&
-                !pedidosView.hidden
-            ) {
-
-                cargarClientesEnSelect();
-
-            }
-
-        }
-    );
-
-
-    function actualizarCamposTipo() {
-
-        if (
-            !tipo ||
-            !descuento
-        ) {
-
-            return;
-
-        }
-
-        if (
-            tipo.value ===
-            "mayorista"
-        ) {
-
-            descuento.disabled =
-                false;
-
-        } else {
-
-            descuento.value =
-                "0";
-
-            descuento.disabled =
-                true;
-
-        }
-
-    }
-
-
-    tipo.addEventListener(
-        "change",
-        actualizarCamposTipo
-    );
-
-
-    const tbodyClientes =
-        document.getElementById(
-            "clientesBody"
-        );
-
-
-    if (tbodyClientes) {
-
-        tbodyClientes.addEventListener(
-            "click",
-            function (evento) {
-
-                const boton =
-                    evento.target.closest(
-                        "button[data-id]"
-                    );
-
-                if (!boton) {
-                    return;
-                }
-
-
-                const id =
-                    boton.dataset.id;
-
-
-                const cliente =
-                    clientes.find(
-                        c =>
-                            c.id ===
-                            id
-                    );
-
-
-                if (!cliente) {
-                    return;
-                }
-
-
-                if (
-                    boton.classList.contains(
-                        "btn-ver"
-                    )
-                ) {
-
-                    mostrarDetalleCliente(
-                        cliente
-                    );
-
-                }
-
-
-                if (
-                    boton.classList.contains(
-                        "btn-editar"
-                    )
-                ) {
-
-                    abrirPanel(
-                        "editar",
-                        cliente
-                    );
-
-                }
-
-
-                if (
-                    boton.classList.contains(
-                        "btn-eliminar"
-                    )
-                ) {
-
-                    abrirDialogoEliminar(
-                        cliente
-                    );
-
-                }
-
-            }
-        );
-
-    }
-
-
-    function mostrarDetalleCliente(
-        cliente
-    ) {
-
-        clienteDetalle =
-            cliente;
-
-
-        detalleNombre.textContent =
-            cliente.nombre ||
-            "—";
-
-        detalleTipo.textContent =
-            cliente.tipo ===
-            "mayorista"
-                ? "Mayorista"
-                : "Minorista";
-
-        detalleTelefono.textContent =
-            cliente.telefono ||
-            "—";
-
-        detalleEmail.textContent =
-            cliente.email ||
-            "—";
-
-        detalleDpi.textContent =
-            cliente.dpi ||
-            "—";
-
-        detalleNit.textContent =
-            cliente.nit ||
-            "—";
-
-        detalleDireccion.textContent =
-            cliente.direccion ||
-            "—";
-
-        detalleDescuento.textContent =
-            (
-                cliente.descuento ||
-                0
-            ) +
-            "%";
-
-        detalleLimiteCredito.textContent =
-            dinero(
-                cliente.limiteCredito ||
-                0
-            );
-
-        detalleNotas.textContent =
-            cliente.notas ||
-            "Sin notas";
-
-
-        dialogDetalle.showModal();
-
-    }
-
-
-    btnCerrarDetalle.addEventListener(
-        "click",
-        function () {
-
-            dialogDetalle.close();
-
-        }
-    );
-
-
-    btnEditarDetalle.addEventListener(
-        "click",
-        function () {
-
-            if (
-                !clienteDetalle
-            ) {
-
-                return;
-
-            }
-
-
-            dialogDetalle.close();
-
-
-            abrirPanel(
-                "editar",
-                clienteDetalle
-            );
-
-        }
-    );
-
-
-    btnLlamar.addEventListener(
-        "click",
-        function () {
-
-            if (
-                clienteDetalle &&
-                clienteDetalle.telefono
-            ) {
-
-                window.location.href =
-                    `tel:${clienteDetalle.telefono}`;
-
-            }
-
-        }
-    );
-
-
-    btnWhatsApp.addEventListener(
-        "click",
-        function () {
-
-            if (
-                clienteDetalle &&
-                clienteDetalle.telefono
-            ) {
-
-                const numero =
-                    clienteDetalle.telefono
-                        .replace(
-                            /\D/g,
-                            ""
-                        );
-
-
-                window.open(
-                    `https://wa.me/502${numero}`,
-                    "_blank"
-                );
-
-            }
-
-        }
-    );
-
-
-    function abrirDialogoEliminar(
-        cliente
-    ) {
-
-        clienteAEliminar =
-            cliente;
-
-        dialogNombreCliente.textContent =
-            cliente.nombre;
-
-        dialogEliminar.showModal();
-
-    }
-
-
-    btnCancelarEliminar.addEventListener(
-        "click",
-        function () {
-
-            dialogEliminar.close();
-
-            clienteAEliminar =
-                null;
-
-        }
-    );
-
-
-    btnConfirmarEliminar.addEventListener(
-        "click",
-        function () {
-
-            if (
-                !clienteAEliminar
-            ) {
-
-                return;
-
-            }
-
-
-            const nombreEliminado =
-                clienteAEliminar.nombre;
-
-
-            clientes =
-                clientes.filter(
-                    cliente =>
-                        cliente.id !==
-                        clienteAEliminar.id
-                );
-
-
-            guardarClientes();
-
-            mostrarClientes();
-
-            dialogEliminar.close();
-
-
-            mostrarToast(
-                `${nombreEliminado} fue eliminado.`
-            );
-
-
-            clienteAEliminar =
-                null;
-
-        }
-    );
-
-
-    function actualizarContadorNotas() {
-
-        notasCounter.textContent =
-            notas.value.length;
-
-    }
-
-
-    notas.addEventListener(
-        "input",
-        actualizarContadorNotas
-    );
-
-
-    function actualizarTemaIconos() {
+    // ============================================================
+    // TEMA
+    // ============================================================
+
+    function actualizarTema() {
 
         const oscuro =
             document.body.classList.contains(
-                "dark"
+                'dark'
             );
 
-
-        if (themeIcon) {
-
-            themeIcon.textContent =
-                oscuro
-                    ? "☀"
-                    : "☾";
-
+        if ($('themeIcon')) {
+            $('themeIcon').textContent =
+                oscuro ? '☀' : '☾';
         }
 
-
-        if (
-            btnTemaDesktop
-        ) {
-
-            btnTemaDesktop.textContent =
-                oscuro
-                    ? "☀"
-                    : "☾";
-
+        if ($('btnTemaDesktop')) {
+            $('btnTemaDesktop').textContent =
+                oscuro ? '☀' : '☾';
         }
-
     }
-
 
     function cambiarTema() {
 
         document.body.classList.toggle(
-            "dark"
+            'dark'
         );
-
-
-        const oscuro =
-            document.body.classList.contains(
-                "dark"
-            );
-
 
         localStorage.setItem(
-            "temaChiquis",
-            oscuro
-                ? "dark"
-                : "light"
+            'temaChiquis',
+            document.body.classList.contains(
+                'dark'
+            )
+                ? 'dark'
+                : 'light'
         );
 
-
-        actualizarTemaIconos();
-
+        actualizarTema();
     }
-
 
     if (
         localStorage.getItem(
-            "temaChiquis"
-        ) ===
-        "dark"
+            'temaChiquis'
+        ) === 'dark'
     ) {
 
         document.body.classList.add(
-            "dark"
+            'dark'
         );
-
     }
 
+    actualizarTema();
 
-    actualizarTemaIconos();
-
-
-    btnTema.addEventListener(
-        "click",
+    on(
+        'btnTema',
+        'click',
         cambiarTema
     );
 
-
-    btnTemaDesktop.addEventListener(
-        "click",
+    on(
+        'btnTemaDesktop',
+        'click',
         cambiarTema
     );
 
-
-    btnMenu.addEventListener(
-        "click",
-        function () {
-
-            sidebar.classList.toggle(
-                "open"
-            );
-
-        }
+    on(
+        'btnMenu',
+        'click',
+        () =>
+            $('sidebar')
+                ?.classList.toggle(
+                    'open'
+                )
     );
 
+    // ============================================================
+    // DESCARGAR ARCHIVO
+    // ============================================================
 
-    function exportarCSV() {
-
-        if (
-            clientes.length ===
-            0
-        ) {
-
-            mostrarToast(
-                "No hay clientes para exportar.",
-                "error"
-            );
-
-            return;
-
-        }
-
-
-        const encabezados = [
-
-            "Nombre",
-            "Tipo",
-            "Telefono",
-            "Correo",
-            "DPI",
-            "NIT",
-            "Direccion",
-            "Descuento",
-            "LimiteCredito",
-            "Notas",
-            "Fecha"
-
-        ];
-
-
-        const filas =
-            clientes.map(
-                cliente => [
-
-                    cliente.nombre,
-                    cliente.tipo,
-                    cliente.telefono,
-                    cliente.email ||
-                        "",
-                    cliente.dpi ||
-                        "",
-                    cliente.nit ||
-                        "",
-                    cliente.direccion ||
-                        "",
-                    cliente.descuento ||
-                        0,
-                    cliente.limiteCredito ||
-                        0,
-                    cliente.notas ||
-                        "",
-                    formatearFecha(
-                        cliente.fecha
-                    )
-
-                ]
-            );
-
-
-        const csv = [
-
-            encabezados,
-            ...filas
-
-        ]
-            .map(
-                fila =>
-                    fila
-                        .map(
-                            dato =>
-                                `"${String(
-                                    dato
-                                ).replace(
-                                    /"/g,
-                                    '""'
-                                )}"`
-                        )
-                        .join(",")
-            )
-            .join("\n");
-
+    function descargar(
+        nombre,
+        contenido,
+        tipo
+    ) {
 
         const blob =
             new Blob(
-                [
-                    "\ufeff" +
-                    csv
-                ],
-                {
-                    type:
-                        "text/csv;charset=utf-8;"
-                }
+                [contenido],
+                { type: tipo }
             );
-
 
         const url =
             URL.createObjectURL(
                 blob
             );
 
+        const a =
+            document.createElement('a');
 
-        const enlace =
-            document.createElement(
-                "a"
+        a.href = url;
+
+        a.download = nombre;
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
+    }
+
+    // ============================================================
+    // EXPORTAR CLIENTES
+    // ============================================================
+
+    function exportarClientes() {
+
+        if (!clientes.length) {
+
+            toast(
+                'No hay clientes para exportar.',
+                'error'
             );
 
+            return;
+        }
 
-        enlace.href =
-            url;
+        const encabezados = [
+            'Nombre',
+            'Tipo',
+            'Telefono',
+            'Correo',
+            'DPI',
+            'NIT',
+            'Direccion',
+            'Descuento',
+            'LimiteCredito',
+            'Notas',
+            'Fecha'
+        ];
 
-        enlace.download =
-            "clientes-variedades-chiquis.csv";
+        const filas =
+            clientes.map(c => [
 
+                c.nombre,
 
-        enlace.click();
+                c.tipo,
 
+                c.telefono,
 
-        URL.revokeObjectURL(
-            url
+                c.email || '',
+
+                c.dpi || '',
+
+                c.nit || '',
+
+                c.direccion || '',
+
+                c.descuento || 0,
+
+                c.limiteCredito || 0,
+
+                c.notas || '',
+
+                formatearFecha(
+                    c.fecha
+                )
+            ]);
+
+        const csv =
+            [
+                encabezados,
+                ...filas
+            ]
+                .map(
+                    f =>
+                        f
+                            .map(
+                                v =>
+                                    `"${String(v)
+                                        .replace(
+                                            /"/g,
+                                            '""'
+                                        )}"`
+                            )
+                            .join(',')
+                )
+                .join('\n');
+
+        descargar(
+            'clientes-variedades-chiquis.csv',
+            '\ufeff' + csv,
+            'text/csv;charset=utf-8'
         );
 
-
-        mostrarToast(
-            "Clientes exportados correctamente."
+        toast(
+            'Clientes exportados correctamente.'
         );
-
     }
 
-
-    btnExportar.addEventListener(
-        "click",
-        exportarCSV
+    on(
+        'btnExportar',
+        'click',
+        exportarClientes
     );
 
-
-    btnExportarNav.addEventListener(
-        "click",
-        exportarCSV
+    on(
+        'btnExportarNav',
+        'click',
+        exportarClientes
     );
 
+    on(
+        'btnExportarOpciones',
+        'click',
+        exportarClientes
+    );
 
-    function abrirImportador() {
+    // ============================================================
+    // EXPORTAR PEDIDOS
+    // ============================================================
 
-        inputImportar.click();
+    on(
+        'btnExportarPedidos',
+        'click',
+        () => {
 
+            if (!pedidos.length) {
+
+                toast(
+                    'No hay pedidos para exportar.',
+                    'error'
+                );
+
+                return;
+            }
+
+            descargar(
+                'pedidos-variedades-chiquis.json',
+                JSON.stringify(
+                    pedidos,
+                    null,
+                    2
+                ),
+                'application/json'
+            );
+
+            toast(
+                'Pedidos exportados correctamente.'
+            );
+        }
+    );
+
+    // ============================================================
+    // IMPORTAR CLIENTES
+    // ============================================================
+
+    function importarClientes() {
+
+        $('inputImportar')?.click();
     }
 
-
-    btnImportar.addEventListener(
-        "click",
-        abrirImportador
+    on(
+        'btnImportar',
+        'click',
+        importarClientes
     );
 
-
-    btnImportarNav.addEventListener(
-        "click",
-        abrirImportador
+    on(
+        'btnImportarNav',
+        'click',
+        importarClientes
     );
 
-
-    inputImportar.addEventListener(
-        "change",
-        function () {
+    on(
+        'inputImportar',
+        'change',
+        e => {
 
             const archivo =
-                inputImportar.files[0];
-
+                e.target.files?.[0];
 
             if (!archivo) {
                 return;
             }
 
-
             const lector =
                 new FileReader();
 
+            lector.onload = () => {
 
-            lector.onload =
-                function (evento) {
+                try {
 
-                    try {
-
-                        const datos =
-                            JSON.parse(
-                                evento.target.result
-                            );
-
-
-                        if (
-                            !Array.isArray(
-                                datos
-                            )
-                        ) {
-
-                            throw new Error(
-                                "Formato incorrecto"
-                            );
-
-                        }
-
-
-                        const clientesValidos =
-                            datos.filter(
-                                cliente =>
-                                    cliente.nombre &&
-                                    cliente.telefono
-                            );
-
-
-                        clientes =
-                            clientesValidos;
-
-
-                        guardarClientes();
-
-                        mostrarClientes();
-
-
-                        mostrarToast(
-                            `${clientesValidos.length} clientes importados.`
+                    const datos =
+                        JSON.parse(
+                            lector.result
                         );
 
-
-                    } catch (
-                        error
+                    if (
+                        !Array.isArray(
+                            datos
+                        )
                     ) {
-
-                        console.error(
-                            error
+                        throw new Error(
+                            'Formato incorrecto'
                         );
-
-
-                        mostrarToast(
-                            "No se pudo importar el archivo.",
-                            "error"
-                        );
-
                     }
 
-                };
+                    clientes = datos;
 
+                    guardarClientes();
+
+                    mostrarClientes();
+
+                    cargarClientesEnSelect();
+
+                    toast(
+                        `${clientes.length} clientes importados.`
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        error
+                    );
+
+                    toast(
+                        'No se pudo importar el archivo.',
+                        'error'
+                    );
+                }
+
+                e.target.value = '';
+            };
 
             lector.readAsText(
                 archivo
             );
-
-
-            inputImportar.value =
-                "";
-
         }
     );
 
+    // ============================================================
+    // ELIMINACIÓN
+    // ============================================================
+
+    on(
+        'btnCancelarEliminar',
+        'click',
+        () =>
+            $('dialogEliminar')
+                ?.close()
+    );
+
+    on(
+        'btnConfirmarEliminar',
+        'click',
+        () => {
+
+            if (
+                clienteAEliminar
+            ) {
+
+                eliminarCliente(
+                    clienteAEliminar
+                );
+            }
+
+            $('dialogEliminar')
+                ?.close();
+
+            clienteAEliminar = null;
+        }
+    );
+
+    // ============================================================
+    // CARGAR CLIENTES DE EJEMPLO
+    // ============================================================
+
+    on(
+        'btnCargarEjemplos',
+        'click',
+        () => {
+
+            if (
+                clientes.length &&
+                !confirm(
+                    'Ya existen clientes. ¿Deseas agregar ejemplos?'
+                )
+            ) {
+                return;
+            }
+
+            const ejemplos = [
+
+                {
+                    nombre:
+                        'María López',
+
+                    telefono:
+                        '55551234',
+
+                    email:
+                        'maria@gmail.com',
+
+                    tipo:
+                        'minorista'
+                },
+
+                {
+                    nombre:
+                        'Distribuidora Chiquis',
+
+                    telefono:
+                        '55552345',
+
+                    email:
+                        'ventas@distribuidora.com',
+
+                    tipo:
+                        'mayorista'
+                }
+            ];
+
+            ejemplos.forEach(x => {
+
+                clientes.push({
+
+                    id:
+                        generarId(
+                            'cliente-'
+                        ),
+
+                    ...x,
+
+                    direccion:
+                        '',
+
+                    dpi:
+                        '',
+
+                    nit:
+                        '',
+
+                    descuento:
+                        x.tipo === 'mayorista'
+                            ? 10
+                            : 0,
+
+                    limiteCredito:
+                        0,
+
+                    notas:
+                        '',
+
+                    fecha:
+                        new Date()
+                            .toISOString()
+                });
+            });
+
+            guardarClientes();
+
+            mostrarClientes();
+
+            cargarClientesEnSelect();
+
+            toast(
+                'Ejemplos agregados.'
+            );
+        }
+    );
+
+    // ============================================================
+    // ELIMINAR TODOS LOS CLIENTES
+    // ============================================================
+
+    on(
+        'btnEliminarTodos',
+        'click',
+        () => {
+
+            if (!clientes.length) {
+
+                toast(
+                    'No hay clientes para eliminar.',
+                    'error'
+                );
+
+                return;
+            }
+
+            if (
+                !confirm(
+                    '¿Seguro que deseas eliminar TODOS los clientes?'
+                )
+            ) {
+                return;
+            }
+
+            clientes = [];
+
+            guardarClientes();
+
+            mostrarClientes();
+
+            cargarClientesEnSelect();
+
+            toast(
+                'Todos los clientes fueron eliminados.'
+            );
+        }
+    );
+
+    // ============================================================
+    // CERRAR OPCIONES
+    // ============================================================
+
+    on(
+        'btnCerrarOpciones',
+        'click',
+        () =>
+            $('dialogOpciones')
+                ?.close()
+    );
+
+    // ============================================================
+    // TECLADO
+    // ============================================================
 
     document.addEventListener(
-        "keydown",
-        function (evento) {
+        'keydown',
+        e => {
 
-            if (
-                evento.ctrlKey &&
-                evento.key.toLowerCase() ===
-                "n"
-            ) {
-
-                evento.preventDefault();
-
+            // ESC
+            if (e.key === 'Escape') {
 
                 if (
-                    pedidosView &&
-                    !pedidosView.hidden
-                ) {
-
-                    abrirPanelPedido(
-                        "nuevo"
-                    );
-
-                } else {
-
-                    abrirPanel(
-                        "nuevo"
-                    );
-
-                }
-
-            }
-
-
-            if (
-                evento.ctrlKey &&
-                evento.key.toLowerCase() ===
-                "k"
-            ) {
-
-                evento.preventDefault();
-
-
-                if (searchInput) {
-
-                    searchInput.focus();
-
-                }
-
-            }
-
-
-            if (
-                evento.key ===
-                "Escape"
-            ) {
-
-                if (
-                    pedidoPanel.classList.contains(
-                        "is-open"
+                    pedidoPanel?.classList.contains(
+                        'is-open'
                     )
                 ) {
 
                     cerrarPanelPedido();
 
                 } else if (
-                    panel.classList.contains(
-                        "is-open"
+                    panel?.classList.contains(
+                        'is-open'
                     )
                 ) {
 
-                    cerrarPanel();
-
+                    cerrarPanelCliente();
                 }
-
             }
 
+            // CTRL + N
+            if (
+                e.ctrlKey &&
+                e.key.toLowerCase() === 'n'
+            ) {
+
+                e.preventDefault();
+
+                if (
+                    $('pedidosView') &&
+                    !$('pedidosView').hidden
+                ) {
+
+                    abrirPanelPedido();
+
+                } else {
+
+                    abrirPanelCliente();
+                }
+            }
+
+            // CTRL + K
+            if (
+                e.ctrlKey &&
+                e.key.toLowerCase() === 'k'
+            ) {
+
+                e.preventDefault();
+
+                (
+                    $('searchInput') ||
+                    $('searchPedidos')
+                )?.focus();
+            }
         }
     );
 
-
-    const btnNavEstadisticas =
-        document.getElementById(
-            "btnNavEstadisticas"
-        );
-
-
-    if (
-        btnNavEstadisticas
-    ) {
-
-        btnNavEstadisticas.addEventListener(
-            "click",
-            function () {
-
-                window.scrollTo(
-                    {
-                        top:
-                            0,
-                        behavior:
-                            "smooth"
-                    }
-                );
-
-            }
-        );
-
-    }
-
+    // ============================================================
+    // INICIO
+    // ============================================================
 
     actualizarCamposTipo();
 
@@ -3707,5 +3385,7 @@ document.addEventListener("DOMContentLoaded", function () {
     mostrarClientes();
 
     actualizarEstadisticasPedidos();
+
+    cambiarVista('clientes');
 
 });
