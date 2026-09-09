@@ -1,286 +1,1742 @@
 document.addEventListener("DOMContentLoaded", function () {
-     /*  ELEMENTOS*/
-    const tablaBody =
-        document.getElementById("tablaBody");
 
-    const emptyState =
-        document.getElementById("emptyState");
+    /* ==================== PEDIDOS ==================== */
+    const btnNavClientes = document.getElementById("btnNavClientes");
+    const btnNavPedidos = document.getElementById("btnNavPedidos");
+    const clientesToolbar = document.getElementById("clientesToolbar");
+    const clientesTableSection = document.getElementById("clientesTableSection");
+    const pedidosView = document.getElementById("pedidosView");
+    const pedidosStats = document.getElementById("pedidosStats");
+    const tituloPrincipal = document.getElementById("tituloPrincipal");
+    const descripcionPrincipal = document.getElementById("descripcionPrincipal");
+    const textoBtnNuevo = document.getElementById("textoBtnNuevo");
+
+    const btnNuevoPedido = document.getElementById("btnNuevoPedido");
+    const btnNuevoPedidoVacio = document.getElementById("btnNuevoPedidoVacio");
+    const pedidoPanel = document.getElementById("pedidoPanel");
+    const pedidoForm = document.getElementById("pedidoForm");
+    const btnCerrarPedidoPanel = document.getElementById("btnCerrarPedidoPanel");
+    const btnCancelarPedido = document.getElementById("btnCancelarPedido");
+    const pedidoPanelTitulo = document.getElementById("pedidoPanelTitulo");
+    const pedidoId = document.getElementById("pedidoId");
+    const pedidoNumero = document.getElementById("pedidoNumero");
+    const pedidoFecha = document.getElementById("pedidoFecha");
+    const pedidoCliente = document.getElementById("pedidoCliente");
+    const pedidoOrigen = document.getElementById("pedidoOrigen");
+    const pedidoEstado = document.getElementById("pedidoEstado");
+    const productosPedido = document.getElementById("productosPedido");
+    const btnAgregarProducto = document.getElementById("btnAgregarProducto");
+    const pedidoSubtotal = document.getElementById("pedidoSubtotal");
+    const pedidoDescuento = document.getElementById("pedidoDescuento");
+    const pedidoTotal = document.getElementById("pedidoTotal");
+    const pedidoDireccion = document.getElementById("pedidoDireccion");
+    const pedidoNotas = document.getElementById("pedidoNotas");
+
+    const pedidosBody = document.getElementById("pedidosBody");
+    const emptyPedidos = document.getElementById("emptyPedidos");
+    const searchPedidos = document.getElementById("searchPedidos");
+    const btnLimpiarPedidos = document.getElementById("btnLimpiarPedidos");
+    const resultadoPedidos = document.getElementById("resultadoPedidos");
+    const footerPedidos = document.getElementById("footerPedidos");
+
+    const statPedidos = document.getElementById("statPedidos");
+    const statPedidosPendientes = document.getElementById("statPedidosPendientes");
+    const statPedidosEntregados = document.getElementById("statPedidosEntregados");
+    const statVentas = document.getElementById("statVentas");
+
+    const countPedidosTodos = document.getElementById("countPedidosTodos");
+    const countPedidosPendientes = document.getElementById("countPedidosPendientes");
+    const countPedidosPreparando = document.getElementById("countPedidosPreparando");
+    const countPedidosEntregados = document.getElementById("countPedidosEntregados");
+
+    const dialogPedidoDetalle = document.getElementById("dialogPedidoDetalle");
+    const btnCerrarPedidoDetalle = document.getElementById("btnCerrarPedidoDetalle");
+    const detallePedidoNumero = document.getElementById("detallePedidoNumero");
+    const detallePedidoEstado = document.getElementById("detallePedidoEstado");
+    const detallePedidoCliente = document.getElementById("detallePedidoCliente");
+    const detallePedidoTelefono = document.getElementById("detallePedidoTelefono");
+    const detallePedidoFecha = document.getElementById("detallePedidoFecha");
+    const detallePedidoOrigen = document.getElementById("detallePedidoOrigen");
+    const detallePedidoDireccion = document.getElementById("detallePedidoDireccion");
+    const detallePedidoTotal = document.getElementById("detallePedidoTotal");
+    const detallePedidoProductos = document.getElementById("detallePedidoProductos");
+    const detallePedidoNotas = document.getElementById("detallePedidoNotas");
+    const btnEditarPedidoDetalle = document.getElementById("btnEditarPedidoDetalle");
+    const btnWhatsAppPedido = document.getElementById("btnWhatsAppPedido");
+    const btnEliminarPedidoDetalle = document.getElementById("btnEliminarPedidoDetalle");
+
+    let pedidos = cargarPedidos();
+    let pedidoDetalleActual = null;
+    let filtroPedidoActual = "todos";
+
+    function cargarPedidos() {
+        try {
+            const datos = localStorage.getItem("pedidosChiquis");
+            return datos
+                ? (Array.isArray(JSON.parse(datos))
+                    ? JSON.parse(datos)
+                    : [])
+                : [];
+        } catch (e) {
+            console.error("Error cargando pedidos:", e);
+            return [];
+        }
+    }
+
+    function guardarPedidos() {
+        localStorage.setItem(
+            "pedidosChiquis",
+            JSON.stringify(pedidos)
+        );
+    }
+
+    function generarNumeroPedido() {
+        const siguiente = pedidos.length + 1;
+
+        return "PED-" +
+            String(siguiente).padStart(4, "0");
+    }
+
+    function dinero(valor) {
+        return "Q" +
+            Number(valor || 0).toFixed(2);
+    }
 
-    const emptyTitle =
-        document.getElementById("emptyTitle");
+    function fechaInputActual() {
 
-    const emptyDescription =
-        document.getElementById("emptyDescription");
+        const ahora = new Date();
 
-    const searchInput =
-        document.getElementById("searchInput");
+        const local =
+            new Date(
+                ahora.getTime() -
+                ahora.getTimezoneOffset() * 60000
+            );
 
-    const btnLimpiarBusqueda =
-        document.getElementById("btnLimpiarBusqueda");
+        return local
+            .toISOString()
+            .slice(0, 16);
+    }
 
-    const btnNuevo =
-        document.getElementById("btnNuevo");
+    function cargarClientesEnSelect(
+        clienteSeleccionado = ""
+    ) {
 
-    const btnNuevoVacio =
-        document.getElementById("btnNuevoVacio");
+        pedidoCliente.innerHTML =
+            '<option value="">Seleccione un cliente</option>';
 
-    const btnFloating =
-        document.getElementById("btnFloating");
+        clientes.forEach(c => {
 
-    const panel =
-        document.getElementById("panel");
+            const option =
+                document.createElement("option");
 
-    const overlay =
-        document.getElementById("overlay");
+            option.value = c.id;
 
-    const clienteForm =
-        document.getElementById("clienteForm");
+            option.textContent =
+                c.nombre +
+                " — " +
+                c.telefono;
 
-    const btnCerrarPanel =
-        document.getElementById("btnCerrarPanel");
+            if (c.id === clienteSeleccionado) {
+                option.selected = true;
+            }
 
-    const btnCancelar =
-        document.getElementById("btnCancelar");
+            pedidoCliente.appendChild(option);
 
-    const panelTitulo =
-        document.getElementById("panelTitulo");
+        });
 
-    const clienteId =
-        document.getElementById("clienteId");
+    }
 
-    const tipoMinorista =
-        document.getElementById("tipoMinorista");
+    function calcularTotalesPedido() {
 
-    const tipoMayorista =
-        document.getElementById("tipoMayorista");
+        let subtotal = 0;
+
+        productosPedido
+            .querySelectorAll(
+                ".producto-pedido-row"
+            )
+            .forEach(row => {
+
+                const cantidad =
+                    Number(
+                        row.querySelector(
+                            ".producto-cantidad"
+                        )?.value || 0
+                    );
+
+                const precio =
+                    Number(
+                        row.querySelector(
+                            ".producto-precio"
+                        )?.value || 0
+                    );
+
+                subtotal +=
+                    cantidad * precio;
+
+                const subtotalEl =
+                    row.querySelector(
+                        ".producto-subtotal"
+                    );
+
+                if (subtotalEl) {
+
+                    subtotalEl.value =
+                        dinero(
+                            cantidad * precio
+                        );
+
+                }
+
+            });
+
+        const cliente =
+            clientes.find(
+                c =>
+                    c.id ===
+                    pedidoCliente.value
+            );
+
+        const porcentaje =
+            cliente?.tipo === "mayorista"
+                ? Number(
+                    cliente.descuento || 0
+                )
+                : 0;
+
+        const descuentoMonto =
+            subtotal * porcentaje / 100;
+
+        const total =
+            subtotal -
+            descuentoMonto;
+
+        pedidoSubtotal.textContent =
+            dinero(subtotal);
+
+        pedidoDescuento.textContent =
+            dinero(descuentoMonto);
+
+        pedidoTotal.textContent =
+            dinero(total);
+
+        return {
+            subtotal,
+            descuento: descuentoMonto,
+            total,
+            porcentaje
+        };
+    }
+
+    function agregarFilaProducto(
+        producto = {}
+    ) {
+
+        const row =
+            document.createElement("div");
+
+        row.className =
+            "producto-pedido-row";
+
+        row.innerHTML = `
+            <div>
+                <label>Producto</label>
+                <input
+                    type="text"
+                    class="producto-nombre"
+                    maxlength="100"
+                    placeholder="Ej. Camisa"
+                    value="${escaparHTML(
+                        producto.nombre || ""
+                    )}"
+                >
+            </div>
+
+            <div>
+                <label>Cantidad</label>
+                <input
+                    type="number"
+                    class="producto-cantidad"
+                    min="1"
+                    step="1"
+                    value="${Number(
+                        producto.cantidad || 1
+                    )}"
+                >
+            </div>
+
+            <div>
+                <label>Precio unitario</label>
+                <input
+                    type="number"
+                    class="producto-precio"
+                    min="0"
+                    step="0.01"
+                    value="${Number(
+                        producto.precio || 0
+                    )}"
+                >
+            </div>
+
+            <div>
+                <label>Subtotal</label>
+                <input
+                    type="text"
+                    class="producto-subtotal"
+                    readonly
+                    value="${dinero(
+                        Number(
+                            producto.cantidad || 1
+                        ) *
+                        Number(
+                            producto.precio || 0
+                        )
+                    )}"
+                >
+            </div>
+
+            <div>
+                <button
+                    type="button"
+                    class="btn-quitar-producto"
+                    title="Quitar producto"
+                >
+                    ×
+                </button>
+            </div>
+        `;
+
+        productosPedido.appendChild(row);
+
+        row
+            .querySelectorAll("input")
+            .forEach(input => {
+
+                input.addEventListener(
+                    "input",
+                    calcularTotalesPedido
+                );
+
+            });
+
+        row
+            .querySelector(
+                ".btn-quitar-producto"
+            )
+            .addEventListener(
+                "click",
+                () => {
+
+                    row.remove();
+
+                    calcularTotalesPedido();
+
+                }
+            );
+
+        calcularTotalesPedido();
+    }
+
+    function abrirPanelPedido(
+        modo = "nuevo",
+        pedido = null
+    ) {
+
+        overlay.hidden = false;
+
+        pedidoPanel.classList.add(
+            "is-open"
+        );
+
+        pedidoPanel.setAttribute(
+            "aria-hidden",
+            "false"
+        );
+
+        if (modo === "nuevo") {
+
+            pedidoPanelTitulo.textContent =
+                "Nuevo pedido";
+
+            pedidoId.value = "";
+
+            pedidoNumero.value =
+                generarNumeroPedido();
+
+            pedidoFecha.value =
+                fechaInputActual();
+
+            pedidoEstado.value =
+                "pendiente";
+
+            pedidoOrigen.value =
+                "WhatsApp";
+
+            cargarClientesEnSelect("");
+
+            pedidoDireccion.value =
+                "";
+
+            pedidoNotas.value =
+                "";
+
+            productosPedido.innerHTML =
+                "";
+
+            agregarFilaProducto();
+
+        } else if (pedido) {
+
+            pedidoPanelTitulo.textContent =
+                "Editar pedido";
+
+            pedidoId.value =
+                pedido.id;
 
-    const tipoHint =
-        document.getElementById("tipoHint");
+            pedidoNumero.value =
+                pedido.numero;
 
-    const camposMayorista =
-        document.getElementById("camposMayorista");
+            pedidoFecha.value =
+                pedido.fecha
+                    ? new Date(
+                        pedido.fecha
+                    )
+                        .toISOString()
+                        .slice(0, 16)
+                    : fechaInputActual();
 
-    const campoDpi =
-        document.getElementById("campoDpi");
+            pedidoEstado.value =
+                pedido.estado ||
+                "pendiente";
+
+            pedidoOrigen.value =
+                pedido.origen ||
+                "WhatsApp";
+
+            cargarClientesEnSelect(
+                pedido.clienteId
+            );
+
+            pedidoDireccion.value =
+                pedido.direccion || "";
+
+            pedidoNotas.value =
+                pedido.notas || "";
+
+            productosPedido.innerHTML =
+                "";
+
+            (pedido.productos || [])
+                .forEach(
+                    p =>
+                        agregarFilaProducto(p)
+                );
+
+            if (
+                !pedido.productos ||
+                pedido.productos.length === 0
+            ) {
+
+                agregarFilaProducto();
+
+            }
+
+        }
+
+        calcularTotalesPedido();
+    }
+
+    function cerrarPanelPedido() {
+
+        pedidoPanel.classList.remove(
+            "is-open"
+        );
+
+        pedidoPanel.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+
+        if (
+            !panel.classList.contains(
+                "is-open"
+            )
+        ) {
+
+            overlay.hidden = true;
+
+        }
+
+    }
+
+    function obtenerPedidoFormulario() {
+
+        const clienteId =
+            pedidoCliente.value;
+
+        const cliente =
+            clientes.find(
+                c =>
+                    c.id === clienteId
+            );
+
+        if (!cliente) {
+
+            mostrarToast(
+                "Seleccione un cliente.",
+                "error"
+            );
 
-    const nombre =
-        document.getElementById("nombre");
+            return null;
 
-    const telefono =
-        document.getElementById("telefono");
+        }
 
-    const email =
-        document.getElementById("email");
+        const productos = [];
 
-    const direccion =
-        document.getElementById("direccion");
+        productosPedido
+            .querySelectorAll(
+                ".producto-pedido-row"
+            )
+            .forEach(row => {
 
-    const dpi =
-        document.getElementById("dpi");
+                const nombre =
+                    row.querySelector(
+                        ".producto-nombre"
+                    )?.value.trim();
 
-    const nit =
-        document.getElementById("nit");
+                const cantidad =
+                    Number(
+                        row.querySelector(
+                            ".producto-cantidad"
+                        )?.value || 0
+                    );
 
-    const descuento =
-        document.getElementById("descuento");
+                const precio =
+                    Number(
+                        row.querySelector(
+                            ".producto-precio"
+                        )?.value || 0
+                    );
 
-    const limiteCredito =
-        document.getElementById("limiteCredito");
+                if (
+                    nombre &&
+                    cantidad > 0
+                ) {
 
-    const notas =
-        document.getElementById("notas");
+                    productos.push({
+                        nombre,
+                        cantidad,
+                        precio,
+                        subtotal:
+                            cantidad * precio
+                    });
 
-    const notasCounter =
-        document.getElementById("notasCounter");
+                }
 
+            });
 
-    /* ESTADÍSTICAS */
+        if (
+            productos.length === 0
+        ) {
 
-    const statTotal =
-        document.getElementById("statTotal");
+            mostrarToast(
+                "Agregue al menos un producto.",
+                "error"
+            );
 
-    const statMinorista =
-        document.getElementById("statMinorista");
+            return null;
 
-    const statMayorista =
-        document.getElementById("statMayorista");
+        }
 
-    const statVisibles =
-        document.getElementById("statVisibles");
+        const totales =
+            calcularTotalesPedido();
 
-    const porcentajeMinorista =
-        document.getElementById("porcentajeMinorista");
+        return {
 
-    const porcentajeMayorista =
-        document.getElementById("porcentajeMayorista");
+            id:
+                pedidoId.value ||
+                "pedido-" +
+                Date.now(),
 
+            numero:
+                pedidoNumero.value,
 
-    /* CONTADORES */
+            fecha:
+                pedidoFecha.value
+                    ? new Date(
+                        pedidoFecha.value
+                    ).toISOString()
+                    : new Date().toISOString(),
 
-    const countTodos =
-        document.getElementById("countTodos");
+            clienteId:
+                cliente.id,
 
-    const countMinoristas =
-        document.getElementById("countMinoristas");
+            clienteNombre:
+                cliente.nombre,
 
-    const countMayoristas =
-        document.getElementById("countMayoristas");
+            clienteTelefono:
+                cliente.telefono,
 
+            origen:
+                pedidoOrigen.value,
 
-    const resultadoTexto =
-        document.getElementById("resultadoTexto");
+            estado:
+                pedidoEstado.value,
 
-    const tableFooterText =
-        document.getElementById("tableFooterText");
+            productos,
 
+            subtotal:
+                totales.subtotal,
 
-    /* DELETE */
+            descuento:
+                totales.descuento,
 
-    const dialogEliminar =
-        document.getElementById("dialogEliminar");
+            porcentajeDescuento:
+                totales.porcentaje,
 
-    const dialogNombreCliente =
-        document.getElementById("dialogNombreCliente");
+            total:
+                totales.total,
 
-    const btnCancelarEliminar =
-        document.getElementById("btnCancelarEliminar");
+            direccion:
+                pedidoDireccion.value.trim(),
 
-    const btnConfirmarEliminar =
-        document.getElementById("btnConfirmarEliminar");
+            notas:
+                pedidoNotas.value.trim()
 
+        };
+    }
 
-    /* DETAIL */
+    pedidoCliente.addEventListener(
+        "change",
+        calcularTotalesPedido
+    );
 
-    const dialogDetalle =
-        document.getElementById("dialogDetalle");
+    btnAgregarProducto.addEventListener(
+        "click",
+        function () {
 
-    const btnCerrarDetalle =
-        document.getElementById("btnCerrarDetalle");
+            agregarFilaProducto();
 
-    const detalleAvatar =
-        document.getElementById("detalleAvatar");
+        }
+    );
 
-    const detalleNombre =
-        document.getElementById("detalleNombre");
+    btnNuevoPedido.addEventListener(
+        "click",
+        function () {
 
-    const detalleTipo =
-        document.getElementById("detalleTipo");
+            abrirPanelPedido(
+                "nuevo"
+            );
 
-    const detalleTelefono =
-        document.getElementById("detalleTelefono");
+        }
+    );
 
-    const detalleEmail =
-        document.getElementById("detalleEmail");
+    btnNuevoPedidoVacio.addEventListener(
+        "click",
+        function () {
 
-    const detalleDireccion =
-        document.getElementById("detalleDireccion");
+            abrirPanelPedido(
+                "nuevo"
+            );
 
-    const detalleFecha =
-        document.getElementById("detalleFecha");
+        }
+    );
 
-    const detalleIdentificacion =
-        document.getElementById("detalleIdentificacion");
+    btnCerrarPedidoPanel.addEventListener(
+        "click",
+        cerrarPanelPedido
+    );
 
-    const detalleComercial =
-        document.getElementById("detalleComercial");
+    btnCancelarPedido.addEventListener(
+        "click",
+        cerrarPanelPedido
+    );
 
-    const detalleNotas =
-        document.getElementById("detalleNotas");
+    pedidoForm.addEventListener(
+        "submit",
+        function (evento) {
 
-    const detalleNotasContainer =
-        document.getElementById("detalleNotasContainer");
+            evento.preventDefault();
 
-    const btnEditarDetalle =
-        document.getElementById("btnEditarDetalle");
+            const pedido =
+                obtenerPedidoFormulario();
 
-    const btnLlamar =
-        document.getElementById("btnLlamar");
+            if (!pedido) {
+                return;
+            }
 
-    const btnWhatsApp =
-        document.getElementById("btnWhatsApp");
+            const indice =
+                pedidos.findIndex(
+                    p =>
+                        p.id ===
+                        pedido.id
+                );
 
+            if (indice >= 0) {
 
-    /* TOAST */
+                pedidos[indice] =
+                    pedido;
 
-    const toast =
-        document.getElementById("toast");
+                mostrarToast(
+                    "Pedido actualizado correctamente."
+                );
 
-    const toastMessage =
-        document.getElementById("toastMessage");
+            } else {
 
-    const toastIcon =
-        document.getElementById("toastIcon");
+                pedidos.push(
+                    pedido
+                );
 
+                mostrarToast(
+                    "Pedido registrado correctamente."
+                );
 
-    /* THEME */
+            }
 
-    const btnTema =
-        document.getElementById("btnTema");
+            guardarPedidos();
 
-    const btnTemaDesktop =
-        document.getElementById("btnTemaDesktop");
+            cerrarPanelPedido();
 
-    const themeIcon =
-        document.getElementById("themeIcon");
+            mostrarPedidos();
 
+            actualizarEstadisticasPedidos();
 
-    /* SIDEBAR */
+        }
+    );
 
-    const sidebar =
-        document.getElementById("sidebar");
+    function obtenerNombreEstado(
+        estado
+    ) {
 
-    const btnMenu =
-        document.getElementById("btnMenu");
+        const nombres = {
 
+            pendiente:
+                "Pendiente",
 
-    /* IMPORT / EXPORT */
+            preparando:
+                "Preparando",
 
-    const btnExportar =
-        document.getElementById("btnExportar");
+            entregado:
+                "Entregado",
 
-    const btnImportar =
-        document.getElementById("btnImportar");
+            cancelado:
+                "Cancelado"
 
-    const btnExportarNav =
-        document.getElementById("btnExportarNav");
+        };
 
-    const btnImportarNav =
-        document.getElementById("btnImportarNav");
+        return nombres[estado] ||
+            estado;
 
-    const inputImportar =
-        document.getElementById("inputImportar");
+    }
+
+    function claseEstado(
+        estado
+    ) {
+
+        return (
+            "estado-pedido estado-" +
+            estado
+        );
+
+    }
+
+    function formatearFechaPedido(
+        fecha
+    ) {
+
+        if (!fecha) {
+            return "—";
+        }
+
+        const date =
+            new Date(fecha);
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return "—";
+
+        }
+
+        return date.toLocaleString(
+            "es-GT",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+            }
+        );
+
+    }
+
+    function mostrarPedidos() {
+
+        if (!pedidosBody) {
+            return;
+        }
+
+        const texto =
+            searchPedidos?.value
+                .trim()
+                .toLowerCase() || "";
+
+        let lista =
+            pedidos.filter(
+                pedido => {
+
+                    const coincideEstado =
+                        filtroPedidoActual ===
+                        "todos" ||
+                        pedido.estado ===
+                        filtroPedidoActual;
+
+                    const contenido =
+                        (
+                            pedido.numero +
+                            " " +
+                            pedido.clienteNombre +
+                            " " +
+                            pedido.clienteTelefono +
+                            " " +
+                            pedido.origen
+                        )
+                            .toLowerCase();
+
+                    const coincideBusqueda =
+                        !texto ||
+                        contenido.includes(
+                            texto
+                        );
+
+                    return (
+                        coincideEstado &&
+                        coincideBusqueda
+                    );
+
+                }
+            );
+
+        lista.sort(
+            (a, b) =>
+                new Date(b.fecha) -
+                new Date(a.fecha)
+        );
+
+        pedidosBody.innerHTML =
+            "";
+
+        if (
+            lista.length === 0
+        ) {
+
+            if (emptyPedidos) {
+                emptyPedidos.hidden =
+                    false;
+            }
+
+        } else {
+
+            if (emptyPedidos) {
+                emptyPedidos.hidden =
+                    true;
+            }
+
+            lista.forEach(
+                pedido => {
+
+                    const tr =
+                        document.createElement(
+                            "tr"
+                        );
+
+                    tr.innerHTML = `
+                        <td>
+                            <strong>
+                                ${escaparHTML(
+                                    pedido.numero
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <div class="pedido-cliente">
+                                <strong>
+                                    ${escaparHTML(
+                                        pedido.clienteNombre ||
+                                        "Sin cliente"
+                                    )}
+                                </strong>
+                                <small>
+                                    ${escaparHTML(
+                                        pedido.clienteTelefono ||
+                                        ""
+                                    )}
+                                </small>
+                            </div>
+                        </td>
+
+                        <td>
+                            ${formatearFechaPedido(
+                                pedido.fecha
+                            )}
+                        </td>
+
+                        <td>
+                            ${escaparHTML(
+                                pedido.origen ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td>
+                            <span class="${claseEstado(
+                                pedido.estado
+                            )}">
+                                ${obtenerNombreEstado(
+                                    pedido.estado
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${dinero(
+                                    pedido.total
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <div class="acciones-pedido">
+
+                                <button
+                                    type="button"
+                                    class="btn-accion btn-ver-pedido"
+                                    data-id="${pedido.id}"
+                                    title="Ver pedido"
+                                >
+                                    👁
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn-accion btn-editar-pedido"
+                                    data-id="${pedido.id}"
+                                    title="Editar pedido"
+                                >
+                                    ✏
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="btn-accion btn-eliminar-pedido"
+                                    data-id="${pedido.id}"
+                                    title="Eliminar pedido"
+                                >
+                                    🗑
+                                </button>
+
+                            </div>
+                        </td>
+                    `;
+
+                    pedidosBody.appendChild(
+                        tr
+                    );
+
+                }
+            );
+
+        }
+
+        if (resultadoPedidos) {
+
+            resultadoPedidos.textContent =
+                lista.length +
+                (
+                    lista.length === 1
+                        ? " pedido"
+                        : " pedidos"
+                );
+
+        }
+
+        if (footerPedidos) {
+
+            footerPedidos.textContent =
+                lista.length +
+                " de " +
+                pedidos.length +
+                " pedidos";
+
+        }
+
+    }
+
+    pedidosBody.addEventListener(
+        "click",
+        function (evento) {
+
+            const boton =
+                evento.target.closest(
+                    "button[data-id]"
+                );
+
+            if (!boton) {
+                return;
+            }
+
+            const id =
+                boton.dataset.id;
+
+            const pedido =
+                pedidos.find(
+                    p =>
+                        p.id === id
+                );
+
+            if (!pedido) {
+                return;
+            }
+
+            if (
+                boton.classList.contains(
+                    "btn-ver-pedido"
+                )
+            ) {
+
+                mostrarDetallePedido(
+                    pedido
+                );
+
+            }
+
+            if (
+                boton.classList.contains(
+                    "btn-editar-pedido"
+                )
+            ) {
+
+                abrirPanelPedido(
+                    "editar",
+                    pedido
+                );
+
+            }
+
+            if (
+                boton.classList.contains(
+                    "btn-eliminar-pedido"
+                )
+            ) {
+
+                eliminarPedido(
+                    pedido
+                );
+
+            }
+
+        }
+    );
+
+    function eliminarPedido(
+        pedido
+    ) {
+
+        const confirmar =
+            confirm(
+                `¿Desea eliminar el pedido ${pedido.numero}?`
+            );
+
+        if (!confirmar) {
+            return;
+        }
+
+        pedidos =
+            pedidos.filter(
+                p =>
+                    p.id !==
+                    pedido.id
+            );
+
+        guardarPedidos();
+
+        mostrarPedidos();
+
+        actualizarEstadisticasPedidos();
+
+        if (
+            pedidoDetalleActual?.id ===
+            pedido.id &&
+            dialogPedidoDetalle.open
+        ) {
+
+            dialogPedidoDetalle.close();
+
+        }
+
+        mostrarToast(
+            "Pedido eliminado correctamente."
+        );
+
+    }
+
+    function mostrarDetallePedido(
+        pedido
+    ) {
+
+        pedidoDetalleActual =
+            pedido;
+
+        const cliente =
+            clientes.find(
+                c =>
+                    c.id ===
+                    pedido.clienteId
+            );
+
+        detallePedidoNumero.textContent =
+            pedido.numero;
+
+        detallePedidoEstado.textContent =
+            obtenerNombreEstado(
+                pedido.estado
+            );
+
+        detallePedidoEstado.className =
+            claseEstado(
+                pedido.estado
+            );
+
+        detallePedidoCliente.textContent =
+            pedido.clienteNombre ||
+            cliente?.nombre ||
+            "Sin cliente";
+
+        detallePedidoTelefono.textContent =
+            pedido.clienteTelefono ||
+            cliente?.telefono ||
+            "—";
+
+        detallePedidoFecha.textContent =
+            formatearFechaPedido(
+                pedido.fecha
+            );
+
+        detallePedidoOrigen.textContent =
+            pedido.origen ||
+            "—";
+
+        detallePedidoDireccion.textContent =
+            pedido.direccion ||
+            "No especificada";
+
+        detallePedidoTotal.textContent =
+            dinero(
+                pedido.total
+            );
+
+        detallePedidoNotas.textContent =
+            pedido.notas ||
+            "Sin notas";
+
+        detallePedidoProductos.innerHTML =
+            "";
+
+        (pedido.productos || [])
+            .forEach(
+                producto => {
+
+                    const item =
+                        document.createElement(
+                            "div"
+                        );
+
+                    item.className =
+                        "detalle-producto";
+
+                    item.innerHTML = `
+                        <div>
+                            <strong>
+                                ${escaparHTML(
+                                    producto.nombre
+                                )}
+                            </strong>
+
+                            <small>
+                                ${producto.cantidad}
+                                ×
+                                ${dinero(
+                                    producto.precio
+                                )}
+                            </small>
+                        </div>
+
+                        <strong>
+                            ${dinero(
+                                producto.subtotal
+                            )}
+                        </strong>
+                    `;
+
+                    detallePedidoProductos
+                        .appendChild(item);
+
+                }
+            );
+
+        dialogPedidoDetalle.showModal();
+
+    }
+
+    btnCerrarPedidoDetalle.addEventListener(
+        "click",
+        function () {
+
+            dialogPedidoDetalle.close();
+
+        }
+    );
+
+    btnEditarPedidoDetalle.addEventListener(
+        "click",
+        function () {
+
+            if (
+                !pedidoDetalleActual
+            ) {
+
+                return;
+
+            }
+
+            dialogPedidoDetalle.close();
+
+            abrirPanelPedido(
+                "editar",
+                pedidoDetalleActual
+            );
+
+        }
+    );
+
+    btnEliminarPedidoDetalle.addEventListener(
+        "click",
+        function () {
+
+            if (
+                !pedidoDetalleActual
+            ) {
+
+                return;
+
+            }
+
+            const pedido =
+                pedidoDetalleActual;
+
+            dialogPedidoDetalle.close();
+
+            eliminarPedido(
+                pedido
+            );
+
+        }
+    );
+
+    btnWhatsAppPedido.addEventListener(
+        "click",
+        function () {
+
+            if (
+                !pedidoDetalleActual
+            ) {
+
+                return;
+
+            }
+
+            const pedido =
+                pedidoDetalleActual;
+
+            const telefono =
+                (
+                    pedido.clienteTelefono ||
+                    ""
+                ).replace(
+                    /\D/g,
+                    ""
+                );
+
+            if (!telefono) {
+
+                mostrarToast(
+                    "El cliente no tiene teléfono registrado.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            let mensaje =
+                `Hola ${pedido.clienteNombre || ""},%0A%0A`;
+
+            mensaje +=
+                `Le compartimos el detalle de su pedido ${pedido.numero}:%0A%0A`;
+
+            (pedido.productos || [])
+                .forEach(
+                    producto => {
+
+                        mensaje +=
+                            `• ${producto.nombre} — ` +
+                            `${producto.cantidad} x ` +
+                            `${dinero(
+                                producto.precio
+                            )} = ` +
+                            `${dinero(
+                                producto.subtotal
+                            )}%0A`;
+
+                    }
+                );
+
+            mensaje +=
+                `%0ASubtotal: ${dinero(
+                    pedido.subtotal
+                )}`;
+
+            if (
+                Number(
+                    pedido.descuento || 0
+                ) > 0
+            ) {
+
+                mensaje +=
+                    `%0ADescuento: ${dinero(
+                        pedido.descuento
+                    )}`;
+
+            }
+
+            mensaje +=
+                `%0ATotal: ${dinero(
+                    pedido.total
+                )}`;
+
+            if (
+                pedido.direccion
+            ) {
+
+                mensaje +=
+                    `%0ADirección: ${encodeURIComponent(
+                        pedido.direccion
+                    )}`;
+
+            }
+
+            mensaje +=
+                `%0A%0AGracias por su compra.`;
+
+            window.open(
+                `https://wa.me/502${telefono}?text=${mensaje}`,
+                "_blank"
+            );
+
+        }
+    );
+
+    function actualizarEstadisticasPedidos() {
+
+        const total =
+            pedidos.length;
+
+        const pendientes =
+            pedidos.filter(
+                p =>
+                    p.estado ===
+                    "pendiente"
+            ).length;
+
+        const preparando =
+            pedidos.filter(
+                p =>
+                    p.estado ===
+                    "preparando"
+            ).length;
+
+        const entregados =
+            pedidos.filter(
+                p =>
+                    p.estado ===
+                    "entregado"
+            ).length;
+
+        const ventas =
+            pedidos
+                .filter(
+                    p =>
+                        p.estado !==
+                        "cancelado"
+                )
+                .reduce(
+                    (
+                        acumulado,
+                        p
+                    ) =>
+                        acumulado +
+                        Number(
+                            p.total || 0
+                        ),
+                    0
+                );
+
+        if (statPedidos) {
+            statPedidos.textContent =
+                total;
+        }
+
+        if (
+            statPedidosPendientes
+        ) {
+
+            statPedidosPendientes.textContent =
+                pendientes;
+
+        }
+
+        if (
+            statPedidosEntregados
+        ) {
+
+            statPedidosEntregados.textContent =
+                entregados;
+
+        }
+
+        if (statVentas) {
+
+            statVentas.textContent =
+                dinero(ventas);
+
+        }
+
+        if (countPedidosTodos) {
+
+            countPedidosTodos.textContent =
+                total;
+
+        }
+
+        if (
+            countPedidosPendientes
+        ) {
+
+            countPedidosPendientes.textContent =
+                pendientes;
+
+        }
+
+        if (
+            countPedidosPreparando
+        ) {
+
+            countPedidosPreparando.textContent =
+                preparando;
+
+        }
+
+        if (
+            countPedidosEntregados
+        ) {
+
+            countPedidosEntregados.textContent =
+                entregados;
+
+        }
+
+    }
+
+    function cambiarVista(
+        vista
+    ) {
+
+        if (
+            vista ===
+            "pedidos"
+        ) {
+
+            clientesToolbar.hidden =
+                true;
+
+            clientesTableSection.hidden =
+                true;
+
+            pedidosView.hidden =
+                false;
+
+            if (pedidosStats) {
+                pedidosStats.hidden =
+                    false;
+            }
+
+            tituloPrincipal.textContent =
+                "Pedidos";
+
+            descripcionPrincipal.textContent =
+                "Centraliza y administra todos los pedidos de Variedades Chiquis.";
+
+            textoBtnNuevo.textContent =
+                "Nuevo pedido";
+
+            mostrarPedidos();
+
+            actualizarEstadisticasPedidos();
+
+        } else {
+
+            clientesToolbar.hidden =
+                false;
+
+            clientesTableSection.hidden =
+                false;
+
+            pedidosView.hidden =
+                true;
+
+            if (pedidosStats) {
+                pedidosStats.hidden =
+                    true;
+            }
+
+            tituloPrincipal.textContent =
+                "Clientes";
+
+            descripcionPrincipal.textContent =
+                "Administra la información de los clientes de Variedades Chiquis.";
+
+            textoBtnNuevo.textContent =
+                "Nuevo cliente";
+
+        }
+
+    }
+
+    btnNavClientes.addEventListener(
+        "click",
+        function () {
+
+            cambiarVista(
+                "clientes"
+            );
+
+        }
+    );
+
+    btnNavPedidos.addEventListener(
+        "click",
+        function () {
+
+            cambiarVista(
+                "pedidos"
+            );
+
+        }
+    );
+
+    searchPedidos.addEventListener(
+        "input",
+        mostrarPedidos
+    );
+
+    btnLimpiarPedidos.addEventListener(
+        "click",
+        function () {
+
+            searchPedidos.value =
+                "";
+
+            filtroPedidoActual =
+                "todos";
+
+            document
+                .querySelectorAll(
+                    ".filtro-pedido"
+                )
+                .forEach(
+                    boton =>
+                        boton.classList.remove(
+                            "active"
+                        )
+                );
+
+            const primero =
+                document.querySelector(
+                    '.filtro-pedido[data-filtro="todos"]'
+                );
+
+            if (primero) {
+                primero.classList.add(
+                    "active"
+                );
+            }
+
+            mostrarPedidos();
+
+        }
+    );
+
+    document
+        .querySelectorAll(
+            ".filtro-pedido"
+        )
+        .forEach(
+            boton => {
+
+                boton.addEventListener(
+                    "click",
+                    function () {
+
+                        filtroPedidoActual =
+                            this.dataset.filtro ||
+                            "todos";
+
+                        document
+                            .querySelectorAll(
+                                ".filtro-pedido"
+                            )
+                            .forEach(
+                                b =>
+                                    b.classList.remove(
+                                        "active"
+                                    )
+                            );
+
+                        this.classList.add(
+                            "active"
+                        );
+
+                        mostrarPedidos();
+
+                    }
+                );
+
+            }
+        );
+
+    const btnExportarPedidos =
+        document.getElementById(
+            "btnExportarPedidos"
+        );
+
+    if (
+        btnExportarPedidos
+    ) {
+
+        btnExportarPedidos.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    pedidos.length ===
+                    0
+                ) {
+
+                    mostrarToast(
+                        "No hay pedidos para exportar.",
+                        "error"
+                    );
+
+                    return;
+
+                }
+
+                const datos =
+                    JSON.stringify(
+                        pedidos,
+                        null,
+                        2
+                    );
+
+                const blob =
+                    new Blob(
+                        [datos],
+                        {
+                            type:
+                                "application/json"
+                        }
+                    );
+
+                const url =
+                    URL.createObjectURL(
+                        blob
+                    );
+
+                const enlace =
+                    document.createElement(
+                        "a"
+                    );
+
+                enlace.href =
+                    url;
+
+                enlace.download =
+                    "pedidos-variedades-chiquis.json";
+
+                enlace.click();
+
+                URL.revokeObjectURL(
+                    url
+                );
+
+                mostrarToast(
+                    "Pedidos exportados correctamente."
+                );
+
+            }
+        );
+
+    }
+
+
+    /* ==================== CLIENTES ==================== */
 
     let clientes =
         cargarClientes();
 
-    let filtroActual =
-        "todos";
+    let clienteDetalle =
+        null;
 
     let clienteAEliminar =
         null;
 
-    let clienteDetalle =
-        null;
-
-    let toastTimeout =
-        null;
 
     function cargarClientes() {
 
         try {
 
             const datos =
-                localStorage.getItem("clientesChiquis");
+                localStorage.getItem(
+                    "clientesChiquis"
+                );
 
-            if (!datos) {
-                return [];
-            }
-
-            const clientesGuardados =
-                JSON.parse(datos);
-
-            return Array.isArray(clientesGuardados)
-                ? clientesGuardados
+            return datos
+                ? (
+                    Array.isArray(
+                        JSON.parse(
+                            datos
+                        )
+                    )
+                        ? JSON.parse(
+                            datos
+                        )
+                        : []
+                )
                 : [];
 
         } catch (error) {
@@ -296,576 +1752,777 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+
     function guardarClientes() {
 
         localStorage.setItem(
             "clientesChiquis",
-            JSON.stringify(clientes)
+            JSON.stringify(
+                clientes
+            )
         );
 
     }
 
-    function generarId() {
 
-        return (
-            Date.now().toString() +
-            Math.random()
-                .toString(36)
-                .substring(2, 8)
-        );
+    function escaparHTML(
+        texto
+    ) {
+
+        return String(
+            texto ?? ""
+        )
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
 
     }
 
-    function obtenerTipo() {
 
-        return tipoMayorista.checked
-            ? "mayorista"
-            : "minorista";
-
-    }
-
-    function formatearFecha(fecha) {
+    function formatearFecha(
+        fecha
+    ) {
 
         if (!fecha) {
-            return "Sin fecha";
+            return "—";
         }
 
-        const fechaObjeto =
-            new Date(fecha);
+        const date =
+            new Date(
+                fecha
+            );
 
-        if (isNaN(fechaObjeto.getTime())) {
-            return "Sin fecha";
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return "—";
+
         }
 
-        return fechaObjeto.toLocaleDateString(
+        return date.toLocaleDateString(
             "es-GT",
             {
-                day: "2-digit",
-                month: "short",
-                year: "numeric"
+                day:
+                    "2-digit",
+                month:
+                    "2-digit",
+                year:
+                    "numeric"
             }
         );
 
     }
 
-    function obtenerIniciales(nombreCliente) {
 
-        if (!nombreCliente) {
-            return "??";
+    function mostrarClientes(
+        lista = clientes
+    ) {
+
+        const tbody =
+            document.getElementById(
+                "clientesBody"
+            );
+
+        const empty =
+            document.getElementById(
+                "emptyClientes"
+            );
+
+        const resultado =
+            document.getElementById(
+                "resultado"
+            );
+
+        const footer =
+            document.getElementById(
+                "footer"
+            );
+
+
+        if (!tbody) {
+            return;
         }
 
-        const palabras =
-            nombreCliente
-                .trim()
-                .split(/\s+/)
-                .filter(Boolean);
 
-        if (palabras.length === 1) {
+        tbody.innerHTML =
+            "";
 
-            return palabras[0]
-                .substring(0, 2)
-                .toUpperCase();
-
-        }
-
-        return (
-            palabras[0].charAt(0) +
-            palabras[1].charAt(0)
-        ).toUpperCase();
-
-    }
-
-    function escaparHTML(texto) {
 
         if (
-            texto === null ||
-            texto === undefined
+            lista.length ===
+            0
         ) {
-            return "";
-        }
 
-        return String(texto)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-
-    }
-
-    function mostrarClientes() {
-
-        tablaBody.innerHTML = "";
-
-        const textoBusqueda =
-            searchInput.value
-                .toLowerCase()
-                .trim();
-
-
-        const clientesFiltrados =
-            clientes.filter(function (cliente) {
-
-                const coincideTipo =
-                    filtroActual === "todos" ||
-                    cliente.tipo === filtroActual;
-
-
-                const textoCliente = [
-
-                    cliente.nombre,
-                    cliente.telefono,
-                    cliente.email,
-                    cliente.nit,
-                    cliente.dpi,
-                    cliente.direccion
-
-                ]
-                    .filter(Boolean)
-                    .join(" ")
-                    .toLowerCase();
-
-
-                const coincideBusqueda =
-                    textoCliente.includes(
-                        textoBusqueda
-                    );
-
-
-                return (
-                    coincideTipo &&
-                    coincideBusqueda
-                );
-
-            });
-
-        if (clientesFiltrados.length === 0) {
-
-            emptyState.hidden = false;
-
-            if (
-                clientes.length === 0
-            ) {
-
-                emptyTitle.textContent =
-                    "No hay clientes registrados";
-
-                emptyDescription.textContent =
-                    "Comienza agregando tu primer cliente al sistema.";
-
-            } else {
-
-                emptyTitle.textContent =
-                    "No encontramos clientes";
-
-                emptyDescription.textContent =
-                    "Prueba cambiando la búsqueda o seleccionando otro filtro.";
-
+            if (empty) {
+                empty.hidden =
+                    false;
             }
 
         } else {
 
-            emptyState.hidden = true;
+            if (empty) {
+                empty.hidden =
+                    true;
+            }
+
+
+            lista.forEach(
+                cliente => {
+
+                    const tr =
+                        document.createElement(
+                            "tr"
+                        );
+
+
+                    const tipoTexto =
+                        cliente.tipo ===
+                        "mayorista"
+                            ? "Mayorista"
+                            : "Minorista";
+
+
+                    tr.innerHTML = `
+
+                        <td>
+
+                            <div class="cliente-nombre">
+
+                                <strong>
+                                    ${escaparHTML(
+                                        cliente.nombre
+                                    )}
+                                </strong>
+
+                                <small>
+                                    ${escaparHTML(
+                                        cliente.telefono ||
+                                        ""
+                                    )}
+                                </small>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="tipo-cliente ${cliente.tipo === "mayorista"
+                                ? "tipo-mayorista"
+                                : "tipo-minorista"}">
+
+                                ${tipoTexto}
+
+                            </span>
+
+                        </td>
+
+
+                        <td>
+                            ${escaparHTML(
+                                cliente.email ||
+                                "—"
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${escaparHTML(
+                                cliente.nit ||
+                                "—"
+                            )}
+                        </td>
+
+
+                        <td>
+                            ${cliente.descuento
+                                ? cliente.descuento + "%"
+                                : "0%"}
+                        </td>
+
+
+                        <td>
+                            ${formatearFecha(
+                                cliente.fecha
+                            )}
+                        </td>
+
+
+                        <td>
+
+                            <div class="acciones">
+
+                                <button
+                                    type="button"
+                                    class="btn-accion btn-ver"
+                                    data-id="${cliente.id}"
+                                    title="Ver cliente"
+                                >
+                                    👁
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="btn-accion btn-editar"
+                                    data-id="${cliente.id}"
+                                    title="Editar cliente"
+                                >
+                                    ✏
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    class="btn-accion btn-eliminar"
+                                    data-id="${cliente.id}"
+                                    title="Eliminar cliente"
+                                >
+                                    🗑
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    `;
+
+
+                    tbody.appendChild(
+                        tr
+                    );
+
+                }
+            );
 
         }
 
 
-        /* FILAS */
+        if (resultado) {
 
-        clientesFiltrados.forEach(
-            function (cliente, index) {
+            resultado.textContent =
+                lista.length +
+                (
+                    lista.length === 1
+                        ? " cliente"
+                        : " clientes"
+                );
 
-                const fila =
-                    document.createElement("tr");
+        }
 
-                fila.style.animationDelay =
-                    `${index * 0.03}s`;
 
+        if (footer) {
 
-                const esMayorista =
-                    cliente.tipo === "mayorista";
+            footer.textContent =
+                lista.length +
+                " de " +
+                clientes.length +
+                " clientes";
 
+        }
 
-                const tipoTexto =
-                    esMayorista
-                        ? "Mayorista"
-                        : "Minorista";
 
-
-                const claseTipo =
-                    esMayorista
-                        ? "tipo-badge--mayorista"
-                        : "tipo-badge--minorista";
-
-
-                const iconoTipo =
-                    esMayorista
-                        ? "📦"
-                        : "🛍️";
-
-
-                const identificacion =
-                    esMayorista
-                        ? (
-                            cliente.nit
-                                ? `NIT: ${escaparHTML(cliente.nit)}`
-                                : "Sin NIT"
-                        )
-                        : (
-                            cliente.dpi
-                                ? `DPI: ${escaparHTML(cliente.dpi)}`
-                                : "Sin DPI"
-                        );
-
-
-                const comercial =
-                    esMayorista
-                        ? (
-                            `Descuento: ${Number(cliente.descuento || 0)}%`
-                        )
-                        : "Cliente personal";
-
-
-                fila.innerHTML = `
-
-                    <td>
-
-                        <div class="cliente-info">
-
-                            <div class="cliente-avatar">
-
-                                ${escaparHTML(
-                    obtenerIniciales(
-                        cliente.nombre
-                    )
-                )}
-
-                            </div>
-
-                            <div>
-
-                                <div class="cliente-nombre">
-
-                                    ${escaparHTML(
-                    cliente.nombre
-                )}
-
-                                </div>
-
-                                <div class="cliente-subtitle">
-
-                                    ${escaparHTML(
-                    identificacion
-                )}
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </td>
-
-
-                    <td>
-
-                        <span
-                            class="tipo-badge ${claseTipo}">
-
-                            ${iconoTipo}
-
-                            ${tipoTexto}
-
-                        </span>
-
-                    </td>
-
-
-                    <td>
-
-                        <div class="contacto">
-
-                            <span class="contacto-phone">
-
-                                ${escaparHTML(
-                    cliente.telefono
-                )}
-
-                            </span>
-
-                            <span class="contacto-email">
-
-                                ${cliente.email
-                        ? escaparHTML(
-                            cliente.email
-                        )
-                        : "Sin correo"
-                    }
-
-                            </span>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="info-item">
-
-                            <span>💼</span>
-
-                            ${escaparHTML(
-                        comercial
-                    )}
-
-                        </div>
-
-                        <div class="info-item">
-
-                            <span>📍</span>
-
-                            ${cliente.direccion
-                        ? "Dirección registrada"
-                        : "Sin dirección"
-                    }
-
-                        </div>
-
-                    </td>
-
-
-                    <td>
-
-                        ${formatearFecha(
-                        cliente.fecha
-                    )}
-
-                    </td>
-
-
-                    <td>
-
-                        <div class="acciones">
-
-                            <button
-                                type="button"
-                                class="btn-accion"
-                                data-accion="ver"
-                                data-id="${cliente.id}"
-                                title="Ver cliente">
-
-                                👁
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="btn-accion"
-                                data-accion="editar"
-                                data-id="${cliente.id}"
-                                title="Editar cliente">
-
-                                ✎
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                class="btn-accion eliminar"
-                                data-accion="eliminar"
-                                data-id="${cliente.id}"
-                                title="Eliminar cliente">
-
-                                ×
-
-                            </button>
-
-                        </div>
-
-                    </td>
-
-                `;
-
-                tablaBody.appendChild(fila);
-            }
-        );
-
-
-        actualizarEstadisticas(
-            clientesFiltrados.length
-        );
-
-        actualizarResultado(
-            clientesFiltrados.length
-        );
+        actualizarEstadisticas();
 
     }
 
-    function actualizarEstadisticas(visibles) {
+
+    function actualizarEstadisticas() {
 
         const total =
             clientes.length;
 
+        const mayoristas =
+            clientes.filter(
+                cliente =>
+                    cliente.tipo ===
+                    "mayorista"
+            ).length;
 
         const minoristas =
             clientes.filter(
                 cliente =>
-                    cliente.tipo === "minorista"
+                    cliente.tipo !==
+                    "mayorista"
             ).length;
 
 
-        const mayoristas =
-            clientes.filter(
-                cliente =>
-                    cliente.tipo === "mayorista"
-            ).length;
+        const statTotal =
+            document.getElementById(
+                "statTotal"
+            );
+
+        const statMayoristas =
+            document.getElementById(
+                "statMayoristas"
+            );
+
+        const statMinoristas =
+            document.getElementById(
+                "statMinoristas"
+            );
 
 
-        statTotal.textContent =
-            total;
+        if (statTotal) {
+            statTotal.textContent =
+                total;
+        }
 
-        statMinorista.textContent =
-            minoristas;
-
-        statMayorista.textContent =
-            mayoristas;
-
-        statVisibles.textContent =
-            visibles;
-
-
-        const porcentajeMinor =
-            total
-                ? Math.round(
-                    (minoristas / total) * 100
-                )
-                : 0;
-
-
-        const porcentajeMayor =
-            total
-                ? Math.round(
-                    (mayoristas / total) * 100
-                )
-                : 0;
-
-
-        porcentajeMinorista.textContent =
-            `${porcentajeMinor}% del total`;
-
-        porcentajeMayorista.textContent =
-            `${porcentajeMayor}% del total`;
-
-
-        countTodos.textContent =
-            total;
-
-        countMinoristas.textContent =
-            minoristas;
-
-        countMayoristas.textContent =
-            mayoristas;
-
-
-        tableFooterText.textContent =
-            visibles === 1
-                ? "1 cliente visible"
-                : `${visibles} clientes visibles`;
-
-    }
-
-    function actualizarResultado(cantidad) {
-
-        const busqueda =
-            searchInput.value.trim();
-
-
-        if (busqueda) {
-
-            resultadoTexto.textContent =
-                cantidad === 1
-                    ? `1 resultado para "${busqueda}"`
-                    : `${cantidad} resultados para "${busqueda}"`;
-
-        } else if (
-            filtroActual !== "todos"
+        if (
+            statMayoristas
         ) {
 
-            resultadoTexto.textContent =
-                cantidad === 1
-                    ? "1 cliente encontrado"
-                    : `${cantidad} clientes encontrados`;
-
-        } else {
-
-            resultadoTexto.textContent =
-                cantidad === 1
-                    ? "Mostrando 1 cliente"
-                    : `Mostrando ${cantidad} clientes`;
+            statMayoristas.textContent =
+                mayoristas;
 
         }
 
+        if (
+            statMinoristas
+        ) {
 
-        if (searchInput.value.trim()) {
-
-            btnLimpiarBusqueda.classList.add(
-                "visible"
-            );
-
-        } else {
-
-            btnLimpiarBusqueda.classList.remove(
-                "visible"
-            );
+            statMinoristas.textContent =
+                minoristas;
 
         }
 
     }
 
+
+    const searchInput =
+        document.getElementById(
+            "searchInput"
+        );
+
+
+    if (searchInput) {
+
+        searchInput.addEventListener(
+            "input",
+            function () {
+
+                const texto =
+                    this.value
+                        .trim()
+                        .toLowerCase();
+
+
+                const filtrados =
+                    clientes.filter(
+                        cliente => {
+
+                            const contenido =
+                                (
+                                    cliente.nombre +
+                                    " " +
+                                    cliente.telefono +
+                                    " " +
+                                    (
+                                        cliente.email ||
+                                        ""
+                                    ) +
+                                    " " +
+                                    (
+                                        cliente.nit ||
+                                        ""
+                                    ) +
+                                    " " +
+                                    (
+                                        cliente.dpi ||
+                                        ""
+                                    )
+                                )
+                                    .toLowerCase();
+
+
+                            return contenido.includes(
+                                texto
+                            );
+
+                        }
+                    );
+
+
+                mostrarClientes(
+                    filtrados
+                );
+
+            }
+        );
+
+    }
+
+
+    const btnNuevo =
+        document.getElementById(
+            "btnNuevo"
+        );
+
+    const btnNuevoVacio =
+        document.getElementById(
+            "btnNuevoVacio"
+        );
+
+    const btnFloating =
+        document.getElementById(
+            "btnFloating"
+        );
+
+    const panel =
+        document.getElementById(
+            "panel"
+        );
+
+    const overlay =
+        document.getElementById(
+            "overlay"
+        );
+
+    const clienteForm =
+        document.getElementById(
+            "clienteForm"
+        );
+
+    const panelTitulo =
+        document.getElementById(
+            "panelTitulo"
+        );
+
+    const clienteId =
+        document.getElementById(
+            "clienteId"
+        );
+
+    const nombre =
+        document.getElementById(
+            "nombre"
+        );
+
+    const tipo =
+        document.getElementById(
+            "tipo"
+        );
+
+    const telefono =
+        document.getElementById(
+            "telefono"
+        );
+
+    const email =
+        document.getElementById(
+            "email"
+        );
+
+    const dpi =
+        document.getElementById(
+            "dpi"
+        );
+
+    const nit =
+        document.getElementById(
+            "nit"
+        );
+
+    const direccion =
+        document.getElementById(
+            "direccion"
+        );
+
+    const descuento =
+        document.getElementById(
+            "descuento"
+        );
+
+    const limiteCredito =
+        document.getElementById(
+            "limiteCredito"
+        );
+
+    const notas =
+        document.getElementById(
+            "notas"
+        );
+
+    const notasCounter =
+        document.getElementById(
+            "notasCounter"
+        );
+
+    const btnCerrarPanel =
+        document.getElementById(
+            "btnCerrarPanel"
+        );
+
+    const btnCancelar =
+        document.getElementById(
+            "btnCancelar"
+        );
+
+    const btnGuardar =
+        document.getElementById(
+            "btnGuardar"
+        );
+
+    const btnTema =
+        document.getElementById(
+            "btnTema"
+        );
+
+    const btnTemaDesktop =
+        document.getElementById(
+            "btnTemaDesktop"
+        );
+
+    const themeIcon =
+        document.getElementById(
+            "themeIcon"
+        );
+
+    const btnMenu =
+        document.getElementById(
+            "btnMenu"
+        );
+
+    const sidebar =
+        document.getElementById(
+            "sidebar"
+        );
+
+    const btnExportar =
+        document.getElementById(
+            "btnExportar"
+        );
+
+    const btnExportarNav =
+        document.getElementById(
+            "btnExportarNav"
+        );
+
+    const btnImportar =
+        document.getElementById(
+            "btnImportar"
+        );
+
+    const btnImportarNav =
+        document.getElementById(
+            "btnImportarNav"
+        );
+
+    const inputImportar =
+        document.getElementById(
+            "inputImportar"
+        );
+
+    const dialogDetalle =
+        document.getElementById(
+            "dialogDetalle"
+        );
+
+    const btnCerrarDetalle =
+        document.getElementById(
+            "btnCerrarDetalle"
+        );
+
+    const btnEditarDetalle =
+        document.getElementById(
+            "btnEditarDetalle"
+        );
+
+    const btnLlamar =
+        document.getElementById(
+            "btnLlamar"
+        );
+
+    const btnWhatsApp =
+        document.getElementById(
+            "btnWhatsApp"
+        );
+
+    const detalleNombre =
+        document.getElementById(
+            "detalleNombre"
+        );
+
+    const detalleTipo =
+        document.getElementById(
+            "detalleTipo"
+        );
+
+    const detalleTelefono =
+        document.getElementById(
+            "detalleTelefono"
+        );
+
+    const detalleEmail =
+        document.getElementById(
+            "detalleEmail"
+        );
+
+    const detalleDpi =
+        document.getElementById(
+            "detalleDpi"
+        );
+
+    const detalleNit =
+        document.getElementById(
+            "detalleNit"
+        );
+
+    const detalleDireccion =
+        document.getElementById(
+            "detalleDireccion"
+        );
+
+    const detalleDescuento =
+        document.getElementById(
+            "detalleDescuento"
+        );
+
+    const detalleLimiteCredito =
+        document.getElementById(
+            "detalleLimiteCredito"
+        );
+
+    const detalleNotas =
+        document.getElementById(
+            "detalleNotas"
+        );
+
+    const dialogEliminar =
+        document.getElementById(
+            "dialogEliminar"
+        );
+
+    const dialogNombreCliente =
+        document.getElementById(
+            "dialogNombreCliente"
+        );
+
+    const btnCancelarEliminar =
+        document.getElementById(
+            "btnCancelarEliminar"
+        );
+
+    const btnConfirmarEliminar =
+        document.getElementById(
+            "btnConfirmarEliminar"
+        );
+
+
+    function mostrarToast(
+        mensaje,
+        tipoMensaje = "success"
+    ) {
+
+        const toast =
+            document.createElement(
+                "div"
+            );
+
+        toast.className =
+            "toast " +
+            tipoMensaje;
+
+        toast.textContent =
+            mensaje;
+
+        document.body.appendChild(
+            toast
+        );
+
+        setTimeout(
+            function () {
+
+                toast.classList.add(
+                    "show"
+                );
+
+            },
+            10
+        );
+
+        setTimeout(
+            function () {
+
+                toast.classList.remove(
+                    "show"
+                );
+
+                setTimeout(
+                    () =>
+                        toast.remove(),
+                    300
+                );
+
+            },
+            3000
+        );
+
+    }
+
+
     function abrirPanel(
-        modo,
+        modo = "nuevo",
         cliente = null
     ) {
 
-        overlay.hidden = false;
+        overlay.hidden =
+            false;
+
+        panel.classList.add(
+            "is-open"
+        );
 
         panel.setAttribute(
             "aria-hidden",
             "false"
         );
 
-        panel.classList.add(
-            "is-open"
-        );
 
-
-        if (modo === "nuevo") {
+        if (
+            modo ===
+            "nuevo"
+        ) {
 
             panelTitulo.textContent =
                 "Nuevo cliente";
 
-            clienteId.value = "";
-
             clienteForm.reset();
 
-            tipoMinorista.checked =
-                true;
+            clienteId.value =
+                "";
 
-            descuento.value = 0;
+            tipo.value =
+                "minorista";
 
-            limiteCredito.value = 0;
+            descuento.value =
+                "0";
 
-            actualizarCamposTipo();
+            limiteCredito.value =
+                "0";
 
-            actualizarContadorNotas();
-
-        }
-
-
-        if (
-            modo === "editar" &&
+        } else if (
             cliente
         ) {
 
@@ -875,66 +2532,55 @@ document.addEventListener("DOMContentLoaded", function () {
             clienteId.value =
                 cliente.id;
 
-
             nombre.value =
-                cliente.nombre || "";
+                cliente.nombre ||
+                "";
+
+            tipo.value =
+                cliente.tipo ||
+                "minorista";
 
             telefono.value =
-                cliente.telefono || "";
+                cliente.telefono ||
+                "";
 
             email.value =
-                cliente.email || "";
-
-            direccion.value =
-                cliente.direccion || "";
+                cliente.email ||
+                "";
 
             dpi.value =
-                cliente.dpi || "";
+                cliente.dpi ||
+                "";
 
             nit.value =
-                cliente.nit || "";
+                cliente.nit ||
+                "";
+
+            direccion.value =
+                cliente.direccion ||
+                "";
 
             descuento.value =
-                cliente.descuento || 0;
+                cliente.descuento ||
+                "0";
 
             limiteCredito.value =
-                cliente.limiteCredito || 0;
+                cliente.limiteCredito ||
+                "0";
 
             notas.value =
-                cliente.notas || "";
-
-
-            if (
-                cliente.tipo ===
-                "mayorista"
-            ) {
-
-                tipoMayorista.checked =
-                    true;
-
-            } else {
-
-                tipoMinorista.checked =
-                    true;
-
-            }
-
-            actualizarCamposTipo();
-
-            actualizarContadorNotas();
+                cliente.notas ||
+                "";
 
         }
 
-        limpiarErrores();
+        actualizarCamposTipo();
 
+        actualizarContadorNotas();
 
         setTimeout(
-            function () {
-
-                nombre.focus();
-
-            },
-            350
+            () => nombre.focus(),
+            100
         );
 
     }
@@ -951,411 +2597,96 @@ document.addEventListener("DOMContentLoaded", function () {
             "true"
         );
 
-
-        setTimeout(
-            function () {
-
-                overlay.hidden = true;
-
-            },
-            350
-        );
-
-    }
-
-    function actualizarCamposTipo() {
-
         if (
-            tipoMayorista.checked
+            !pedidoPanel.classList.contains(
+                "is-open"
+            )
         ) {
 
-            camposMayorista.hidden =
-                false;
-
-            campoDpi.hidden =
+            overlay.hidden =
                 true;
 
-            tipoHint.textContent =
-                "Compra productos en volumen para negocio o reventa.";
-
-        } else {
-
-            camposMayorista.hidden =
-                true;
-
-            campoDpi.hidden =
-                false;
-
-            tipoHint.textContent =
-                "Compra para uso personal, en unidades sueltas.";
-
         }
 
     }
 
-    function mostrarToast(
-        mensaje,
-        tipo = "success"
-    ) {
 
-        clearTimeout(
-            toastTimeout
-        );
-
-
-        toastMessage.textContent =
-            mensaje;
-
-
-        if (
-            tipo === "error"
-        ) {
-
-            toastIcon.textContent =
-                "×";
-
-        } else {
-
-            toastIcon.textContent =
-                "✓";
-
-        }
-
-        toast.classList.add(
-            "show"
-        );
-
-
-        toastTimeout =
-            setTimeout(
-                function () {
-
-                    toast.classList.remove(
-                        "show"
-                    );
-
-                },
-                3000
-            );
-
-    }
-
-    function validarFormulario() {
-
-        limpiarErrores();
-
-        let valido = true;
-
-
-        if (
-            nombre.value.trim().length <
-            3
-        ) {
-
-            mostrarError(
-                nombre,
-                "Ingrese un nombre válido."
-            );
-
-            valido = false;
-
-        }
-
-
-        if (
-            telefono.value.trim() === ""
-        ) {
-
-            mostrarError(
-                telefono,
-                "Ingrese el número de teléfono."
-            );
-
-            valido = false;
-
-        } else if (
-            telefono.value.replace(
-                /\D/g,
-                ""
-            ).length < 8
-        ) {
-
-            mostrarError(
-                telefono,
-                "Ingrese un teléfono válido."
-            );
-
-            valido = false;
-
-        }
-
-
-        if (
-            email.value.trim() !== ""
-        ) {
-
-            const correoValido =
-                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                    .test(
-                        email.value.trim()
-                    );
-
-            if (!correoValido) {
-
-                mostrarError(
-                    email,
-                    "Ingrese un correo válido."
-                );
-
-                valido = false;
-
-            }
-
-        }
-
-        if (
-            tipoMayorista.checked
-        ) {
-
-            if (
-                nit.value.trim() === ""
-            ) {
-
-                mostrarError(
-                    nit,
-                    "El NIT es obligatorio para mayoristas."
-                );
-
-                valido = false;
-
-            }
-
-        }
-
-
-        if (
-            Number(descuento.value) <
-            0 ||
-            Number(descuento.value) >
-            100
-        ) {
-            mostrarError(
-                descuento,
-                "El descuento debe estar entre 0 y 100."
-            );
-            valido = false;
-
-        }
-
-
-        if (!valido) {
-
-            const primerError =
-                document.querySelector(
-                    ".error"
-                );
-
-            if (primerError) {
-
-                primerError.focus();
-            }
-
-            mostrarToast(
-                "Revisa los campos marcados.",
-                "error"
-            );
-
-        }
-
-        return valido;
-
-    }
-
-    function mostrarError(
-        elemento,
-        mensaje
-    ) {
-
-        elemento.classList.add(
-            "error"
-        );
-
-
-        const error =
-            document.createElement(
-                "div"
-            );
-
-        error.className =
-            "error-message";
-
-        error.textContent =
-            mensaje;
-
-        elemento.parentElement.appendChild(
-            error
-        );
-
-    }
-
-    function limpiarErrores() {
-
-        document
-            .querySelectorAll(
-                ".error-message"
-            )
-            .forEach(
-                elemento =>
-                    elemento.remove()
-            );
-
-        document
-            .querySelectorAll(
-                ".error"
-            )
-            .forEach(
-                elemento =>
-                    elemento.classList.remove(
-                        "error"
-                    )
-            );
-
-    }
-
-    clienteForm.addEventListener(
-        "submit",
-        function (evento) {
-
-            evento.preventDefault();
-
-            if (
-                !validarFormulario()
-            ) {
-                return;
-            }
-
-            const id =
-                clienteId.value ||
-                generarId();
-
-            const clienteExistente =
-                clientes.find(
-                    cliente =>
-                        cliente.id === id
-                );
-
-            const datosCliente = {
-
-                id: id,
-
-                tipo:
-                    obtenerTipo(),
-
-                nombre:
-                    nombre.value.trim(),
-
-                telefono:
-                    telefono.value.trim(),
-
-                email:
-                    email.value.trim(),
-
-                direccion:
-                    direccion.value.trim(),
-
-                dpi:
-                    dpi.value.trim(),
-
-                nit:
-                    nit.value.trim(),
-
-                descuento:
-                    Number(
-                        descuento.value || 0
-                    ),
-
-                limiteCredito:
-                    Number(
-                        limiteCredito.value || 0
-                    ),
-
-                notas:
-                    notas.value.trim(),
-
-                fecha:
-                    clienteExistente
-                        ? clienteExistente.fecha
-                        : new Date().toISOString()
-
-            };
-
-            if (clienteExistente) {
-
-                const indice =
-                    clientes.findIndex(
-                        cliente =>
-                            cliente.id === id
-                    );
-
-                clientes[indice] =
-                    datosCliente;
-
-                mostrarToast(
-                    "Cliente actualizado correctamente."
-                );
-
-            } else {
-
-                clientes.push(
-                    datosCliente
-                );
-
-                mostrarToast(
-                    "Cliente registrado correctamente."
-                );
-
-            }
-
-            guardarClientes();
-            mostrarClientes();
-            cerrarPanel();
-
-        }
-    );
+    /*
+     * IMPORTANTE:
+     * Esta es la parte corregida.
+     * btnNuevo ya fue declarado antes
+     * de crear este listener.
+     */
 
     btnNuevo.addEventListener(
         "click",
         function () {
 
-            abrirPanel(
-                "nuevo"
-            );
+            if (
+                pedidosView &&
+                !pedidosView.hidden
+            ) {
+
+                abrirPanelPedido(
+                    "nuevo"
+                );
+
+            } else {
+
+                abrirPanel(
+                    "nuevo"
+                );
+
+            }
 
         }
     );
 
 
-    btnNuevoVacio.addEventListener(
-        "click",
-        function () {
+    if (btnNuevoVacio) {
 
-            abrirPanel(
-                "nuevo"
-            );
+        btnNuevoVacio.addEventListener(
+            "click",
+            function () {
 
-        }
-    );
+                abrirPanel(
+                    "nuevo"
+                );
 
-    btnFloating.addEventListener(
-        "click",
-        function () {
+            }
+        );
 
-            abrirPanel(
-                "nuevo"
-            );
+    }
 
-        }
-    );
+
+    if (btnFloating) {
+
+        btnFloating.addEventListener(
+            "click",
+            function () {
+
+                if (
+                    pedidosView &&
+                    !pedidosView.hidden
+                ) {
+
+                    abrirPanelPedido(
+                        "nuevo"
+                    );
+
+                } else {
+
+                    abrirPanel(
+                        "nuevo"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
 
     btnCerrarPanel.addEventListener(
         "click",
@@ -1369,247 +2700,372 @@ document.addEventListener("DOMContentLoaded", function () {
     );
 
 
+    /*
+     * Overlay corregido.
+     * Primero revisa si está abierto
+     * el panel de pedidos.
+     */
+
     overlay.addEventListener(
-        "click",
-        cerrarPanel
-    );
-
-    tipoMinorista.addEventListener(
-        "change",
-        actualizarCamposTipo
-    );
-
-
-    tipoMayorista.addEventListener(
-        "change",
-        actualizarCamposTipo
-    );
-
-    searchInput.addEventListener(
-        "input",
-        mostrarClientes
-    );
-
-
-    btnLimpiarBusqueda.addEventListener(
         "click",
         function () {
 
-            searchInput.value = "";
+            if (
+                pedidoPanel.classList.contains(
+                    "is-open"
+                )
+            ) {
 
-            mostrarClientes();
+                cerrarPanelPedido();
 
-            searchInput.focus();
+            } else {
+
+                cerrarPanel();
+
+            }
 
         }
     );
 
-    document
-        .querySelectorAll(
-            ".filter-button"
-        )
-        .forEach(
-            function (boton) {
 
-                boton.addEventListener(
-                    "click",
-                    function () {
+    clienteForm.addEventListener(
+        "submit",
+        function (evento) {
 
-                        document
-                            .querySelectorAll(
-                                ".filter-button"
-                            )
-                            .forEach(
-                                item =>
-                                    item.classList.remove(
-                                        "active"
-                                    )
-                            );
+            evento.preventDefault();
 
 
-                        boton.classList.add(
-                            "active"
-                        );
+            const nombreValor =
+                nombre.value.trim();
+
+            const telefonoValor =
+                telefono.value.trim();
 
 
-                        filtroActual =
-                            boton.dataset.filter;
+            if (
+                !nombreValor
+            ) {
 
-
-                        mostrarClientes();
-
-                    }
+                mostrarToast(
+                    "Ingrese el nombre del cliente.",
+                    "error"
                 );
+
+                nombre.focus();
+
+                return;
+
+            }
+
+
+            if (
+                !telefonoValor
+            ) {
+
+                mostrarToast(
+                    "Ingrese el número de teléfono.",
+                    "error"
+                );
+
+                telefono.focus();
+
+                return;
+
+            }
+
+
+            const cliente = {
+
+                id:
+                    clienteId.value ||
+                    "cliente-" +
+                    Date.now(),
+
+                nombre:
+                    nombreValor,
+
+                tipo:
+                    tipo.value,
+
+                telefono:
+                    telefonoValor,
+
+                email:
+                    email.value.trim(),
+
+                dpi:
+                    dpi.value.trim(),
+
+                nit:
+                    nit.value.trim(),
+
+                direccion:
+                    direccion.value.trim(),
+
+                descuento:
+                    Number(
+                        descuento.value ||
+                        0
+                    ),
+
+                limiteCredito:
+                    Number(
+                        limiteCredito.value ||
+                        0
+                    ),
+
+                notas:
+                    notas.value.trim(),
+
+                fecha:
+                    clienteId.value
+                        ? (
+                            clientes.find(
+                                c =>
+                                    c.id ===
+                                    clienteId.value
+                            )?.fecha ||
+                            new Date().toISOString()
+                        )
+                        : new Date().toISOString()
+
+            };
+
+
+            const indice =
+                clientes.findIndex(
+                    c =>
+                        c.id ===
+                        cliente.id
+                );
+
+
+            if (
+                indice >=
+                0
+            ) {
+
+                clientes[indice] =
+                    cliente;
+
+                mostrarToast(
+                    "Cliente actualizado correctamente."
+                );
+
+            } else {
+
+                clientes.push(
+                    cliente
+                );
+
+                mostrarToast(
+                    "Cliente agregado correctamente."
+                );
+
+            }
+
+
+            guardarClientes();
+
+            mostrarClientes();
+
+            cerrarPanel();
+
+            if (
+                pedidosView &&
+                !pedidosView.hidden
+            ) {
+
+                cargarClientesEnSelect();
+
+            }
+
+        }
+    );
+
+
+    function actualizarCamposTipo() {
+
+        if (
+            !tipo ||
+            !descuento
+        ) {
+
+            return;
+
+        }
+
+        if (
+            tipo.value ===
+            "mayorista"
+        ) {
+
+            descuento.disabled =
+                false;
+
+        } else {
+
+            descuento.value =
+                "0";
+
+            descuento.disabled =
+                true;
+
+        }
+
+    }
+
+
+    tipo.addEventListener(
+        "change",
+        actualizarCamposTipo
+    );
+
+
+    const tbodyClientes =
+        document.getElementById(
+            "clientesBody"
+        );
+
+
+    if (tbodyClientes) {
+
+        tbodyClientes.addEventListener(
+            "click",
+            function (evento) {
+
+                const boton =
+                    evento.target.closest(
+                        "button[data-id]"
+                    );
+
+                if (!boton) {
+                    return;
+                }
+
+
+                const id =
+                    boton.dataset.id;
+
+
+                const cliente =
+                    clientes.find(
+                        c =>
+                            c.id ===
+                            id
+                    );
+
+
+                if (!cliente) {
+                    return;
+                }
+
+
+                if (
+                    boton.classList.contains(
+                        "btn-ver"
+                    )
+                ) {
+
+                    mostrarDetalleCliente(
+                        cliente
+                    );
+
+                }
+
+
+                if (
+                    boton.classList.contains(
+                        "btn-editar"
+                    )
+                ) {
+
+                    abrirPanel(
+                        "editar",
+                        cliente
+                    );
+
+                }
+
+
+                if (
+                    boton.classList.contains(
+                        "btn-eliminar"
+                    )
+                ) {
+
+                    abrirDialogoEliminar(
+                        cliente
+                    );
+
+                }
 
             }
         );
 
-    tablaBody.addEventListener(
-        "click",
-        function (evento) {
-
-            const boton =
-                evento.target.closest(
-                    ".btn-accion"
-                );
+    }
 
 
-            if (!boton) {
-                return;
-            }
-
-
-            const id =
-                boton.dataset.id;
-
-            const accion =
-                boton.dataset.accion;
-
-
-            const cliente =
-                clientes.find(
-                    item =>
-                        item.id === id
-                );
-
-
-            if (!cliente) {
-                return;
-            }
-
-
-            if (
-                accion === "editar"
-            ) {
-
-                abrirPanel(
-                    "editar",
-                    cliente
-                );
-
-            }
-
-
-            if (
-                accion === "eliminar"
-            ) {
-
-                abrirDialogoEliminar(
-                    cliente
-                );
-
-            }
-
-
-            if (
-                accion === "ver"
-            ) {
-
-                abrirDetalle(
-                    cliente
-                );
-
-            }
-
-        }
-    );
-
-    function abrirDetalle(cliente) {
+    function mostrarDetalleCliente(
+        cliente
+    ) {
 
         clienteDetalle =
             cliente;
 
 
-        detalleAvatar.textContent =
-            obtenerIniciales(
-                cliente.nombre
-            );
-
-
         detalleNombre.textContent =
-            cliente.nombre;
-
-
-        const mayorista =
-            cliente.tipo === "mayorista";
-
+            cliente.nombre ||
+            "—";
 
         detalleTipo.textContent =
-            mayorista
-                ? "📦 Mayorista"
-                : "🛍️ Minorista";
-
-
-        detalleTipo.style.background =
-            mayorista
-                ? "var(--orange-bg)"
-                : "var(--green-bg)";
-
-
-        detalleTipo.style.color =
-            mayorista
-                ? "var(--orange)"
-                : "var(--green)";
-
+            cliente.tipo ===
+            "mayorista"
+                ? "Mayorista"
+                : "Minorista";
 
         detalleTelefono.textContent =
             cliente.telefono ||
-            "Sin teléfono";
-
+            "—";
 
         detalleEmail.textContent =
             cliente.email ||
-            "Sin correo";
+            "—";
 
+        detalleDpi.textContent =
+            cliente.dpi ||
+            "—";
+
+        detalleNit.textContent =
+            cliente.nit ||
+            "—";
 
         detalleDireccion.textContent =
             cliente.direccion ||
-            "Sin dirección";
+            "—";
 
+        detalleDescuento.textContent =
+            (
+                cliente.descuento ||
+                0
+            ) +
+            "%";
 
-        detalleFecha.textContent =
-            formatearFecha(
-                cliente.fecha
+        detalleLimiteCredito.textContent =
+            dinero(
+                cliente.limiteCredito ||
+                0
             );
 
+        detalleNotas.textContent =
+            cliente.notas ||
+            "Sin notas";
 
-        detalleIdentificacion.textContent =
-            mayorista
-                ? (
-                    cliente.nit
-                        ? `NIT: ${cliente.nit}`
-                        : "Sin NIT"
-                )
-                : (
-                    cliente.dpi
-                        ? `DPI: ${cliente.dpi}`
-                        : "Sin DPI"
-                );
-
-
-        detalleComercial.textContent =
-            mayorista
-                ? `Descuento ${cliente.descuento || 0}% · Crédito Q${Number(cliente.limiteCredito || 0).toFixed(2)}`
-                : "Cliente minorista";
-        if (
-            cliente.notas
-        ) {
-
-            detalleNotas.textContent =
-                cliente.notas;
-            detalleNotasContainer.style.display =
-                "block";
-
-        } else {
-
-            detalleNotas.textContent =
-                "Sin notas registradas.";
-            detalleNotasContainer.style.display =
-                "block";
-        }
 
         dialogDetalle.showModal();
+
     }
+
 
     btnCerrarDetalle.addEventListener(
         "click",
@@ -1625,11 +3081,17 @@ document.addEventListener("DOMContentLoaded", function () {
         "click",
         function () {
 
-            if (!clienteDetalle) {
+            if (
+                !clienteDetalle
+            ) {
+
                 return;
+
             }
 
+
             dialogDetalle.close();
+
 
             abrirPanel(
                 "editar",
@@ -1673,6 +3135,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             /\D/g,
                             ""
                         );
+
+
                 window.open(
                     `https://wa.me/502${numero}`,
                     "_blank"
@@ -1683,22 +3147,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
+
     function abrirDialogoEliminar(
         cliente
     ) {
+
         clienteAEliminar =
             cliente;
+
         dialogNombreCliente.textContent =
             cliente.nombre;
+
         dialogEliminar.showModal();
+
     }
+
 
     btnCancelarEliminar.addEventListener(
         "click",
         function () {
+
             dialogEliminar.close();
+
             clienteAEliminar =
                 null;
+
         }
     );
 
@@ -1710,8 +3183,12 @@ document.addEventListener("DOMContentLoaded", function () {
             if (
                 !clienteAEliminar
             ) {
+
                 return;
+
             }
+
+
             const nombreEliminado =
                 clienteAEliminar.nombre;
 
@@ -1722,16 +3199,26 @@ document.addEventListener("DOMContentLoaded", function () {
                         cliente.id !==
                         clienteAEliminar.id
                 );
+
+
             guardarClientes();
+
             mostrarClientes();
+
             dialogEliminar.close();
+
+
             mostrarToast(
                 `${nombreEliminado} fue eliminado.`
             );
+
+
             clienteAEliminar =
                 null;
+
         }
     );
+
 
     function actualizarContadorNotas() {
 
@@ -1746,6 +3233,7 @@ document.addEventListener("DOMContentLoaded", function () {
         actualizarContadorNotas
     );
 
+
     function actualizarTemaIconos() {
 
         const oscuro =
@@ -1753,7 +3241,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 "dark"
             );
 
+
         if (themeIcon) {
+
             themeIcon.textContent =
                 oscuro
                     ? "☀"
@@ -1761,21 +3251,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-        if (btnTemaDesktop) {
+
+        if (
+            btnTemaDesktop
+        ) {
 
             btnTemaDesktop.textContent =
                 oscuro
                     ? "☀"
                     : "☾";
+
         }
 
     }
+
 
     function cambiarTema() {
 
         document.body.classList.toggle(
             "dark"
         );
+
 
         const oscuro =
             document.body.classList.contains(
@@ -1790,6 +3286,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 : "light"
         );
 
+
         actualizarTemaIconos();
 
     }
@@ -1798,7 +3295,8 @@ document.addEventListener("DOMContentLoaded", function () {
     if (
         localStorage.getItem(
             "temaChiquis"
-        ) === "dark"
+        ) ===
+        "dark"
     ) {
 
         document.body.classList.add(
@@ -1807,7 +3305,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
+
     actualizarTemaIconos();
+
 
     btnTema.addEventListener(
         "click",
@@ -1820,6 +3320,7 @@ document.addEventListener("DOMContentLoaded", function () {
         cambiarTema
     );
 
+
     btnMenu.addEventListener(
         "click",
         function () {
@@ -1831,10 +3332,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
+
     function exportarCSV() {
 
         if (
-            clientes.length === 0
+            clientes.length ===
+            0
         ) {
 
             mostrarToast(
@@ -1845,6 +3348,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
 
         }
+
 
         const encabezados = [
 
@@ -1870,13 +3374,20 @@ document.addEventListener("DOMContentLoaded", function () {
                     cliente.nombre,
                     cliente.tipo,
                     cliente.telefono,
-                    cliente.email || "",
-                    cliente.dpi || "",
-                    cliente.nit || "",
-                    cliente.direccion || "",
-                    cliente.descuento || 0,
-                    cliente.limiteCredito || 0,
-                    cliente.notas || "",
+                    cliente.email ||
+                        "",
+                    cliente.dpi ||
+                        "",
+                    cliente.nit ||
+                        "",
+                    cliente.direccion ||
+                        "",
+                    cliente.descuento ||
+                        0,
+                    cliente.limiteCredito ||
+                        0,
+                    cliente.notas ||
+                        "",
                     formatearFecha(
                         cliente.fecha
                     )
@@ -1896,11 +3407,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     fila
                         .map(
                             dato =>
-                                `"${String(dato)
-                                    .replace(
-                                        /"/g,
-                                        '""'
-                                    )}"`
+                                `"${String(
+                                    dato
+                                ).replace(
+                                    /"/g,
+                                    '""'
+                                )}"`
                         )
                         .join(",")
             )
@@ -1909,7 +3421,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const blob =
             new Blob(
-                ["\ufeff" + csv],
+                [
+                    "\ufeff" +
+                    csv
+                ],
                 {
                     type:
                         "text/csv;charset=utf-8;"
@@ -1943,6 +3458,7 @@ document.addEventListener("DOMContentLoaded", function () {
             url
         );
 
+
         mostrarToast(
             "Clientes exportados correctamente."
         );
@@ -1960,6 +3476,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "click",
         exportarCSV
     );
+
 
     function abrirImportador() {
 
@@ -2043,11 +3560,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         );
 
 
-                    } catch (error) {
+                    } catch (
+                        error
+                    ) {
 
                         console.error(
                             error
                         );
+
 
                         mostrarToast(
                             "No se pudo importar el archivo.",
@@ -2070,41 +3590,72 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
+
     document.addEventListener(
         "keydown",
         function (evento) {
 
             if (
                 evento.ctrlKey &&
-                evento.key.toLowerCase() === "n"
+                evento.key.toLowerCase() ===
+                "n"
             ) {
 
                 evento.preventDefault();
 
-                abrirPanel(
-                    "nuevo"
-                );
+
+                if (
+                    pedidosView &&
+                    !pedidosView.hidden
+                ) {
+
+                    abrirPanelPedido(
+                        "nuevo"
+                    );
+
+                } else {
+
+                    abrirPanel(
+                        "nuevo"
+                    );
+
+                }
 
             }
 
 
             if (
                 evento.ctrlKey &&
-                evento.key.toLowerCase() === "k"
+                evento.key.toLowerCase() ===
+                "k"
             ) {
 
                 evento.preventDefault();
 
-                searchInput.focus();
+
+                if (searchInput) {
+
+                    searchInput.focus();
+
+                }
 
             }
 
 
             if (
-                evento.key === "Escape"
+                evento.key ===
+                "Escape"
             ) {
 
                 if (
+                    pedidoPanel.classList.contains(
+                        "is-open"
+                    )
+                ) {
+
+                    cerrarPanelPedido();
+
+                } else if (
                     panel.classList.contains(
                         "is-open"
                     )
@@ -2119,28 +3670,42 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
+
     const btnNavEstadisticas =
         document.getElementById(
             "btnNavEstadisticas"
         );
 
 
-    btnNavEstadisticas.addEventListener(
-        "click",
-        function () {
+    if (
+        btnNavEstadisticas
+    ) {
 
-            window.scrollTo(
-                {
-                    top: 0,
-                    behavior: "smooth"
-                }
-            );
+        btnNavEstadisticas.addEventListener(
+            "click",
+            function () {
 
-        }
-    );
+                window.scrollTo(
+                    {
+                        top:
+                            0,
+                        behavior:
+                            "smooth"
+                    }
+                );
+
+            }
+        );
+
+    }
+
 
     actualizarCamposTipo();
+
     actualizarContadorNotas();
+
     mostrarClientes();
+
+    actualizarEstadisticasPedidos();
 
 });

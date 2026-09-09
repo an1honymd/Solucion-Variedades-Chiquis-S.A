@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="description"
-        content="Sistema de gestión de clientes de Variedades Chiquis">
+    <meta name="description" content="Sistema de gestión de clientes de Variedades Chiquis">
 
     <title>Variedades Chiquis | Gestión de Clientes</title>
 
@@ -42,9 +41,14 @@
 
                 <p class="nav-title">MENÚ PRINCIPAL</p>
 
-                <button class="nav-item active" type="button">
+                <button class="nav-item active" type="button" id="btnNavClientes">
                     <span class="nav-icon">⌂</span>
                     <span>Clientes</span>
+                </button>
+
+                <button class="nav-item" type="button" id="btnNavPedidos">
+                    <span class="nav-icon">🛒</span>
+                    <span>Pedidos</span>
                 </button>
 
                 <button class="nav-item" type="button" id="btnNavEstadisticas">
@@ -77,11 +81,7 @@
                     </div>
                 </div>
 
-                <button
-                    class="theme-button"
-                    id="btnTema"
-                    type="button"
-                    title="Cambiar tema">
+                <button class="theme-button" id="btnTema" type="button" title="Cambiar tema">
 
                     <span id="themeIcon">☾</span>
                     <span>Modo oscuro</span>
@@ -100,11 +100,7 @@
 
                 <div class="mobile-brand">
 
-                    <button
-                        class="menu-button"
-                        id="btnMenu"
-                        type="button"
-                        aria-label="Abrir menú">
+                    <button class="menu-button" id="btnMenu" type="button" aria-label="Abrir menú">
 
                         ☰
 
@@ -122,35 +118,28 @@
                         PANEL DE ADMINISTRACIÓN
                     </span>
 
-                    <h1>
+                    <h1 id="tituloPrincipal">
                         Gestión de clientes
                     </h1>
 
-                    <p>
-                        Administra y consulta la información de tus clientes.
+                    <p id="descripcionPrincipal">
+                        Administra clientes y centraliza los pedidos recibidos por teléfono y WhatsApp.
                     </p>
 
                 </div>
 
                 <div class="header-actions">
 
-                    <button
-                        class="icon-button"
-                        id="btnTemaDesktop"
-                        type="button"
-                        title="Cambiar tema">
+                    <button class="icon-button" id="btnTemaDesktop" type="button" title="Cambiar tema">
 
                         ☾
 
                     </button>
 
-                    <button
-                        class="btn btn-primary"
-                        id="btnNuevo"
-                        type="button">
+                    <button class="btn btn-primary" id="btnNuevo" type="button">
 
                         <span class="plus-icon">+</span>
-                        Nuevo cliente
+                        <span id="textoBtnNuevo">Nuevo cliente</span>
 
                     </button>
 
@@ -253,7 +242,46 @@
 
             </section>
 
-            <section class="toolbar-card">
+            <!-- ESTADÍSTICAS DE PEDIDOS -->
+            <section class="stats-grid pedidos-stats" id="pedidosStats" hidden>
+                <article class="stat-card">
+                    <div class="stat-card-icon">🛒</div>
+                    <div class="stat-card-content">
+                        <span>Total de pedidos</span>
+                        <strong id="statPedidos">0</strong>
+                        <small>Pedidos registrados</small>
+                    </div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-card-icon active-icon">⏳</div>
+                    <div class="stat-card-content">
+                        <span>Pendientes</span>
+                        <strong id="statPedidosPendientes">0</strong>
+                        <small>Por preparar o gestionar</small>
+                    </div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-card-icon minorista-icon">✓</div>
+                    <div class="stat-card-content">
+                        <span>Entregados</span>
+                        <strong id="statPedidosEntregados">0</strong>
+                        <small>Pedidos completados</small>
+                    </div>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-card-icon mayorista-icon">Q</div>
+                    <div class="stat-card-content">
+                        <span>Ventas registradas</span>
+                        <strong id="statVentas">Q0.00</strong>
+                        <small>Total de pedidos</small>
+                    </div>
+                </article>
+            </section>
+
+            <section class="toolbar-card" id="clientesToolbar">
 
                 <div class="toolbar-top">
 
@@ -271,29 +299,19 @@
 
                     <div class="toolbar-actions">
 
-                        <button
-                            class="secondary-button"
-                            id="btnExportar"
-                            type="button">
+                        <button class="secondary-button" id="btnExportar" type="button">
 
                             ↓ Exportar
 
                         </button>
 
-                        <button
-                            class="secondary-button"
-                            id="btnImportar"
-                            type="button">
+                        <button class="secondary-button" id="btnImportar" type="button">
 
                             ↑ Importar
 
                         </button>
 
-                        <input
-                            type="file"
-                            id="inputImportar"
-                            accept=".json"
-                            hidden>
+                        <input type="file" id="inputImportar" accept=".json" hidden>
 
                     </div>
 
@@ -308,17 +326,10 @@
                             ⌕
                         </span>
 
-                        <input
-                            type="search"
-                            id="searchInput"
-                            placeholder="Buscar por nombre, teléfono, correo o NIT..."
+                        <input type="search" id="searchInput" placeholder="Buscar por nombre, teléfono, correo o NIT..."
                             autocomplete="off">
 
-                        <button
-                            type="button"
-                            class="clear-search"
-                            id="btnLimpiarBusqueda"
-                            title="Limpiar búsqueda">
+                        <button type="button" class="clear-search" id="btnLimpiarBusqueda" title="Limpiar búsqueda">
 
                             ×
 
@@ -329,30 +340,21 @@
 
                     <div class="filter-container">
 
-                        <button
-                            class="filter-button active"
-                            data-filter="todos"
-                            type="button">
+                        <button class="filter-button active" data-filter="todos" type="button">
 
                             Todos
                             <span id="countTodos">0</span>
 
                         </button>
 
-                        <button
-                            class="filter-button"
-                            data-filter="minorista"
-                            type="button">
+                        <button class="filter-button" data-filter="minorista" type="button">
 
                             🛍️ Minoristas
                             <span id="countMinoristas">0</span>
 
                         </button>
 
-                        <button
-                            class="filter-button"
-                            data-filter="mayorista"
-                            type="button">
+                        <button class="filter-button" data-filter="mayorista" type="button">
 
                             📦 Mayoristas
                             <span id="countMayoristas">0</span>
@@ -365,7 +367,7 @@
 
             </section>
 
-            <section class="table-card">
+            <section class="table-card" id="clientesTableSection">
 
                 <div class="table-responsive">
 
@@ -403,10 +405,7 @@
 
                 <!-- ESTADO VACÍO -->
 
-                <div
-                    class="empty-state"
-                    id="emptyState"
-                    hidden>
+                <div class="empty-state" id="emptyState" hidden>
 
                     <div class="empty-illustration">
                         👥
@@ -420,10 +419,7 @@
                         Comienza agregando tu primer cliente.
                     </p>
 
-                    <button
-                        class="btn btn-primary"
-                        id="btnNuevoVacio"
-                        type="button">
+                    <button class="btn btn-primary" id="btnNuevoVacio" type="button">
 
                         + Registrar cliente
 
@@ -444,6 +440,218 @@
                 </div>
 
             </section>
+
+
+            <!-- MÓDULO DE PEDIDOS -->
+            <section class="pedidos-view" id="pedidosView" hidden>
+                <section class="toolbar-card">
+                    <div class="toolbar-top">
+                        <div>
+                            <h2>Gestión de pedidos</h2>
+                            <p id="resultadoPedidos">Centraliza pedidos de llamadas y WhatsApp.</p>
+                        </div>
+                        <div class="toolbar-actions">
+                            <button class="secondary-button" id="btnExportarPedidos" type="button">↓ Exportar
+                                pedidos</button>
+                            <button class="btn btn-primary" id="btnNuevoPedido" type="button">+ Nuevo pedido</button>
+                        </div>
+                    </div>
+
+                    <div class="toolbar-bottom">
+                        <div class="search-box">
+                            <span class="search-icon">⌕</span>
+                            <input type="search" id="searchPedidos"
+                                placeholder="Buscar por cliente, teléfono, producto o número de pedido..."
+                                autocomplete="off">
+                            <button type="button" class="clear-search" id="btnLimpiarPedidos">×</button>
+                        </div>
+
+                        <div class="filter-container">
+                            <button class="filter-button active" data-estado="todos" type="button">Todos <span
+                                    id="countPedidosTodos">0</span></button>
+                            <button class="filter-button" data-estado="pendiente" type="button">⏳ Pendientes <span
+                                    id="countPedidosPendientes">0</span></button>
+                            <button class="filter-button" data-estado="preparando" type="button">📦 Preparando <span
+                                    id="countPedidosPreparando">0</span></button>
+                            <button class="filter-button" data-estado="entregado" type="button">✓ Entregados <span
+                                    id="countPedidosEntregados">0</span></button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="table-card">
+                    <div class="table-responsive">
+                        <table class="clientes-table pedidos-table">
+                            <thead>
+                                <tr>
+                                    <th>Pedido</th>
+                                    <th>Cliente</th>
+                                    <th>Productos</th>
+                                    <th>Total</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th class="actions-header">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pedidosBody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="empty-state" id="emptyPedidos" hidden>
+                        <div class="empty-illustration">🛒</div>
+                        <h2>No hay pedidos registrados</h2>
+                        <p>Registra el primer pedido para centralizar la información de llamadas y WhatsApp.</p>
+                        <button class="btn btn-primary" id="btnNuevoPedidoVacio" type="button">+ Registrar
+                            pedido</button>
+                    </div>
+
+                    <div class="table-footer">
+                        <span id="footerPedidos">0 pedidos</span>
+                        <span>Pedidos almacenados localmente</span>
+                    </div>
+                </section>
+            </section>
+
+            <!-- FORMULARIO DE PEDIDO -->
+            <aside class="panel pedido-panel" id="pedidoPanel" aria-hidden="true">
+                <form id="pedidoForm" novalidate>
+                    <div class="panel-header">
+                        <div>
+                            <span class="panel-eyebrow">PEDIDO</span>
+                            <h2 id="pedidoPanelTitulo">Nuevo pedido</h2>
+                            <p>Registra de forma estructurada la solicitud del cliente.</p>
+                        </div>
+                        <button type="button" class="btn-close" id="btnCerrarPedidoPanel">×</button>
+                    </div>
+
+                    <input type="hidden" id="pedidoId">
+
+                    <div class="form-section">
+                        <div class="section-heading">
+                            <span class="section-number">01</span>
+                            <div><strong>Información del pedido</strong><small>Origen, fecha y estado</small></div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label class="field-label" for="pedidoNumero">No. de pedido</label>
+                                <input type="text" id="pedidoNumero" readonly>
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="pedidoFecha">Fecha del pedido <span>*</span></label>
+                                <input type="datetime-local" id="pedidoFecha">
+                            </div>
+                        </div>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label class="field-label" for="pedidoCliente">Cliente <span>*</span></label>
+                                <select id="pedidoCliente"></select>
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="pedidoOrigen">Origen del pedido</label>
+                                <select id="pedidoOrigen">
+                                    <option value="WhatsApp">WhatsApp</option>
+                                    <option value="Llamada telefónica">Llamada telefónica</option>
+                                    <option value="Presencial">Presencial</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="pedidoEstado">Estado</label>
+                            <select id="pedidoEstado">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="preparando">Preparando</option>
+                                <option value="entregado">Entregado</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-heading">
+                            <span class="section-number">02</span>
+                            <div><strong>Productos solicitados</strong><small>Producto, cantidad y precio</small></div>
+                        </div>
+
+                        <div id="productosPedido"></div>
+                        <button type="button" class="secondary-button agregar-producto" id="btnAgregarProducto">+
+                            Agregar producto</button>
+
+                        <div class="pedido-totales">
+                            <div><span>Subtotal</span><strong id="pedidoSubtotal">Q0.00</strong></div>
+                            <div><span>Descuento</span><strong id="pedidoDescuento">Q0.00</strong></div>
+                            <div class="total-final"><span>Total</span><strong id="pedidoTotal">Q0.00</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-heading">
+                            <span class="section-number">03</span>
+                            <div><strong>Entrega y observaciones</strong><small>Información necesaria para completar el
+                                    pedido</small></div>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="pedidoDireccion">Dirección de entrega</label>
+                            <textarea id="pedidoDireccion" rows="3"
+                                placeholder="Zona, calle, avenida, referencia..."></textarea>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label" for="pedidoNotas">Notas del pedido</label>
+                            <textarea id="pedidoNotas" rows="3"
+                                placeholder="Color, talla, horario, instrucciones u otra observación..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="panel-footer">
+                        <button type="button" class="btn btn-secondary" id="btnCancelarPedido">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">✓ Guardar pedido</button>
+                    </div>
+                </form>
+            </aside>
+
+            <!-- DETALLE DE PEDIDO -->
+            <dialog id="dialogPedidoDetalle">
+                <div class="detail-modal pedido-detail-modal">
+                    <button class="modal-close" id="btnCerrarPedidoDetalle" type="button">×</button>
+                    <div class="detail-avatar">🛒</div>
+                    <h2 id="detallePedidoNumero">Pedido</h2>
+                    <span class="detail-badge" id="detallePedidoEstado">Pendiente</span>
+
+                    <div class="detail-grid">
+                        <div class="detail-item"><span>👤 Cliente</span><strong id="detallePedidoCliente">-</strong>
+                        </div>
+                        <div class="detail-item"><span>📞 Teléfono</span><strong id="detallePedidoTelefono">-</strong>
+                        </div>
+                        <div class="detail-item"><span>📅 Fecha</span><strong id="detallePedidoFecha">-</strong></div>
+                        <div class="detail-item"><span>📲 Origen</span><strong id="detallePedidoOrigen">-</strong></div>
+                        <div class="detail-item"><span>📍 Entrega</span><strong id="detallePedidoDireccion">-</strong>
+                        </div>
+                        <div class="detail-item"><span>💰 Total</span><strong id="detallePedidoTotal">Q0.00</strong>
+                        </div>
+                    </div>
+
+                    <div class="detail-notes">
+                        <span>📦 Productos</span>
+                        <div id="detallePedidoProductos"></div>
+                    </div>
+
+                    <div class="detail-notes">
+                        <span>📝 Notas</span>
+                        <p id="detallePedidoNotas">Sin notas registradas.</p>
+                    </div>
+
+                    <div class="detail-actions">
+                        <button class="btn btn-secondary" id="btnEditarPedidoDetalle" type="button">✎ Editar</button>
+                        <button class="btn btn-whatsapp" id="btnWhatsAppPedido" type="button">💬 WhatsApp</button>
+                        <button class="btn btn-danger" id="btnEliminarPedidoDetalle" type="button">🗑 Eliminar</button>
+                    </div>
+                </div>
+            </dialog>
 
             <section class="help-card">
 
@@ -486,20 +694,12 @@
 
     </div>
 
-    <div
-        class="overlay"
-        id="overlay"
-        hidden>
+    <div class="overlay" id="overlay" hidden>
     </div>
 
-    <aside
-        class="panel"
-        id="panel"
-        aria-hidden="true">
+    <aside class="panel" id="panel" aria-hidden="true">
 
-        <form
-            id="clienteForm"
-            novalidate>
+        <form id="clienteForm" novalidate>
 
             <div class="panel-header">
 
@@ -519,11 +719,7 @@
 
                 </div>
 
-                <button
-                    type="button"
-                    class="btn-close"
-                    id="btnCerrarPanel"
-                    aria-label="Cerrar">
+                <button type="button" class="btn-close" id="btnCerrarPanel" aria-label="Cerrar">
 
                     ×
 
@@ -532,9 +728,7 @@
             </div>
 
 
-            <input
-                type="hidden"
-                id="clienteId">
+            <input type="hidden" id="clienteId">
 
 
             <!-- TIPO -->
@@ -562,16 +756,9 @@
 
                 <div class="tipo-toggle">
 
-                    <input
-                        type="radio"
-                        name="tipo"
-                        id="tipoMinorista"
-                        value="minorista"
-                        checked>
+                    <input type="radio" name="tipo" id="tipoMinorista" value="minorista" checked>
 
-                    <label
-                        for="tipoMinorista"
-                        class="tipo-opcion">
+                    <label for="tipoMinorista" class="tipo-opcion">
 
                         <span class="tipo-opcion-icon">
                             🛍️
@@ -585,15 +772,9 @@
                     </label>
 
 
-                    <input
-                        type="radio"
-                        name="tipo"
-                        id="tipoMayorista"
-                        value="mayorista">
+                    <input type="radio" name="tipo" id="tipoMayorista" value="mayorista">
 
-                    <label
-                        for="tipoMayorista"
-                        class="tipo-opcion">
+                    <label for="tipoMayorista" class="tipo-opcion">
 
                         <span class="tipo-opcion-icon">
                             📦
@@ -608,9 +789,7 @@
 
                 </div>
 
-                <p
-                    class="field-hint"
-                    id="tipoHint">
+                <p class="field-hint" id="tipoHint">
 
                     Compra para uso personal, en unidades sueltas.
 
@@ -644,9 +823,7 @@
 
                 <div class="field">
 
-                    <label
-                        for="nombre"
-                        class="field-label">
+                    <label for="nombre" class="field-label">
 
                         Nombre completo
                         <span>*</span>
@@ -659,11 +836,7 @@
                             👤
                         </span>
 
-                        <input
-                            type="text"
-                            id="nombre"
-                            placeholder="Ej. Ana Lucía Pérez"
-                            maxlength="100">
+                        <input type="text" id="nombre" placeholder="Ej. Ana Lucía Pérez" maxlength="100">
 
                     </div>
 
@@ -674,9 +847,7 @@
 
                     <div class="field">
 
-                        <label
-                            for="telefono"
-                            class="field-label">
+                        <label for="telefono" class="field-label">
 
                             Teléfono
                             <span>*</span>
@@ -689,11 +860,7 @@
                                 ☎
                             </span>
 
-                            <input
-                                type="tel"
-                                id="telefono"
-                                placeholder="5555-1234"
-                                maxlength="20">
+                            <input type="tel" id="telefono" placeholder="5555-1234" maxlength="20">
 
                         </div>
 
@@ -702,9 +869,7 @@
 
                     <div class="field">
 
-                        <label
-                            for="email"
-                            class="field-label">
+                        <label for="email" class="field-label">
 
                             Correo electrónico
 
@@ -716,11 +881,7 @@
                                 @
                             </span>
 
-                            <input
-                                type="email"
-                                id="email"
-                                placeholder="cliente@correo.com"
-                                maxlength="120">
+                            <input type="email" id="email" placeholder="cliente@correo.com" maxlength="120">
 
                         </div>
 
@@ -729,13 +890,9 @@
                 </div>
 
 
-                <div
-                    class="field"
-                    id="campoDpi">
+                <div class="field" id="campoDpi">
 
-                    <label
-                        for="dpi"
-                        class="field-label">
+                    <label for="dpi" class="field-label">
 
                         DPI
 
@@ -747,11 +904,7 @@
                             ID
                         </span>
 
-                        <input
-                            type="text"
-                            id="dpi"
-                            placeholder="0000 00000 0000"
-                            maxlength="20">
+                        <input type="text" id="dpi" placeholder="0000 00000 0000" maxlength="20">
 
                     </div>
 
@@ -785,9 +938,7 @@
 
                 <div class="field">
 
-                    <label
-                        for="direccion"
-                        class="field-label">
+                    <label for="direccion" class="field-label">
 
                         Dirección de entrega
 
@@ -799,10 +950,7 @@
                             📍
                         </span>
 
-                        <textarea
-                            id="direccion"
-                            placeholder="Zona, calle, avenida, referencia..."
-                            rows="3"
+                        <textarea id="direccion" placeholder="Zona, calle, avenida, referencia..." rows="3"
                             maxlength="300"></textarea>
 
                     </div>
@@ -814,10 +962,7 @@
 
             <!-- MAYORISTA -->
 
-            <div
-                class="form-section wholesale-section"
-                id="camposMayorista"
-                hidden>
+            <div class="form-section wholesale-section" id="camposMayorista" hidden>
 
                 <div class="section-heading">
 
@@ -842,29 +987,21 @@
 
                     <div class="field">
 
-                        <label
-                            for="nit"
-                            class="field-label">
+                        <label for="nit" class="field-label">
 
                             NIT
                             <span>*</span>
 
                         </label>
 
-                        <input
-                            type="text"
-                            id="nit"
-                            placeholder="1234567-8"
-                            maxlength="20">
+                        <input type="text" id="nit" placeholder="1234567-8" maxlength="20">
 
                     </div>
 
 
                     <div class="field">
 
-                        <label
-                            for="descuento"
-                            class="field-label">
+                        <label for="descuento" class="field-label">
 
                             Descuento
 
@@ -872,12 +1009,7 @@
 
                         <div class="input-suffix">
 
-                            <input
-                                type="number"
-                                id="descuento"
-                                min="0"
-                                max="100"
-                                value="0">
+                            <input type="number" id="descuento" min="0" max="100" value="0">
 
                             <span>%</span>
 
@@ -890,9 +1022,7 @@
 
                 <div class="field">
 
-                    <label
-                        for="limiteCredito"
-                        class="field-label">
+                    <label for="limiteCredito" class="field-label">
 
                         Límite de crédito
 
@@ -902,12 +1032,7 @@
 
                         <span>Q</span>
 
-                        <input
-                            type="number"
-                            id="limiteCredito"
-                            min="0"
-                            step="0.01"
-                            value="0">
+                        <input type="number" id="limiteCredito" min="0" step="0.01" value="0">
 
                     </div>
 
@@ -941,18 +1066,13 @@
 
                 <div class="field">
 
-                    <label
-                        for="notas"
-                        class="field-label">
+                    <label for="notas" class="field-label">
 
                         Notas internas
 
                     </label>
 
-                    <textarea
-                        id="notas"
-                        rows="3"
-                        maxlength="300"
+                    <textarea id="notas" rows="3" maxlength="300"
                         placeholder="Preferencias, horarios, observaciones..."></textarea>
 
                     <div class="character-counter">
@@ -965,18 +1085,13 @@
 
             <div class="panel-footer">
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    id="btnCancelar">
+                <button type="button" class="btn btn-secondary" id="btnCancelar">
 
                     Cancelar
 
                 </button>
 
-                <button
-                    type="submit"
-                    class="btn btn-primary">
+                <button type="submit" class="btn btn-primary">
 
                     <span>✓</span>
                     Guardar cliente
@@ -993,18 +1108,13 @@
 
         <div class="detail-modal">
 
-            <button
-                class="modal-close"
-                id="btnCerrarDetalle"
-                type="button">
+            <button class="modal-close" id="btnCerrarDetalle" type="button">
 
                 ×
 
             </button>
 
-            <div
-                class="detail-avatar"
-                id="detalleAvatar">
+            <div class="detail-avatar" id="detalleAvatar">
 
                 AP
 
@@ -1014,9 +1124,7 @@
                 Cliente
             </h2>
 
-            <span
-                class="detail-badge"
-                id="detalleTipo">
+            <span class="detail-badge" id="detalleTipo">
 
                 Minorista
 
@@ -1087,9 +1195,7 @@
             </div>
 
 
-            <div
-                class="detail-notes"
-                id="detalleNotasContainer">
+            <div class="detail-notes" id="detalleNotasContainer">
 
                 <span>📝 Notas</span>
 
@@ -1102,28 +1208,19 @@
 
             <div class="detail-actions">
 
-                <button
-                    class="btn btn-secondary"
-                    id="btnEditarDetalle"
-                    type="button">
+                <button class="btn btn-secondary" id="btnEditarDetalle" type="button">
 
                     ✎ Editar
 
                 </button>
 
-                <button
-                    class="btn btn-whatsapp"
-                    id="btnWhatsApp"
-                    type="button">
+                <button class="btn btn-whatsapp" id="btnWhatsApp" type="button">
 
                     💬 WhatsApp
 
                 </button>
 
-                <button
-                    class="btn btn-primary"
-                    id="btnLlamar"
-                    type="button">
+                <button class="btn btn-primary" id="btnLlamar" type="button">
 
                     ☎ Llamar
 
@@ -1158,19 +1255,13 @@
 
             <div class="dialog-actions">
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    id="btnCancelarEliminar">
+                <button type="button" class="btn btn-secondary" id="btnCancelarEliminar">
 
                     Cancelar
 
                 </button>
 
-                <button
-                    type="button"
-                    class="btn btn-danger"
-                    id="btnConfirmarEliminar">
+                <button type="button" class="btn btn-danger" id="btnConfirmarEliminar">
 
                     Eliminar cliente
 
@@ -1198,10 +1289,7 @@
                     </h2>
                 </div>
 
-                <button
-                    class="modal-close"
-                    id="btnCerrarOpciones"
-                    type="button">
+                <button class="modal-close" id="btnCerrarOpciones" type="button">
 
                     ×
 
@@ -1209,10 +1297,7 @@
 
             </div>
 
-            <button
-                class="option-item"
-                id="btnCargarEjemplos"
-                type="button">
+            <button class="option-item" id="btnCargarEjemplos" type="button">
 
                 <span>✨</span>
 
@@ -1224,10 +1309,7 @@
             </button>
 
 
-            <button
-                class="option-item"
-                id="btnExportarOpciones"
-                type="button">
+            <button class="option-item" id="btnExportarOpciones" type="button">
 
                 <span>📥</span>
 
@@ -1239,10 +1321,7 @@
             </button>
 
 
-            <button
-                class="option-item danger-option"
-                id="btnEliminarTodos"
-                type="button">
+            <button class="option-item danger-option" id="btnEliminarTodos" type="button">
 
                 <span>🗑️</span>
 
@@ -1257,10 +1336,7 @@
 
     </dialog>
 
-    <div
-        class="toast"
-        id="toast"
-        role="status">
+    <div class="toast" id="toast" role="status">
 
         <span class="toast-icon" id="toastIcon">
             ✓
@@ -1272,13 +1348,9 @@
 
     </div>
 
-         BOTÓN FLOTANTE
+    BOTÓN FLOTANTE
 
-    <button
-        class="floating-button"
-        id="btnFloating"
-        type="button"
-        title="Nuevo cliente">
+    <button class="floating-button" id="btnFloating" type="button" title="Nuevo cliente">
         +
     </button>
 
