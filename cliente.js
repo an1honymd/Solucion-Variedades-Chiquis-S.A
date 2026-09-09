@@ -1,9 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-    /* =========================================================
-       ELEMENTOS
-    ========================================================= */
-
+     /*  ELEMENTOS*/
     const tablaBody =
         document.getElementById("tablaBody");
 
@@ -254,11 +250,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const inputImportar =
         document.getElementById("inputImportar");
 
-
-    /* =========================================================
-       VARIABLES
-    ========================================================= */
-
     let clientes =
         cargarClientes();
 
@@ -273,11 +264,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let toastTimeout =
         null;
-
-
-    /* =========================================================
-       LOCAL STORAGE
-    ========================================================= */
 
     function cargarClientes() {
 
@@ -310,7 +296,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
     function guardarClientes() {
 
         localStorage.setItem(
@@ -319,11 +304,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
     }
-
-
-    /* =========================================================
-       ID
-    ========================================================= */
 
     function generarId() {
 
@@ -336,11 +316,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
-    /* =========================================================
-       TIPO
-    ========================================================= */
-
     function obtenerTipo() {
 
         return tipoMayorista.checked
@@ -348,11 +323,6 @@ document.addEventListener("DOMContentLoaded", function () {
             : "minorista";
 
     }
-
-
-    /* =========================================================
-       FECHA
-    ========================================================= */
 
     function formatearFecha(fecha) {
 
@@ -377,11 +347,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
     }
-
-
-    /* =========================================================
-       INICIALES
-    ========================================================= */
 
     function obtenerIniciales(nombreCliente) {
 
@@ -410,11 +375,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
-    /* =========================================================
-       ESCAPAR HTML
-    ========================================================= */
-
     function escaparHTML(texto) {
 
         if (
@@ -432,11 +392,6 @@ document.addEventListener("DOMContentLoaded", function () {
             .replace(/'/g, "&#039;");
 
     }
-
-
-    /* =========================================================
-       MOSTRAR CLIENTES
-    ========================================================= */
 
     function mostrarClientes() {
 
@@ -483,9 +438,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
 
             });
-
-
-        /* EMPTY */
 
         if (clientesFiltrados.length === 0) {
 
@@ -583,10 +535,10 @@ document.addEventListener("DOMContentLoaded", function () {
                             <div class="cliente-avatar">
 
                                 ${escaparHTML(
-                                    obtenerIniciales(
-                                        cliente.nombre
-                                    )
-                                )}
+                    obtenerIniciales(
+                        cliente.nombre
+                    )
+                )}
 
                             </div>
 
@@ -595,16 +547,16 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <div class="cliente-nombre">
 
                                     ${escaparHTML(
-                                        cliente.nombre
-                                    )}
+                    cliente.nombre
+                )}
 
                                 </div>
 
                                 <div class="cliente-subtitle">
 
                                     ${escaparHTML(
-                                        identificacion
-                                    )}
+                    identificacion
+                )}
 
                                 </div>
 
@@ -636,27 +588,25 @@ document.addEventListener("DOMContentLoaded", function () {
                             <span class="contacto-phone">
 
                                 ${escaparHTML(
-                                    cliente.telefono
-                                )}
+                    cliente.telefono
+                )}
 
                             </span>
 
                             <span class="contacto-email">
 
-                                ${
-                                    cliente.email
-                                        ? escaparHTML(
-                                            cliente.email
-                                        )
-                                        : "Sin correo"
-                                }
+                                ${cliente.email
+                        ? escaparHTML(
+                            cliente.email
+                        )
+                        : "Sin correo"
+                    }
 
                             </span>
 
                         </div>
 
                     </td>
-
 
                     <td>
 
@@ -665,8 +615,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             <span>💼</span>
 
                             ${escaparHTML(
-                                comercial
-                            )}
+                        comercial
+                    )}
 
                         </div>
 
@@ -674,11 +624,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
                             <span>📍</span>
 
-                            ${
-                                cliente.direccion
-                                    ? "Dirección registrada"
-                                    : "Sin dirección"
-                            }
+                            ${cliente.direccion
+                        ? "Dirección registrada"
+                        : "Sin dirección"
+                    }
 
                         </div>
 
@@ -688,8 +637,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     <td>
 
                         ${formatearFecha(
-                            cliente.fecha
-                        )}
+                        cliente.fecha
+                    )}
 
                     </td>
 
@@ -739,9 +688,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 `;
 
-
                 tablaBody.appendChild(fila);
-
             }
         );
 
@@ -755,11 +702,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
     }
-
-
-    /* =========================================================
-       ESTADÍSTICAS
-    ========================================================= */
 
     function actualizarEstadisticas(visibles) {
 
@@ -834,11 +776,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
-    /* =========================================================
-       RESULTADO
-    ========================================================= */
-
     function actualizarResultado(cantidad) {
 
         const busqueda =
@@ -886,11 +823,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     }
-
-
-    /* =========================================================
-       ABRIR PANEL
-    ========================================================= */
 
     function abrirPanel(
         modo,
@@ -987,13 +919,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
-
             actualizarCamposTipo();
 
             actualizarContadorNotas();
 
         }
-
 
         limpiarErrores();
 
@@ -1009,10 +939,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
-    /* =========================================================
-       CERRAR PANEL
-    ========================================================= */
 
     function cerrarPanel() {
 
@@ -1036,11 +962,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
     }
-
-
-    /* =========================================================
-       TIPO
-    ========================================================= */
 
     function actualizarCamposTipo() {
 
@@ -1072,11 +993,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
-    /* =========================================================
-       TOAST
-    ========================================================= */
-
     function mostrarToast(
         mensaje,
         tipo = "success"
@@ -1105,7 +1021,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-
         toast.classList.add(
             "show"
         );
@@ -1124,11 +1039,6 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
     }
-
-
-    /* =========================================================
-       VALIDACIÓN
-    ========================================================= */
 
     function validarFormulario() {
 
@@ -1190,7 +1100,6 @@ document.addEventListener("DOMContentLoaded", function () {
                         email.value.trim()
                     );
 
-
             if (!correoValido) {
 
                 mostrarError(
@@ -1203,7 +1112,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
         }
-
 
         if (
             tipoMayorista.checked
@@ -1231,12 +1139,10 @@ document.addEventListener("DOMContentLoaded", function () {
             Number(descuento.value) >
             100
         ) {
-
             mostrarError(
                 descuento,
                 "El descuento debe estar entre 0 y 100."
             );
-
             valido = false;
 
         }
@@ -1252,7 +1158,6 @@ document.addEventListener("DOMContentLoaded", function () {
             if (primerError) {
 
                 primerError.focus();
-
             }
 
             mostrarToast(
@@ -1262,15 +1167,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-
         return valido;
 
     }
-
-
-    /* =========================================================
-       MOSTRAR ERROR
-    ========================================================= */
 
     function mostrarError(
         elemento,
@@ -1293,17 +1192,11 @@ document.addEventListener("DOMContentLoaded", function () {
         error.textContent =
             mensaje;
 
-
         elemento.parentElement.appendChild(
             error
         );
 
     }
-
-
-    /* =========================================================
-       LIMPIAR ERRORES
-    ========================================================= */
 
     function limpiarErrores() {
 
@@ -1315,7 +1208,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 elemento =>
                     elemento.remove()
             );
-
 
         document
             .querySelectorAll(
@@ -1330,17 +1222,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
-    /* =========================================================
-       GUARDAR CLIENTE
-    ========================================================= */
-
     clienteForm.addEventListener(
         "submit",
         function (evento) {
 
             evento.preventDefault();
-
 
             if (
                 !validarFormulario()
@@ -1348,18 +1234,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-
             const id =
                 clienteId.value ||
                 generarId();
-
 
             const clienteExistente =
                 clientes.find(
                     cliente =>
                         cliente.id === id
                 );
-
 
             const datosCliente = {
 
@@ -1406,7 +1289,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             };
 
-
             if (clienteExistente) {
 
                 const indice =
@@ -1415,10 +1297,8 @@ document.addEventListener("DOMContentLoaded", function () {
                             cliente.id === id
                     );
 
-
                 clientes[indice] =
                     datosCliente;
-
 
                 mostrarToast(
                     "Cliente actualizado correctamente."
@@ -1430,27 +1310,18 @@ document.addEventListener("DOMContentLoaded", function () {
                     datosCliente
                 );
 
-
                 mostrarToast(
                     "Cliente registrado correctamente."
                 );
 
             }
 
-
             guardarClientes();
-
             mostrarClientes();
-
             cerrarPanel();
 
         }
     );
-
-
-    /* =========================================================
-       NUEVO
-    ========================================================= */
 
     btnNuevo.addEventListener(
         "click",
@@ -1475,7 +1346,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
-
     btnFloating.addEventListener(
         "click",
         function () {
@@ -1486,11 +1356,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
-
-
-    /* =========================================================
-       CERRAR PANEL
-    ========================================================= */
 
     btnCerrarPanel.addEventListener(
         "click",
@@ -1509,11 +1374,6 @@ document.addEventListener("DOMContentLoaded", function () {
         cerrarPanel
     );
 
-
-    /* =========================================================
-       CAMBIO TIPO
-    ========================================================= */
-
     tipoMinorista.addEventListener(
         "change",
         actualizarCamposTipo
@@ -1524,11 +1384,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "change",
         actualizarCamposTipo
     );
-
-
-    /* =========================================================
-       BUSCAR
-    ========================================================= */
 
     searchInput.addEventListener(
         "input",
@@ -1548,11 +1403,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
-
-
-    /* =========================================================
-       FILTROS
-    ========================================================= */
 
     document
         .querySelectorAll(
@@ -1593,11 +1443,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
         );
-
-
-    /* =========================================================
-       ACCIONES TABLA
-    ========================================================= */
 
     tablaBody.addEventListener(
         "click",
@@ -1668,11 +1513,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
-
-
-    /* =========================================================
-       DETALLE
-    ========================================================= */
 
     function abrirDetalle(cliente) {
 
@@ -1751,15 +1591,12 @@ document.addEventListener("DOMContentLoaded", function () {
             mayorista
                 ? `Descuento ${cliente.descuento || 0}% · Crédito Q${Number(cliente.limiteCredito || 0).toFixed(2)}`
                 : "Cliente minorista";
-
-
         if (
             cliente.notas
         ) {
 
             detalleNotas.textContent =
                 cliente.notas;
-
             detalleNotasContainer.style.display =
                 "block";
 
@@ -1767,17 +1604,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             detalleNotas.textContent =
                 "Sin notas registradas.";
-
             detalleNotasContainer.style.display =
                 "block";
-
         }
 
-
         dialogDetalle.showModal();
-
     }
-
 
     btnCerrarDetalle.addEventListener(
         "click",
@@ -1841,8 +1673,6 @@ document.addEventListener("DOMContentLoaded", function () {
                             /\D/g,
                             ""
                         );
-
-
                 window.open(
                     `https://wa.me/502${numero}`,
                     "_blank"
@@ -1853,37 +1683,22 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
-
-    /* =========================================================
-       ELIMINAR
-    ========================================================= */
-
     function abrirDialogoEliminar(
         cliente
     ) {
-
         clienteAEliminar =
             cliente;
-
-
         dialogNombreCliente.textContent =
             cliente.nombre;
-
-
         dialogEliminar.showModal();
-
     }
-
 
     btnCancelarEliminar.addEventListener(
         "click",
         function () {
-
             dialogEliminar.close();
-
             clienteAEliminar =
                 null;
-
         }
     );
 
@@ -1897,8 +1712,6 @@ document.addEventListener("DOMContentLoaded", function () {
             ) {
                 return;
             }
-
-
             const nombreEliminado =
                 clienteAEliminar.nombre;
 
@@ -1909,30 +1722,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         cliente.id !==
                         clienteAEliminar.id
                 );
-
-
             guardarClientes();
-
             mostrarClientes();
-
             dialogEliminar.close();
-
-
             mostrarToast(
                 `${nombreEliminado} fue eliminado.`
             );
-
-
             clienteAEliminar =
                 null;
-
         }
     );
-
-
-    /* =========================================================
-       NOTAS COUNTER
-    ========================================================= */
 
     function actualizarContadorNotas() {
 
@@ -1947,11 +1746,6 @@ document.addEventListener("DOMContentLoaded", function () {
         actualizarContadorNotas
     );
 
-
-    /* =========================================================
-       DARK MODE
-    ========================================================= */
-
     function actualizarTemaIconos() {
 
         const oscuro =
@@ -1959,9 +1753,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 "dark"
             );
 
-
         if (themeIcon) {
-
             themeIcon.textContent =
                 oscuro
                     ? "☀"
@@ -1969,25 +1761,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-
         if (btnTemaDesktop) {
 
             btnTemaDesktop.textContent =
                 oscuro
                     ? "☀"
                     : "☾";
-
         }
 
     }
-
 
     function cambiarTema() {
 
         document.body.classList.toggle(
             "dark"
         );
-
 
         const oscuro =
             document.body.classList.contains(
@@ -2001,7 +1789,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 ? "dark"
                 : "light"
         );
-
 
         actualizarTemaIconos();
 
@@ -2020,9 +1807,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     }
 
-
     actualizarTemaIconos();
-
 
     btnTema.addEventListener(
         "click",
@@ -2035,11 +1820,6 @@ document.addEventListener("DOMContentLoaded", function () {
         cambiarTema
     );
 
-
-    /* =========================================================
-       SIDEBAR MOBILE
-    ========================================================= */
-
     btnMenu.addEventListener(
         "click",
         function () {
@@ -2050,11 +1830,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
     );
-
-
-    /* =========================================================
-       EXPORTAR CSV
-    ========================================================= */
 
     function exportarCSV() {
 
@@ -2070,7 +1845,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
 
         }
-
 
         const encabezados = [
 
@@ -2169,7 +1943,6 @@ document.addEventListener("DOMContentLoaded", function () {
             url
         );
 
-
         mostrarToast(
             "Clientes exportados correctamente."
         );
@@ -2187,11 +1960,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "click",
         exportarCSV
     );
-
-
-    /* =========================================================
-       IMPORTAR JSON
-    ========================================================= */
 
     function abrirImportador() {
 
@@ -2302,11 +2070,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
-
-    /* =========================================================
-       ATAJOS DE TECLADO
-    ========================================================= */
-
     document.addEventListener(
         "keydown",
         function (evento) {
@@ -2356,11 +2119,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
-
-    /* =========================================================
-       NAVEGACIÓN ESTADÍSTICAS
-    ========================================================= */
-
     const btnNavEstadisticas =
         document.getElementById(
             "btnNavEstadisticas"
@@ -2381,15 +2139,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     );
 
-
-    /* =========================================================
-       INICIALIZAR
-    ========================================================= */
-
     actualizarCamposTipo();
-
     actualizarContadorNotas();
-
     mostrarClientes();
 
 });

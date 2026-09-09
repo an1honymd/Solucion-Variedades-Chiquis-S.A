@@ -366,8 +366,8 @@ function agregarProducto(producto = null) {
                     class="producto-nombre"
                     placeholder="Ej. Camiseta"
                     value="${escapeHTML(
-                        producto?.nombre || ""
-                    )}"
+        producto?.nombre || ""
+    )}"
                     required
                 >
 
@@ -514,7 +514,7 @@ function formatearMoneda(valor) {
 
 pedidoForm.addEventListener(
     "submit",
-    function(event) {
+    function (event) {
 
         event.preventDefault();
 
@@ -844,8 +844,8 @@ function renderPedidos() {
 
                     <span class="order-number">
                         ${escapeHTML(
-                            pedido.numero
-                        )}
+                pedido.numero
+            )}
                     </span>
 
                 </td>
@@ -855,8 +855,8 @@ function renderPedidos() {
 
                     <span class="order-client">
                         ${escapeHTML(
-                            pedido.clienteNombre
-                        )}
+                pedido.clienteNombre
+            )}
                     </span>
 
                 </td>
@@ -875,8 +875,8 @@ function renderPedidos() {
                 <td>
 
                     ${formatearFecha(
-                        pedido.fecha
-                    )}
+                pedido.fecha
+            )}
 
                 </td>
 
@@ -894,8 +894,8 @@ function renderPedidos() {
 
                     <span class="total">
                         ${formatearMoneda(
-                            pedido.total
-                        )}
+                pedido.total
+            )}
                     </span>
 
                 </td>
@@ -1050,10 +1050,9 @@ function actualizarEstadisticas(
         "contadorPedidos"
     ).textContent =
 
-        `${cantidadVisible} pedido${
-            cantidadVisible === 1
-                ? ""
-                : "s"
+        `${cantidadVisible} pedido${cantidadVisible === 1
+            ? ""
+            : "s"
         }`;
 
 }
@@ -1062,7 +1061,7 @@ function actualizarEstadisticas(
 /* EDITAR */
 
 window.editarPedido =
-    function(id) {
+    function (id) {
 
         const pedido =
             pedidos.find(
@@ -1083,7 +1082,7 @@ window.editarPedido =
 /* ELIMINAR */
 
 window.eliminarPedido =
-    function(id) {
+    function (id) {
 
         pedidoEliminar = id;
 

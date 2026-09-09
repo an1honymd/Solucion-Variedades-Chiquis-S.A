@@ -26,7 +26,7 @@
     --rojo: #b54444;
 
     --sombra:
-        0 10px 30px rgba(50,35,25,.08);
+        0 10px 30px rgba(50, 35, 25, .08);
 
 }
 
@@ -661,7 +661,7 @@ td {
 
     inset: 0;
 
-    background: rgba(20,15,10,.45);
+    background: rgba(20, 15, 10, .45);
 
     opacity: 0;
 
@@ -709,7 +709,7 @@ td {
 
     transition: .3s;
 
-    box-shadow: -10px 0 40px rgba(0,0,0,.12);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, .12);
 
 }
 
@@ -1067,14 +1067,14 @@ dialog {
 
     margin: auto;
 
-    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
 
 }
 
 
 dialog::backdrop {
 
-    background: rgba(0,0,0,.45);
+    background: rgba(0, 0, 0, .45);
 
 }
 
