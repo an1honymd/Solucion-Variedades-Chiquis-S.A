@@ -2,17 +2,12 @@
 <html lang="es">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Variedades Chiquis - Pedidos</title>
 
-    <link rel="stylesheet"
-          href="./pedidos.css">
-
+    <link rel="stylesheet" href="./pedidos.css">
 </head>
 
 <body>
@@ -33,57 +28,35 @@
 
             <div class="brand-text">
 
-                <h1>
-                    Variedades Chiquis
-                </h1>
+                <h1>Variedades Chiquis</h1>
 
-                <span>
-                    Sistema de gestión
-                </span>
+                <span>Sistema de gestión</span>
 
             </div>
 
         </div>
 
 
-        <!-- =================================================
-             MENÚ
-        ================================================== -->
-
         <nav class="menu">
 
-            <!--
-                IMPORTANTE:
-                No usamos href="cliente.html".
-                Usamos historial para regresar a Clientes.
-            -->
-
-            <a href="#"
+            <a href="./cliente.html"
                class="menu-item"
                id="btnNavClientes">
 
-                <span class="menu-icon">
-                    👥
-                </span>
+                <span class="menu-icon">👥</span>
 
-                <span>
-                    Clientes
-                </span>
+                <span>Clientes</span>
 
             </a>
 
 
-            <a href="pedidos.html"
+            <a href="./pedidos.html"
                class="menu-item active"
                id="btnNavPedidos">
 
-                <span class="menu-icon">
-                    📦
-                </span>
+                <span class="menu-icon">📦</span>
 
-                <span>
-                    Pedidos
-                </span>
+                <span>Pedidos</span>
 
             </a>
 
@@ -96,13 +69,9 @@
                     id="btnTema"
                     type="button">
 
-                <span id="themeIcon">
-                    🌙
-                </span>
+                <span id="themeIcon">🌙</span>
 
-                <span id="themeText">
-                    Cambiar tema
-                </span>
+                <span id="themeText">Cambiar tema</span>
 
             </button>
 
@@ -117,16 +86,11 @@
 
     <main class="main-content">
 
-
-        <!-- ENCABEZADO -->
-
         <header class="topbar">
 
             <div class="page-title">
 
-                <h2>
-                    Gestión de Pedidos
-                </h2>
+                <h2>Gestión de Pedidos</h2>
 
                 <p>
                     Administra los pedidos de Variedades Chiquis
@@ -141,9 +105,7 @@
                         id="btnExportarPedidos"
                         type="button">
 
-                    <span>
-                        📤
-                    </span>
+                    <span>📤</span>
 
                     Exportar
 
@@ -154,9 +116,7 @@
                         id="btnNuevoPedido"
                         type="button">
 
-                    <span>
-                        ＋
-                    </span>
+                    <span>＋</span>
 
                     Nuevo pedido
 
@@ -171,9 +131,7 @@
              ESTADÍSTICAS
         ====================================================== -->
 
-        <section class="stats-grid"
-                 id="pedidosStats">
-
+        <section class="stats-grid">
 
             <div class="stat-card">
 
@@ -183,13 +141,9 @@
 
                 <div>
 
-                    <span>
-                        Total pedidos
-                    </span>
+                    <span>Total pedidos</span>
 
-                    <strong id="statPedidos">
-                        0
-                    </strong>
+                    <strong id="statPedidos">0</strong>
 
                 </div>
 
@@ -204,13 +158,9 @@
 
                 <div>
 
-                    <span>
-                        Pendientes
-                    </span>
+                    <span>Pendientes</span>
 
-                    <strong id="statPedidosPendientes">
-                        0
-                    </strong>
+                    <strong id="statPedidosPendientes">0</strong>
 
                 </div>
 
@@ -225,13 +175,9 @@
 
                 <div>
 
-                    <span>
-                        Entregados
-                    </span>
+                    <span>Entregados</span>
 
-                    <strong id="statPedidosEntregados">
-                        0
-                    </strong>
+                    <strong id="statPedidosEntregados">0</strong>
 
                 </div>
 
@@ -246,13 +192,9 @@
 
                 <div>
 
-                    <span>
-                        Ventas
-                    </span>
+                    <span>Ventas</span>
 
-                    <strong id="statVentas">
-                        Q0.00
-                    </strong>
+                    <strong id="statVentas">Q0.00</strong>
 
                 </div>
 
@@ -265,11 +207,9 @@
              TABLA
         ====================================================== -->
 
-        <section class="content-card pedidos-view">
-
+        <section class="content-card">
 
             <div class="toolbar">
-
 
                 <div class="search-box">
 
@@ -322,53 +262,35 @@
 
             <div class="table-container">
 
-
                 <table>
 
                     <thead>
 
                         <tr>
 
-                            <th>
-                                Pedido
-                            </th>
+                            <th>Pedido</th>
 
-                            <th>
-                                Cliente
-                            </th>
+                            <th>Cliente</th>
 
-                            <th>
-                                Fecha
-                            </th>
+                            <th>Fecha</th>
 
-                            <th>
-                                Estado
-                            </th>
+                            <th>Estado</th>
 
-                            <th>
-                                Origen
-                            </th>
+                            <th>Origen</th>
 
-                            <th>
-                                Total
-                            </th>
+                            <th>Total</th>
 
-                            <th>
-                                Acciones
-                            </th>
+                            <th>Acciones</th>
 
                         </tr>
 
                     </thead>
 
 
-                    <tbody id="pedidosBody">
-                    </tbody>
+                    <tbody id="pedidosBody"></tbody>
 
                 </table>
 
-
-                <!-- ESTADO VACÍO -->
 
                 <div class="empty-state"
                      id="emptyPedidos">
@@ -385,14 +307,11 @@
                         Comienza agregando tu primer pedido al sistema.
                     </p>
 
-
                     <button class="btn btn-primary"
                             id="btnNuevoPedidoVacio"
                             type="button">
 
-                        <span>
-                            ＋
-                        </span>
+                        <span>＋</span>
 
                         Agregar pedido
 
@@ -414,25 +333,23 @@
 ====================================================== -->
 
 <div class="overlay"
-     id="overlay"
-     hidden>
+     id="overlay">
 </div>
 
 
 <!-- =====================================================
-     PANEL DE PEDIDO
+     PANEL NUEVO / EDITAR PEDIDO
 ====================================================== -->
 
 <aside class="side-panel"
        id="pedidoPanel">
 
-
     <div class="panel-header">
 
         <div>
 
-            <h2>
-                Gestión de pedido
+            <h2 id="tituloPanelPedido">
+                Nuevo pedido
             </h2>
 
             <p>
@@ -455,15 +372,15 @@
 
     <form id="pedidoForm">
 
-
         <input type="hidden"
                id="pedidoId">
 
 
         <div class="panel-body">
 
-
-            <!-- INFORMACIÓN -->
+            <!-- =================================================
+                 INFORMACIÓN DEL PEDIDO
+            ================================================== -->
 
             <div class="form-section">
 
@@ -473,7 +390,6 @@
 
 
                 <div class="form-row">
-
 
                     <div class="form-group">
 
@@ -504,7 +420,6 @@
 
 
                 <div class="form-row">
-
 
                     <div class="form-group">
 
@@ -586,10 +501,11 @@
             </div>
 
 
-            <!-- PRODUCTOS -->
+            <!-- =================================================
+                 PRODUCTOS
+            ================================================== -->
 
             <div class="form-section">
-
 
                 <div class="section-title-row">
 
@@ -597,8 +513,7 @@
                         Productos
                     </h3>
 
-
-                    <button class="btn btn-secondary"
+                    <button class="btn btn-secondary btn-agregar-producto"
                             id="btnAgregarProducto"
                             type="button">
 
@@ -613,11 +528,12 @@
                      class="productos-pedido">
                 </div>
 
-
             </div>
 
 
-            <!-- TOTALES -->
+            <!-- =================================================
+                 TOTALES
+            ================================================== -->
 
             <div class="form-section">
 
@@ -671,7 +587,9 @@
             </div>
 
 
-            <!-- ENTREGA -->
+            <!-- =================================================
+                 ENTREGA
+            ================================================== -->
 
             <div class="form-section">
 
@@ -705,9 +623,12 @@
 
             </div>
 
-
         </div>
 
+
+        <!-- =================================================
+             PIE DEL PANEL
+        ================================================== -->
 
         <div class="panel-footer">
 
@@ -723,11 +644,11 @@
             <button class="btn btn-primary"
                     type="submit">
 
-                <span>
-                    ✓
-                </span>
+                <span>✓</span>
 
-                Guardar pedido
+                <span id="textoGuardarPedido">
+                    Guardar pedido
+                </span>
 
             </button>
 
@@ -739,16 +660,13 @@
 
 
 <!-- =====================================================
-     DETALLE DEL PEDIDO
+     MODAL DETALLE
 ====================================================== -->
 
 <div class="modal-container"
-     id="dialogPedidoDetalle"
-     hidden>
-
+     id="dialogPedidoDetalle">
 
     <div class="modal modal-detalle">
-
 
         <div class="modal-header">
 
@@ -758,8 +676,7 @@
                     Detalle del pedido
                 </h3>
 
-                <span id="detallePedidoNumero">
-                </span>
+                <span id="detallePedidoNumero"></span>
 
             </div>
 
@@ -777,78 +694,58 @@
 
         <div class="detalle-body">
 
-
             <div class="detalle-info">
 
-
                 <div>
 
-                    <span>
-                        Cliente
-                    </span>
+                    <span>Cliente</span>
 
-                    <strong id="detallePedidoCliente">
-                    </strong>
+                    <strong id="detallePedidoCliente"></strong>
 
                 </div>
 
 
                 <div>
 
-                    <span>
-                        Teléfono
-                    </span>
+                    <span>Teléfono</span>
 
-                    <strong id="detallePedidoTelefono">
-                    </strong>
+                    <strong id="detallePedidoTelefono"></strong>
 
                 </div>
 
 
                 <div>
 
-                    <span>
-                        Fecha
-                    </span>
+                    <span>Fecha</span>
 
-                    <strong id="detallePedidoFecha">
-                    </strong>
+                    <strong id="detallePedidoFecha"></strong>
 
                 </div>
 
 
                 <div>
 
-                    <span>
-                        Origen
-                    </span>
+                    <span>Origen</span>
 
-                    <strong id="detallePedidoOrigen">
-                    </strong>
+                    <strong id="detallePedidoOrigen"></strong>
 
                 </div>
 
 
                 <div>
 
-                    <span>
-                        Estado
-                    </span>
+                    <span>Estado</span>
 
-                    <strong id="detallePedidoEstado">
-                    </strong>
+                    <strong id="detallePedidoEstado"></strong>
 
                 </div>
 
 
                 <div>
 
-                    <span>
-                        Dirección
-                    </span>
+                    <span>Dirección</span>
 
-                    <strong id="detallePedidoDireccion">
-                    </strong>
+                    <strong id="detallePedidoDireccion"></strong>
 
                 </div>
 
@@ -861,8 +758,7 @@
                     Productos
                 </h4>
 
-                <div id="detallePedidoProductos">
-                </div>
+                <div id="detallePedidoProductos"></div>
 
             </div>
 
@@ -896,7 +792,6 @@
 
 
         <div class="modal-actions">
-
 
             <button class="btn btn-secondary"
                     id="btnWhatsAppPedido"
@@ -948,8 +843,6 @@
 
 </div>
 
-
-<!-- JAVASCRIPT -->
 
 <script src="./pedidos.js"></script>
 
