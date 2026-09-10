@@ -1,51 +1,50 @@
-'use strict';
-
-/* =========================================================
-   VARIEDADES CHIQUIS - GESTIÓN DE PEDIDOS
-   ========================================================= */
-
 document.addEventListener('DOMContentLoaded', () => {
 
-    /* =====================================================
-       UTILIDADES
-       ===================================================== */
+    // ============================================================
+    // VARIEDADES CHIQUIS - PEDIDOS
+    // ============================================================
 
-    const $ = (id) => document.getElementById(id);
-
+    const $ = (id) =>
+        document.getElementById(id);
 
     const on = (id, event, fn) => {
 
-        const elemento = $(id);
+        const el = $(id);
 
-        if (elemento) {
-            elemento.addEventListener(event, fn);
+        if (el) {
+            el.addEventListener(event, fn);
         }
 
-        return elemento;
+        return el;
     };
 
 
-    /* =====================================================
-       VARIABLES
-       ===================================================== */
+    const overlay =
+        $('overlay');
 
-    const overlay = $('overlay');
-    const pedidoPanel = $('pedidoPanel');
-    const pedidoForm = $('pedidoForm');
+    const pedidoPanel =
+        $('pedidoPanel');
 
-    let pedidos = cargarPedidos();
-    let clientes = cargarClientes();
-
-    let pedidoDetalleActual = null;
-
-    let filtroPedido = 'todos';
-
-    let toastTimer = null;
+    const pedidoForm =
+        $('pedidoForm');
 
 
-    /* =====================================================
-       ESCAPAR HTML
-       ===================================================== */
+    let pedidos =
+        cargarPedidos();
+
+    let clientes =
+        cargarClientes();
+
+    let pedidoDetalleActual =
+        null;
+
+    let filtroPedido =
+        'todos';
+
+
+    // ============================================================
+    // UTILIDADES
+    // ============================================================
 
     function escaparHTML(valor) {
 
@@ -55,24 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
-
     }
 
-
-    /* =====================================================
-       DINERO
-       ===================================================== */
 
     function dinero(valor) {
 
-        return 'Q' + Number(valor || 0).toFixed(2);
-
+        return 'Q' +
+            Number(valor || 0)
+                .toFixed(2);
     }
 
-
-    /* =====================================================
-       ID
-       ===================================================== */
 
     function generarId(prefijo = '') {
 
@@ -81,13 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
             Math.random()
                 .toString(36)
                 .slice(2, 8);
-
     }
 
-
-    /* =====================================================
-       FECHA
-       ===================================================== */
 
     function formatearFechaHora(fecha) {
 
@@ -95,14 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return 'Sin fecha';
         }
 
+        const d =
+            new Date(fecha);
 
-        const d = new Date(fecha);
-
-
-        if (Number.isNaN(d.getTime())) {
+        if (
+            Number.isNaN(
+                d.getTime()
+            )
+        ) {
             return 'Sin fecha';
         }
-
 
         return d.toLocaleString(
             'es-GT',
@@ -114,95 +102,112 @@ document.addEventListener('DOMContentLoaded', () => {
                 minute: '2-digit'
             }
         );
-
     }
 
 
-    /* =====================================================
-       FECHA PARA INPUT
-       ===================================================== */
-
     function fechaActualInput() {
 
-        const d = new Date();
-
+        const d =
+            new Date();
 
         d.setMinutes(
             d.getMinutes() -
             d.getTimezoneOffset()
         );
 
-
         return d.toISOString()
             .slice(0, 16);
-
     }
 
-
-    /* =====================================================
-       TOAST
-       ===================================================== */
 
     function toast(
         mensaje,
         tipo = 'success'
     ) {
 
-        const contenedor = $('toast');
+        const contenedor =
+            $('toast');
 
+        if (contenedor) {
 
-        if (!contenedor) {
-            return;
-        }
+            const icono =
+                $('toastIcon');
 
+            const texto =
+                $('toastMessage');
 
-        const icono =
-            $('toastIcon');
+            if (texto) {
 
+                texto.textContent =
+                    mensaje;
+            }
 
-        const texto =
-            $('toastMessage');
+            if (icono) {
 
+                icono.textContent =
+                    tipo === 'error'
+                        ? '!'
+                        : '✓';
+            }
 
-        if (texto) {
-            texto.textContent = mensaje;
-        }
+            contenedor.classList.add(
+                'show'
+            );
 
+            clearTimeout(
+                window.__toastTimer
+            );
 
-        if (icono) {
-
-            icono.textContent =
-                tipo === 'error'
-                    ? '!'
-                    : '✓';
-
-        }
-
-
-        contenedor.classList.add('show');
-
-
-        clearTimeout(toastTimer);
-
-
-        toastTimer =
-            setTimeout(
-                () => {
+            window.__toastTimer =
+                setTimeout(() => {
 
                     contenedor.classList.remove(
                         'show'
                     );
 
-                },
-                3000
+                }, 3000);
+
+            return;
+        }
+
+
+        const t =
+            document.createElement(
+                'div'
             );
 
+        t.textContent =
+            mensaje;
+
+        t.style.cssText = `
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 99999;
+            padding: 14px 18px;
+            border-radius: 10px;
+            background: ${
+                tipo === 'error'
+                    ? '#b42318'
+                    : '#16794b'
+            };
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 8px 30px rgba(0,0,0,.2);
+        `;
+
+        document.body.appendChild(t);
+
+        setTimeout(
+            () => t.remove(),
+            3000
+        );
     }
 
 
-    /* =====================================================
-       LOCAL STORAGE - PEDIDOS
-       ===================================================== */
+    // ============================================================
+    // LOCAL STORAGE
+    // ============================================================
 
     function cargarPedidos() {
 
@@ -215,22 +220,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     ) || '[]'
                 );
 
-
             return Array.isArray(datos)
                 ? datos
                 : [];
 
-        } catch (error) {
+        } catch (e) {
 
-            console.error(
-                'Error cargando pedidos:',
-                error
-            );
+            console.error(e);
 
             return [];
-
         }
-
     }
 
 
@@ -240,36 +239,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             localStorage.setItem(
                 'pedidosChiquis',
-                JSON.stringify(pedidos)
+                JSON.stringify(
+                    pedidos
+                )
             );
-
 
             return true;
 
-        } catch (error) {
+        } catch (e) {
 
-            console.error(
-                'Error guardando pedidos:',
-                error
-            );
-
+            console.error(e);
 
             toast(
                 'No se pudieron guardar los pedidos.',
                 'error'
             );
 
-
             return false;
-
         }
-
     }
 
-
-    /* =====================================================
-       LOCAL STORAGE - CLIENTES
-       ===================================================== */
 
     function cargarClientes() {
 
@@ -282,97 +271,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     ) || '[]'
                 );
 
-
             return Array.isArray(datos)
                 ? datos
                 : [];
 
-        } catch (error) {
+        } catch (e) {
 
-            console.error(
-                'Error cargando clientes:',
-                error
-            );
+            console.error(e);
 
             return [];
-
         }
-
     }
 
 
-    /* =====================================================
-       NÚMERO DE PEDIDO
-       ===================================================== */
+    // ============================================================
+    // NUMERO DE PEDIDO
+    // ============================================================
 
     function generarNumeroPedido() {
 
-        let mayor = 0;
-
-
-        pedidos.forEach(
-            pedido => {
-
-                const numero =
-                    String(
-                        pedido.numero || ''
-                    );
-
-
-                const encontrado =
-                    numero.match(
-                        /PED-(\d+)/i
-                    );
-
-
-                if (encontrado) {
-
-                    mayor =
-                        Math.max(
-                            mayor,
-                            Number(
-                                encontrado[1]
-                            )
-                        );
-
-                }
-
-            }
-        );
-
+        const numero =
+            pedidos.length + 1;
 
         return 'PED-' +
-            String(mayor + 1)
+            String(numero)
                 .padStart(4, '0');
-
     }
 
 
-    /* =====================================================
-       CLIENTES EN SELECT
-       ===================================================== */
+    // ============================================================
+    // CLIENTES EN SELECT
+    // ============================================================
 
     function cargarClientesEnSelect() {
 
         const select =
             $('pedidoCliente');
 
-
         if (!select) {
             return;
         }
 
-
         clientes =
             cargarClientes();
-
 
         select.innerHTML = `
             <option value="">
                 Seleccionar cliente
             </option>
         `;
-
 
         clientes.forEach(
             cliente => {
@@ -382,10 +329,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         'option'
                     );
 
-
                 option.value =
                     cliente.id;
-
 
                 option.textContent =
                     `${cliente.nombre} — ${
@@ -393,20 +338,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         'Sin teléfono'
                     }`;
 
-
                 select.appendChild(
                     option
                 );
-
             }
         );
-
     }
 
 
-    /* =====================================================
-       PRODUCTOS
-       ===================================================== */
+    // ============================================================
+    // PRODUCTOS
+    // ============================================================
 
     function agregarFilaProducto(
         producto = {}
@@ -415,27 +357,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const contenedor =
             $('productosPedido');
 
-
         if (!contenedor) {
             return;
         }
-
 
         const fila =
             document.createElement(
                 'div'
             );
 
-
         fila.className =
             'producto-pedido-row';
 
-
         fila.innerHTML = `
-
             <div class="field">
 
-                <label>
+                <label class="field-label">
                     Producto
                 </label>
 
@@ -445,15 +382,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     placeholder="Nombre del producto"
                     value="${escaparHTML(
                         producto.nombre || ''
-                    )}"
-                >
-
+                    )}">
             </div>
 
 
             <div class="field">
 
-                <label>
+                <label class="field-label">
                     Cantidad
                 </label>
 
@@ -461,15 +396,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     type="number"
                     class="producto-cantidad"
                     min="1"
-                    value="${producto.cantidad || 1}"
-                >
-
+                    value="${
+                        producto.cantidad || 1
+                    }">
             </div>
 
 
             <div class="field">
 
-                <label>
+                <label class="field-label">
                     Precio
                 </label>
 
@@ -478,22 +413,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     class="producto-precio"
                     min="0"
                     step="0.01"
-                    value="${producto.precio ?? 0}"
-                >
-
+                    value="${
+                        producto.precio ?? 0
+                    }">
             </div>
 
 
             <button
                 type="button"
                 class="btn-eliminar-producto"
-                title="Eliminar producto"
-            >
+                title="Eliminar producto">
                 ×
             </button>
-
         `;
-
 
         contenedor.appendChild(
             fila
@@ -504,16 +436,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .querySelectorAll(
                 '.producto-cantidad, .producto-precio'
             )
-            .forEach(
-                input => {
+            .forEach(input => {
 
-                    input.addEventListener(
-                        'input',
-                        calcularTotales
-                    );
-
-                }
-            );
+                input.addEventListener(
+                    'input',
+                    calcularTotales
+                );
+            });
 
 
         fila
@@ -527,10 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     fila.remove();
 
                     calcularTotales();
-
                 }
             );
-
     }
 
 
@@ -540,7 +467,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll(
                 '.producto-pedido-row'
             );
-
 
         const productos = [];
 
@@ -585,25 +511,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         precio,
 
                         subtotal:
-                            cantidad *
-                            precio
-
+                            cantidad * precio
                     });
-
                 }
-
             }
         );
 
 
         return productos;
-
     }
 
 
-    /* =====================================================
-       TOTALES
-       ===================================================== */
+    // ============================================================
+    // TOTALES
+    // ============================================================
 
     function calcularTotales() {
 
@@ -616,14 +537,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 (total, producto) =>
                     total +
                     Number(
-                        producto.subtotal || 0
+                        producto.subtotal ||
+                        0
                     ),
                 0
             );
 
 
         const clienteId =
-            $('pedidoCliente')?.value;
+            $('pedidoCliente')
+                ?.value;
 
 
         const cliente =
@@ -642,8 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const descuento =
             subtotal *
-            porcentaje /
-            100;
+            (porcentaje / 100);
 
 
         const total =
@@ -658,7 +580,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoSubtotal')
                 .textContent =
                 dinero(subtotal);
-
         }
 
 
@@ -667,7 +588,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoDescuento')
                 .textContent =
                 dinero(descuento);
-
         }
 
 
@@ -676,15 +596,13 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoTotal')
                 .textContent =
                 dinero(total);
-
         }
-
     }
 
 
-    /* =====================================================
-       ABRIR PANEL
-       ===================================================== */
+    // ============================================================
+    // ABRIR PANEL
+    // ============================================================
 
     function abrirPanelPedido(
         pedido = null
@@ -701,7 +619,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clientes =
             cargarClientes();
 
-
         cargarClientesEnSelect();
 
 
@@ -709,14 +626,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             overlay.hidden =
                 false;
-
         }
 
 
         pedidoPanel.classList.add(
             'is-open'
         );
-
 
         pedidoPanel.setAttribute(
             'aria-hidden',
@@ -730,11 +645,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const productos =
             $('productosPedido');
 
-
         if (productos) {
 
-            productos.innerHTML = '';
-
+            productos.innerHTML =
+                '';
         }
 
 
@@ -742,7 +656,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             $('pedidoId').value =
                 pedido?.id || '';
-
         }
 
 
@@ -753,7 +666,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 pedido
                     ? 'Editar pedido'
                     : 'Nuevo pedido';
-
         }
 
 
@@ -762,7 +674,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoNumero').value =
                 pedido?.numero ||
                 generarNumeroPedido();
-
         }
 
 
@@ -771,7 +682,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoFecha').value =
                 pedido?.fecha ||
                 fechaActualInput();
-
         }
 
 
@@ -779,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             $('pedidoCliente').value =
                 pedido?.clienteId || '';
-
         }
 
 
@@ -788,7 +697,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoOrigen').value =
                 pedido?.origen ||
                 'WhatsApp';
-
         }
 
 
@@ -797,7 +705,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoEstado').value =
                 pedido?.estado ||
                 'pendiente';
-
         }
 
 
@@ -806,7 +713,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoDireccion').value =
                 pedido?.direccion ||
                 '';
-
         }
 
 
@@ -815,7 +721,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('pedidoNotas').value =
                 pedido?.notas ||
                 '';
-
         }
 
 
@@ -837,18 +742,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
 
             agregarFilaProducto();
-
         }
 
 
         calcularTotales();
-
     }
 
-
-    /* =====================================================
-       CERRAR PANEL
-       ===================================================== */
 
     function cerrarPanelPedido() {
 
@@ -861,7 +760,6 @@ document.addEventListener('DOMContentLoaded', () => {
             'is-open'
         );
 
-
         pedidoPanel.setAttribute(
             'aria-hidden',
             'true'
@@ -872,24 +770,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             overlay.hidden =
                 true;
-
         }
-
     }
 
 
-    /* =====================================================
-       VALIDAR PEDIDO
-       ===================================================== */
+    // ============================================================
+    // VALIDAR
+    // ============================================================
 
     function validarPedido() {
 
         const cliente =
-            $('pedidoCliente')?.value;
+            $('pedidoCliente')
+                ?.value;
 
 
         const fecha =
-            $('pedidoFecha')?.value;
+            $('pedidoFecha')
+                ?.value;
 
 
         const productos =
@@ -904,7 +802,6 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             return false;
-
         }
 
 
@@ -916,7 +813,6 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             return false;
-
         }
 
 
@@ -928,7 +824,6 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             return false;
-
         }
 
 
@@ -948,20 +843,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
                 return false;
-
             }
-
         }
 
 
         return true;
-
     }
 
 
-    /* =====================================================
-       GUARDAR PEDIDO
-       ===================================================== */
+    // ============================================================
+    // GUARDAR PEDIDO
+    // ============================================================
 
     function guardarPedido(event) {
 
@@ -983,8 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         const numero =
-            $('pedidoNumero').value ||
-            generarNumeroPedido();
+            $('pedidoNumero').value;
 
 
         const clienteId =
@@ -1008,7 +899,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 (total, producto) =>
                     total +
                     Number(
-                        producto.subtotal || 0
+                        producto.subtotal ||
+                        0
                     ),
                 0
             );
@@ -1030,14 +922,6 @@ document.addEventListener('DOMContentLoaded', () => {
             Math.max(
                 0,
                 subtotal - descuento
-            );
-
-
-        const indice =
-            pedidos.findIndex(
-                p =>
-                    String(p.id) ===
-                    String(id)
             );
 
 
@@ -1084,8 +968,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             fechaActualizacion:
                 new Date().toISOString()
-
         };
+
+
+        const indice =
+            pedidos.findIndex(
+                p =>
+                    String(p.id) ===
+                    String(id)
+            );
 
 
         if (indice >= 0) {
@@ -1097,7 +988,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
             pedidos[indice] = {
+
                 ...pedidos[indice],
+
                 ...pedido
             };
 
@@ -1120,7 +1013,6 @@ document.addEventListener('DOMContentLoaded', () => {
             toast(
                 'Pedido registrado correctamente.'
             );
-
         }
 
 
@@ -1131,15 +1023,13 @@ document.addEventListener('DOMContentLoaded', () => {
             mostrarPedidos();
 
             actualizarEstadisticasPedidos();
-
         }
-
     }
 
 
-    /* =====================================================
-       FILTRAR
-       ===================================================== */
+    // ============================================================
+    // MOSTRAR PEDIDOS
+    // ============================================================
 
     function obtenerPedidosFiltrados() {
 
@@ -1156,20 +1046,10 @@ document.addEventListener('DOMContentLoaded', () => {
             pedido => {
 
                 const coincideEstado =
-                    filtroPedido === 'todos' ||
-                    pedido.estado === filtroPedido;
-
-
-                const nombresProductos =
-                    (
-                        pedido.productos ||
-                        []
-                    )
-                        .map(
-                            p =>
-                                p.nombre
-                        )
-                        .join(' ');
+                    filtroPedido ===
+                    'todos' ||
+                    pedido.estado ===
+                    filtroPedido;
 
 
                 const texto =
@@ -1187,7 +1067,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         pedido.notas,
 
-                        nombresProductos
+                        ...(pedido.productos || [])
+                            .map(
+                                p => p.nombre
+                            )
 
                     ]
                         .join(' ')
@@ -1201,26 +1084,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     );
 
 
-                return (
-                    coincideEstado &&
-                    coincideBusqueda
-                );
-
+                return coincideEstado &&
+                    coincideBusqueda;
             }
         );
-
     }
 
-
-    /* =====================================================
-       MOSTRAR PEDIDOS
-       ===================================================== */
 
     function mostrarPedidos() {
 
         const tbody =
             $('pedidosBody');
-
 
         const empty =
             $('emptyPedidos');
@@ -1235,7 +1109,8 @@ document.addEventListener('DOMContentLoaded', () => {
             obtenerPedidosFiltrados();
 
 
-        tbody.innerHTML = '';
+        tbody.innerHTML =
+            '';
 
 
         lista.forEach(
@@ -1255,8 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const nombres =
                     productos
                         .map(
-                            p =>
-                                p.nombre
+                            p => p.nombre
                         )
                         .filter(Boolean)
                         .join(', ');
@@ -1278,9 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 }[
                     pedido.estado
-                ] ||
-                pedido.estado ||
-                'Pendiente';
+                ] || pedido.estado;
 
 
                 tr.innerHTML = `
@@ -1289,15 +1161,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         <strong>
                             ${escaparHTML(
-                                pedido.numero ||
-                                ''
+                                pedido.numero
                             )}
                         </strong>
 
                         <small>
                             ${escaparHTML(
-                                pedido.origen ||
-                                ''
+                                pedido.origen || ''
                             )}
                         </small>
 
@@ -1321,20 +1191,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
                             </div>
 
+
                             <div>
 
                                 <strong>
+
                                     ${escaparHTML(
                                         pedido.clienteNombre ||
                                         'Sin cliente'
                                     )}
+
                                 </strong>
 
+
                                 <small>
+
                                     ${escaparHTML(
                                         pedido.clienteTelefono ||
                                         'Sin teléfono'
                                     )}
+
                                 </small>
 
                             </div>
@@ -1349,19 +1225,25 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="productos-resumen">
 
                             <strong>
+
                                 ${productos.length}
+
                                 producto${
                                     productos.length === 1
                                         ? ''
                                         : 's'
                                 }
+
                             </strong>
 
+
                             <small>
+
                                 ${escaparHTML(
                                     nombres ||
                                     'Sin productos'
                                 )}
+
                             </small>
 
                         </div>
@@ -1372,34 +1254,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>
 
                         <strong>
+
                             ${dinero(
                                 pedido.total
                             )}
+
                         </strong>
 
                     </td>
 
 
                     <td>
+
                         ${formatearFechaHora(
                             pedido.fecha
                         )}
+
                     </td>
 
 
                     <td>
 
-                        <span
-                            class="status-badge ${
-                                escaparHTML(
-                                    pedido.estado ||
-                                    'pendiente'
-                                )
-                            }"
-                        >
-                            ${escaparHTML(
-                                estadoTexto
-                            )}
+                        <span class="status-badge ${
+                            escaparHTML(
+                                pedido.estado
+                            )
+                        }">
+
+                            ${estadoTexto}
+
                         </span>
 
                     </td>
@@ -1414,10 +1297,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 data-id="${escaparHTML(
                                     pedido.id
                                 )}"
-                                title="Ver pedido"
-                                type="button"
-                            >
+                                title="Ver pedido">
+
                                 👁
+
                             </button>
 
 
@@ -1426,10 +1309,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 data-id="${escaparHTML(
                                     pedido.id
                                 )}"
-                                title="Editar"
-                                type="button"
-                            >
+                                title="Editar">
+
                                 ✎
+
                             </button>
 
 
@@ -1438,10 +1321,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 data-id="${escaparHTML(
                                     pedido.id
                                 )}"
-                                title="Eliminar"
-                                type="button"
-                            >
+                                title="Eliminar">
+
                                 🗑
+
                             </button>
 
                         </div>
@@ -1454,7 +1337,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tbody.appendChild(
                     tr
                 );
-
             }
         );
 
@@ -1463,7 +1345,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             empty.hidden =
                 lista.length > 0;
-
         }
 
 
@@ -1471,8 +1352,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             $('resultadoPedidos')
                 .textContent =
-                `Mostrando ${lista.length} de ${pedidos.length} pedidos`;
-
+                `Mostrando ${
+                    lista.length
+                } de ${
+                    pedidos.length
+                } pedidos`;
         }
 
 
@@ -1485,18 +1369,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         ? ''
                         : 's'
                 }`;
-
         }
 
 
         actualizarContadoresPedidos();
-
     }
 
 
-    /* =====================================================
-       CONTADORES
-       ===================================================== */
+    // ============================================================
+    // CONTADORES
+    // ============================================================
 
     function actualizarContadoresPedidos() {
 
@@ -1529,7 +1411,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('countPedidosTodos')
                 .textContent =
                 pedidos.length;
-
         }
 
 
@@ -1538,7 +1419,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('countPedidosPendientes')
                 .textContent =
                 pendientes;
-
         }
 
 
@@ -1547,7 +1427,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('countPedidosPreparando')
                 .textContent =
                 preparando;
-
         }
 
 
@@ -1556,15 +1435,13 @@ document.addEventListener('DOMContentLoaded', () => {
             $('countPedidosEntregados')
                 .textContent =
                 entregados;
-
         }
-
     }
 
 
-    /* =====================================================
-       ESTADÍSTICAS
-       ===================================================== */
+    // ============================================================
+    // ESTADISTICAS
+    // ============================================================
 
     function actualizarEstadisticasPedidos() {
 
@@ -1604,7 +1481,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('statPedidos')
                 .textContent =
                 total;
-
         }
 
 
@@ -1613,7 +1489,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('statPedidosPendientes')
                 .textContent =
                 pendientes;
-
         }
 
 
@@ -1622,7 +1497,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('statPedidosEntregados')
                 .textContent =
                 entregados;
-
         }
 
 
@@ -1631,18 +1505,16 @@ document.addEventListener('DOMContentLoaded', () => {
             $('statVentas')
                 .textContent =
                 dinero(ventas);
-
         }
 
 
         actualizarContadoresPedidos();
-
     }
 
 
-    /* =====================================================
-       ACCIONES DE TABLA
-       ===================================================== */
+    // ============================================================
+    // TABLA
+    // ============================================================
 
     on(
         'pedidosBody',
@@ -1664,7 +1536,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 pedidos.find(
                     p =>
                         String(p.id) ===
-                        String(btn.dataset.id)
+                        String(
+                            btn.dataset.id
+                        )
                 );
 
 
@@ -1682,7 +1556,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 mostrarDetallePedido(
                     pedido
                 );
-
             }
 
 
@@ -1695,7 +1568,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 abrirPanelPedido(
                     pedido
                 );
-
             }
 
 
@@ -1708,44 +1580,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 eliminarPedido(
                     pedido
                 );
-
             }
 
         }
     );
 
 
-    /* =====================================================
-       BUSCADOR
-       ===================================================== */
+    // ============================================================
+    // BUSCADOR
+    // ============================================================
 
     on(
         'searchPedidos',
         'input',
-        () => {
-
-            const valor =
-                $('searchPedidos')
-                    ?.value || '';
-
-
-            const boton =
-                $('btnLimpiarPedidos');
-
-
-            if (boton) {
-
-                boton.classList.toggle(
-                    'visible',
-                    valor.length > 0
-                );
-
-            }
-
-
-            mostrarPedidos();
-
-        }
+        mostrarPedidos
     );
 
 
@@ -1758,7 +1606,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 $('searchPedidos').value =
                     '';
-
             }
 
 
@@ -1771,8 +1618,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     '.filter-button[data-estado]'
                 )
                 .forEach(
-                    boton =>
-                        boton.classList.remove(
+                    b =>
+                        b.classList.remove(
                             'active'
                         )
                 );
@@ -1787,42 +1634,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
 
-            const limpiar =
-                $('btnLimpiarPedidos');
-
-
-            if (limpiar) {
-
-                limpiar.classList.remove(
-                    'visible'
-                );
-
-            }
-
-
             mostrarPedidos();
-
         }
     );
 
 
-    /* =====================================================
-       FILTROS
-       ===================================================== */
+    // ============================================================
+    // FILTROS
+    // ============================================================
 
     document
         .querySelectorAll(
             '.filter-button[data-estado]'
         )
         .forEach(
-            boton => {
+            btn => {
 
-                boton.addEventListener(
+                btn.addEventListener(
                     'click',
                     () => {
 
                         filtroPedido =
-                            boton.dataset.estado ||
+                            btn.dataset.estado ||
                             'todos';
 
 
@@ -1838,23 +1671,21 @@ document.addEventListener('DOMContentLoaded', () => {
                             );
 
 
-                        boton.classList.add(
+                        btn.classList.add(
                             'active'
                         );
 
 
                         mostrarPedidos();
-
                     }
                 );
-
             }
         );
 
 
-    /* =====================================================
-       DETALLE
-       ===================================================== */
+    // ============================================================
+    // DETALLE PEDIDO
+    // ============================================================
 
     function mostrarDetallePedido(
         pedido
@@ -1879,35 +1710,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 .textContent =
                 pedido.numero ||
                 'Pedido';
-
         }
-
-
-        const estados = {
-
-            pendiente:
-                'Pendiente',
-
-            preparando:
-                'Preparando',
-
-            entregado:
-                'Entregado',
-
-            cancelado:
-                'Cancelado'
-
-        };
 
 
         if ($('detallePedidoEstado')) {
 
+            const estadoTexto = {
+
+                pendiente:
+                    'Pendiente',
+
+                preparando:
+                    'Preparando',
+
+                entregado:
+                    'Entregado',
+
+                cancelado:
+                    'Cancelado'
+
+            }[
+                pedido.estado
+            ] || pedido.estado;
+
+
             $('detallePedidoEstado')
                 .textContent =
-                estados[pedido.estado] ||
-                pedido.estado ||
-                'Pendiente';
-
+                estadoTexto;
         }
 
 
@@ -1917,7 +1746,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .textContent =
                 pedido.clienteNombre ||
                 '-';
-
         }
 
 
@@ -1927,7 +1755,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .textContent =
                 pedido.clienteTelefono ||
                 '-';
-
         }
 
 
@@ -1938,7 +1765,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 formatearFechaHora(
                     pedido.fecha
                 );
-
         }
 
 
@@ -1948,7 +1774,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .textContent =
                 pedido.origen ||
                 '-';
-
         }
 
 
@@ -1958,7 +1783,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .textContent =
                 pedido.direccion ||
                 '-';
-
         }
 
 
@@ -1969,17 +1793,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 dinero(
                     pedido.total
                 );
-
         }
 
 
-        const contenedor =
-            $('detallePedidoProductos');
+        if ($('detallePedidoProductos')) {
+
+            const contenedor =
+                $('detallePedidoProductos');
 
 
-        if (contenedor) {
-
-            contenedor.innerHTML = '';
+            contenedor.innerHTML =
+                '';
 
 
             (
@@ -2001,21 +1825,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     div.innerHTML = `
 
                         <span>
+
                             ${escaparHTML(
                                 producto.nombre
                             )}
+
                         </span>
 
+
                         <strong>
+
                             ${producto.cantidad}
+
                             ×
+
                             ${dinero(
                                 producto.precio
                             )}
+
                             =
+
                             ${dinero(
                                 producto.subtotal
                             )}
+
                         </strong>
 
                     `;
@@ -2024,10 +1857,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     contenedor.appendChild(
                         div
                     );
-
                 }
             );
-
         }
 
 
@@ -2037,7 +1868,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .textContent =
                 pedido.notas ||
                 'Sin notas registradas.';
-
         }
 
 
@@ -2046,11 +1876,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'function'
         ) {
 
-            if (!dialog.open) {
-
-                dialog.showModal();
-
-            }
+            dialog.showModal();
 
         } else {
 
@@ -2058,21 +1884,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 'open',
                 ''
             );
-
         }
-
     }
 
 
     on(
         'btnCerrarPedidoDetalle',
         'click',
-        () => {
-
+        () =>
             $('dialogPedidoDetalle')
-                ?.close();
-
-        }
+                ?.close()
     );
 
 
@@ -2081,7 +1902,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'click',
         () => {
 
-            if (!pedidoDetalleActual) {
+            if (
+                !pedidoDetalleActual
+            ) {
                 return;
             }
 
@@ -2093,26 +1916,23 @@ document.addEventListener('DOMContentLoaded', () => {
             abrirPanelPedido(
                 pedidoDetalleActual
             );
-
         }
     );
 
 
-    /* =====================================================
-       ELIMINAR
-       ===================================================== */
+    // ============================================================
+    // ELIMINAR PEDIDO
+    // ============================================================
 
     function eliminarPedido(
         pedido
     ) {
 
-        const confirmar =
-            confirm(
+        if (
+            !confirm(
                 `¿Deseas eliminar el pedido ${pedido.numero}?`
-            );
-
-
-        if (!confirmar) {
+            )
+        ) {
             return;
         }
 
@@ -2125,18 +1945,18 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
 
-        if (guardarPedidos()) {
+        guardarPedidos();
 
-            mostrarPedidos();
 
-            actualizarEstadisticasPedidos();
+        mostrarPedidos();
 
-            toast(
-                'Pedido eliminado correctamente.'
-            );
 
-        }
+        actualizarEstadisticasPedidos();
 
+
+        toast(
+            'Pedido eliminado correctamente.'
+        );
     }
 
 
@@ -2145,7 +1965,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'click',
         () => {
 
-            if (!pedidoDetalleActual) {
+            if (
+                !pedidoDetalleActual
+            ) {
                 return;
             }
 
@@ -2157,14 +1979,13 @@ document.addEventListener('DOMContentLoaded', () => {
             eliminarPedido(
                 pedidoDetalleActual
             );
-
         }
     );
 
 
-    /* =====================================================
-       WHATSAPP
-       ===================================================== */
+    // ============================================================
+    // WHATSAPP
+    // ============================================================
 
     on(
         'btnWhatsAppPedido',
@@ -2172,8 +1993,8 @@ document.addEventListener('DOMContentLoaded', () => {
         () => {
 
             if (
-                !pedidoDetalleActual ||
-                !pedidoDetalleActual.clienteTelefono
+                !pedidoDetalleActual
+                    ?.clienteTelefono
             ) {
 
                 toast(
@@ -2182,50 +2003,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
                 return;
-
             }
 
 
-            const pedido =
+            const p =
                 pedidoDetalleActual;
 
 
-            let telefono =
-                String(
-                    pedido.clienteTelefono
-                )
+            const telefono =
+                p.clienteTelefono
                     .replace(
                         /\D/g,
                         ''
                     );
 
 
-            if (
-                telefono.length === 8
-            ) {
-
-                telefono =
-                    '502' +
-                    telefono;
-
-            }
-
-
             let mensaje =
                 `Hola ${
-                    pedido.clienteNombre ||
-                    ''
+                    p.clienteNombre || ''
                 },\n\n`;
 
 
             mensaje +=
                 `Detalle del pedido ${
-                    pedido.numero
+                    p.numero
                 }:\n\n`;
 
 
             (
-                pedido.productos ||
+                p.productos ||
                 []
             ).forEach(
                 producto => {
@@ -2244,7 +2050,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 producto.subtotal
                             )
                         }\n`;
-
                 }
             );
 
@@ -2252,58 +2057,40 @@ document.addEventListener('DOMContentLoaded', () => {
             mensaje +=
                 `\nTotal: ${
                     dinero(
-                        pedido.total
+                        p.total
                     )
                 }`;
 
 
             window.open(
-                `https://wa.me/${telefono}?text=${encodeURIComponent(
+                `https://wa.me/502${telefono}?text=${encodeURIComponent(
                     mensaje
                 )}`,
-                '_blank',
-                'noopener,noreferrer'
+                '_blank'
             );
-
         }
     );
 
 
-    /* =====================================================
-       BOTONES NUEVO
-       ===================================================== */
-
-    on(
-        'btnNuevo',
-        'click',
-        () => abrirPanelPedido()
-    );
-
+    // ============================================================
+    // BOTONES PRINCIPALES
+    // ============================================================
 
     on(
         'btnNuevoPedido',
         'click',
-        () => abrirPanelPedido()
+        () =>
+            abrirPanelPedido()
     );
 
 
     on(
         'btnNuevoPedidoVacio',
         'click',
-        () => abrirPanelPedido()
+        () =>
+            abrirPanelPedido()
     );
 
-
-    on(
-        'btnFloating',
-        'click',
-        () => abrirPanelPedido()
-    );
-
-
-    /* =====================================================
-       PRODUCTOS
-       ===================================================== */
 
     on(
         'btnAgregarProducto',
@@ -2312,10 +2099,6 @@ document.addEventListener('DOMContentLoaded', () => {
             agregarFilaProducto()
     );
 
-
-    /* =====================================================
-       PANEL
-       ===================================================== */
 
     on(
         'btnCerrarPedidoPanel',
@@ -2338,10 +2121,6 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
-    /* =====================================================
-       FORMULARIO
-       ===================================================== */
-
     on(
         'pedidoForm',
         'submit',
@@ -2356,25 +2135,24 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
-    /* =====================================================
-       NAVEGACIÓN
-       =====================================================
+    // ============================================================
+    // NAVEGACIÓN
+    // ============================================================
 
+    /*
        IMPORTANTE:
+
        NO ponemos aquí:
 
        window.location.href = 'cliente.html';
 
-       porque el enlace <a href="cliente.html">
-       del HTML ya se encarga de navegar.
+       La navegación ahora la hace directamente
+       el <a href="./cliente.html"> del HTML.
 
-       Esto evita conflictos al regresar a Clientes.
+       Esto evita el error que aparecía al volver
+       desde Pedidos hacia Clientes.
     */
 
-
-    /* =====================================================
-       ESTADÍSTICAS
-       ===================================================== */
 
     on(
         'btnNavEstadisticas',
@@ -2385,14 +2163,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 ?.scrollIntoView({
                     behavior: 'smooth'
                 });
-
         }
     );
 
 
-    /* =====================================================
-       TEMA
-       ===================================================== */
+    // ============================================================
+    // TEMA
+    // ============================================================
 
     function actualizarTema() {
 
@@ -2404,12 +2181,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if ($('themeIcon')) {
 
-            $('themeIcon')
-                .textContent =
+            $('themeIcon').textContent =
                 oscuro
                     ? '☀'
                     : '☾';
-
         }
 
 
@@ -2420,40 +2195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 oscuro
                     ? '☀'
                     : '☾';
-
         }
-
-    }
-
-
-    function cargarTema() {
-
-        try {
-
-            if (
-                localStorage.getItem(
-                    'temaChiquis'
-                ) === 'dark'
-            ) {
-
-                document.body.classList.add(
-                    'dark'
-                );
-
-            }
-
-        } catch (error) {
-
-            console.warn(
-                'No se pudo cargar el tema.',
-                error
-            );
-
-        }
-
-
-        actualizarTema();
-
     }
 
 
@@ -2464,31 +2206,33 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
 
-        try {
-
-            localStorage.setItem(
-                'temaChiquis',
-
-                document.body.classList.contains(
-                    'dark'
-                )
-                    ? 'dark'
-                    : 'light'
-            );
-
-        } catch (error) {
-
-            console.warn(
-                'No se pudo guardar el tema.',
-                error
-            );
-
-        }
+        localStorage.setItem(
+            'temaChiquis',
+            document.body.classList.contains(
+                'dark'
+            )
+                ? 'dark'
+                : 'light'
+        );
 
 
         actualizarTema();
-
     }
+
+
+    if (
+        localStorage.getItem(
+            'temaChiquis'
+        ) === 'dark'
+    ) {
+
+        document.body.classList.add(
+            'dark'
+        );
+    }
+
+
+    actualizarTema();
 
 
     on(
@@ -2505,27 +2249,32 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
 
-    /* =====================================================
-       MENÚ MÓVIL
-       ===================================================== */
-
     on(
         'btnMenu',
         'click',
-        () => {
-
+        () =>
             $('sidebar')
                 ?.classList.toggle(
                     'open'
-                );
-
-        }
+                )
     );
 
 
-    /* =====================================================
-       EXPORTAR
-       ===================================================== */
+    // ============================================================
+    // OVERLAY
+    // ============================================================
+
+    on(
+        'overlay',
+        'click',
+        () =>
+            cerrarPanelPedido()
+    );
+
+
+    // ============================================================
+    // DESCARGAR
+    // ============================================================
 
     function descargar(
         nombre,
@@ -2554,9 +2303,12 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
 
-        a.href = url;
+        a.href =
+            url;
 
-        a.download = nombre;
+
+        a.download =
+            nombre;
 
 
         document.body.appendChild(
@@ -2571,230 +2323,72 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         setTimeout(
-            () => {
-
+            () =>
                 URL.revokeObjectURL(
                     url
-                );
-
-            },
+                ),
             1000
         );
-
     }
 
 
-    function exportarPedidos() {
-
-        if (!pedidos.length) {
-
-            toast(
-                'No hay pedidos para exportar.',
-                'error'
-            );
-
-            return;
-
-        }
-
-
-        descargar(
-
-            'pedidos-variedades-chiquis.json',
-
-            JSON.stringify(
-                pedidos,
-                null,
-                2
-            ),
-
-            'application/json'
-
-        );
-
-
-        toast(
-            'Pedidos exportados correctamente.'
-        );
-
-    }
-
+    // ============================================================
+    // EXPORTAR
+    // ============================================================
 
     on(
         'btnExportarPedidos',
         'click',
-        exportarPedidos
-    );
+        () => {
 
-
-    on(
-        'btnExportarNav',
-        'click',
-        exportarPedidos
-    );
-
-
-    /* =====================================================
-       IMPORTAR
-       ===================================================== */
-
-    function importarPedidos(event) {
-
-        const archivo =
-            event.target.files?.[0];
-
-
-        if (!archivo) {
-            return;
-        }
-
-
-        const lector =
-            new FileReader();
-
-
-        lector.onload =
-            () => {
-
-                try {
-
-                    const datos =
-                        JSON.parse(
-                            lector.result
-                        );
-
-
-                    if (
-                        !Array.isArray(datos)
-                    ) {
-
-                        throw new Error(
-                            'Formato inválido'
-                        );
-
-                    }
-
-
-                    pedidos =
-                        datos.map(
-                            pedido => ({
-
-                                ...pedido,
-
-                                id:
-                                    pedido.id ||
-                                    generarId('PED-'),
-
-                                numero:
-                                    pedido.numero ||
-                                    generarNumeroPedido(),
-
-                                fechaCreacion:
-                                    pedido.fechaCreacion ||
-                                    new Date().toISOString()
-
-                            })
-                        );
-
-
-                    if (
-                        guardarPedidos()
-                    ) {
-
-                        mostrarPedidos();
-
-                        actualizarEstadisticasPedidos();
-
-                        toast(
-                            'Pedidos importados correctamente.'
-                        );
-
-                    }
-
-                } catch (error) {
-
-                    console.error(
-                        error
-                    );
-
-
-                    toast(
-                        'El archivo seleccionado no es válido.',
-                        'error'
-                    );
-
-                }
-
-
-                event.target.value =
-                    '';
-
-            };
-
-
-        lector.onerror =
-            () => {
+            if (!pedidos.length) {
 
                 toast(
-                    'No se pudo leer el archivo.',
+                    'No hay pedidos para exportar.',
                     'error'
                 );
 
-
-                event.target.value =
-                    '';
-
-            };
+                return;
+            }
 
 
-        lector.readAsText(
-            archivo
-        );
+            descargar(
 
-    }
+                'pedidos-variedades-chiquis.json',
+
+                JSON.stringify(
+                    pedidos,
+                    null,
+                    2
+                ),
+
+                'application/json'
+            );
 
 
-    on(
-        'btnImportarNav',
-        'click',
-        () => {
-
-            $('archivoImportar')
-                ?.click();
-
+            toast(
+                'Pedidos exportados correctamente.'
+            );
         }
     );
 
 
-    on(
-        'archivoImportar',
-        'change',
-        importarPedidos
-    );
-
-
-    /* =====================================================
-       ESCAPE
-       ===================================================== */
+    // ============================================================
+    // TECLADO
+    // ============================================================
 
     document.addEventListener(
         'keydown',
         event => {
 
             if (
-                event.key === 'Escape'
+                event.key === 'Escape' &&
+                pedidoPanel?.classList.contains(
+                    'is-open'
+                )
             ) {
 
-                if (
-                    pedidoPanel?.classList.contains(
-                        'is-open'
-                    )
-                ) {
-
-                    cerrarPanelPedido();
-
-                }
-
+                cerrarPanelPedido();
             }
 
 
@@ -2807,7 +2401,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 event.preventDefault();
 
                 abrirPanelPedido();
-
             }
 
 
@@ -2821,18 +2414,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 $('searchPedidos')
                     ?.focus();
-
             }
-
         }
     );
 
 
-    /* =====================================================
-       INICIO
-       ===================================================== */
-
-    cargarTema();
+    // ============================================================
+    // INICIO
+    // ============================================================
 
     cargarClientesEnSelect();
 
