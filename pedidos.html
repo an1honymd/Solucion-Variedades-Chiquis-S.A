@@ -2,120 +2,108 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="description"
-        content="Sistema de gestión de pedidos de Variedades Chiquis">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <title>Variedades Chiquis | Gestión de Pedidos</title>
+    <title>Variedades Chiquis - Pedidos</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="./pedidos.css">
 
-    <link rel="stylesheet" href="pedidos.css">
 </head>
 
 <body>
 
 <div class="app">
 
-    <!-- =========================================================
-         SIDEBAR
-    ========================================================== -->
+    <!-- =====================================================
+         BARRA LATERAL
+    ====================================================== -->
 
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar">
 
-        <div class="sidebar-brand">
+        <div class="brand">
 
-            <div class="brand-logo">
-                VC
+            <div class="brand-icon">
+                🛍️
             </div>
 
-            <div>
-                <strong>Variedades</strong>
-                <span>Chiquis</span>
+            <div class="brand-text">
+
+                <h1>
+                    Variedades Chiquis
+                </h1>
+
+                <span>
+                    Sistema de gestión
+                </span>
+
             </div>
 
         </div>
 
-        <nav class="sidebar-nav">
 
-            <p class="nav-title">
-                MENÚ PRINCIPAL
-            </p>
+        <!-- =================================================
+             MENÚ
+        ================================================== -->
 
-            <a
-                class="nav-item"
-                href="./cliente.html"
-                id="btnNavClientes"
-            >
-                <span class="nav-icon">👥</span>
-                <span>Clientes</span>
+        <nav class="menu">
+
+            <!--
+                IMPORTANTE:
+                No usamos href="cliente.html".
+                Usamos historial para regresar a Clientes.
+            -->
+
+            <a href="#"
+               class="menu-item"
+               id="btnNavClientes">
+
+                <span class="menu-icon">
+                    👥
+                </span>
+
+                <span>
+                    Clientes
+                </span>
+
             </a>
 
-            <a
-                class="nav-item active"
-                href="./pedidos.html"
-                id="btnNavPedidos"
-            >
-                <span class="nav-icon">🛒</span>
-                <span>Pedidos</span>
+
+            <a href="pedidos.html"
+               class="menu-item active"
+               id="btnNavPedidos">
+
+                <span class="menu-icon">
+                    📦
+                </span>
+
+                <span>
+                    Pedidos
+                </span>
+
             </a>
-
-            <a
-                class="nav-item"
-                href="./tienda.html"
-                id="btnNavTienda"
-            >
-                <span class="nav-icon">🏪</span>
-                <span>Tienda</span>
-            </a>
-
-            <button
-                class="nav-item"
-                id="btnNavEstadisticas"
-                type="button"
-            >
-                <span class="nav-icon">▥</span>
-                <span>Estadísticas</span>
-            </button>
-
-            <p class="nav-title">
-                HERRAMIENTAS
-            </p>
-
-            <button
-                class="nav-item"
-                id="btnExportarNav"
-                type="button"
-            >
-                <span class="nav-icon">↓</span>
-                <span>Exportar pedidos</span>
-            </button>
 
         </nav>
 
+
         <div class="sidebar-bottom">
 
-            <div class="storage-status">
+            <button class="theme-btn"
+                    id="btnTema"
+                    type="button">
 
-                <span class="status-dot"></span>
+                <span id="themeIcon">
+                    🌙
+                </span>
 
-                <div>
-                    <strong>Datos locales</strong>
-                    <small>Guardado automático</small>
-                </div>
+                <span id="themeText">
+                    Cambiar tema
+                </span>
 
-            </div>
-
-            <button
-                class="theme-button"
-                id="btnTema"
-                type="button"
-            >
-                <span id="themeIcon">☾</span>
-                <span id="themeText">Modo oscuro</span>
             </button>
 
         </div>
@@ -123,67 +111,55 @@
     </aside>
 
 
-    <!-- =========================================================
+    <!-- =====================================================
          CONTENIDO PRINCIPAL
-    ========================================================== -->
+    ====================================================== -->
 
     <main class="main-content">
 
-        <!-- HEADER -->
 
-        <header class="top-header">
+        <!-- ENCABEZADO -->
 
-            <div class="mobile-brand">
+        <header class="topbar">
 
-                <button
-                    class="menu-button"
-                    id="btnMenu"
-                    type="button"
-                    aria-label="Abrir menú"
-                >
-                    ☰
-                </button>
+            <div class="page-title">
 
-                <div class="mobile-logo">
-                    VC
-                </div>
-
-            </div>
-
-            <div class="welcome">
-
-                <span class="eyebrow">
-                    PANEL DE ADMINISTRACIÓN
-                </span>
-
-                <h1>
-                    Gestión de pedidos
-                </h1>
+                <h2>
+                    Gestión de Pedidos
+                </h2>
 
                 <p>
-                    Organiza y administra todos los pedidos de Variedades Chiquis.
+                    Administra los pedidos de Variedades Chiquis
                 </p>
 
             </div>
 
-            <div class="header-actions">
 
-                <button
-                    class="icon-button"
-                    id="btnTemaDesktop"
-                    type="button"
-                    title="Cambiar tema"
-                >
-                    ☾
+            <div class="topbar-actions">
+
+                <button class="btn btn-secondary"
+                        id="btnExportarPedidos"
+                        type="button">
+
+                    <span>
+                        📤
+                    </span>
+
+                    Exportar
+
                 </button>
 
-                <button
-                    class="btn btn-primary"
-                    id="btnNuevo"
-                    type="button"
-                >
-                    <span class="plus-icon">+</span>
+
+                <button class="btn btn-primary"
+                        id="btnNuevoPedido"
+                        type="button">
+
+                    <span>
+                        ＋
+                    </span>
+
                     Nuevo pedido
+
                 </button>
 
             </div>
@@ -195,224 +171,148 @@
              ESTADÍSTICAS
         ====================================================== -->
 
-        <section class="stats-grid" id="pedidosStats">
+        <section class="stats-grid"
+                 id="pedidosStats">
 
-            <article class="stat-card">
 
-                <div class="stat-card-icon">
-                    🛒
+            <div class="stat-card">
+
+                <div class="stat-icon blue">
+                    📦
                 </div>
 
-                <div class="stat-card-content">
+                <div>
 
-                    <span>Total de pedidos</span>
+                    <span>
+                        Total pedidos
+                    </span>
 
                     <strong id="statPedidos">
                         0
                     </strong>
 
-                    <small>
-                        Pedidos registrados
-                    </small>
-
                 </div>
 
-            </article>
+            </div>
 
 
-            <article class="stat-card">
+            <div class="stat-card">
 
-                <div class="stat-card-icon orange">
+                <div class="stat-icon orange">
                     ⏳
                 </div>
 
-                <div class="stat-card-content">
+                <div>
 
-                    <span>Pendientes</span>
+                    <span>
+                        Pendientes
+                    </span>
 
                     <strong id="statPedidosPendientes">
                         0
                     </strong>
 
-                    <small>
-                        Por preparar
-                    </small>
-
                 </div>
 
-            </article>
+            </div>
 
 
-            <article class="stat-card">
+            <div class="stat-card">
 
-                <div class="stat-card-icon green">
+                <div class="stat-icon green">
                     ✓
                 </div>
 
-                <div class="stat-card-content">
+                <div>
 
-                    <span>Entregados</span>
+                    <span>
+                        Entregados
+                    </span>
 
                     <strong id="statPedidosEntregados">
                         0
                     </strong>
 
-                    <small>
-                        Pedidos completados
-                    </small>
-
                 </div>
 
-            </article>
+            </div>
 
 
-            <article class="stat-card">
+            <div class="stat-card">
 
-                <div class="stat-card-icon blue">
+                <div class="stat-icon purple">
                     Q
                 </div>
 
-                <div class="stat-card-content">
+                <div>
 
-                    <span>Ventas registradas</span>
+                    <span>
+                        Ventas
+                    </span>
 
                     <strong id="statVentas">
                         Q0.00
                     </strong>
 
-                    <small>
-                        Total vendido
-                    </small>
-
                 </div>
 
-            </article>
+            </div>
 
         </section>
 
 
         <!-- =====================================================
-             CONTENEDOR PRINCIPAL
+             TABLA
         ====================================================== -->
 
-        <section class="content-card">
+        <section class="content-card pedidos-view">
 
-            <!-- ENCABEZADO -->
-
-            <div class="content-header">
-
-                <div>
-
-                    <span class="section-eyebrow">
-                        PEDIDOS
-                    </span>
-
-                    <h2>
-                        Directorio de pedidos
-                    </h2>
-
-                    <p id="resultadoPedidos">
-                        Mostrando todos los pedidos
-                    </p>
-
-                </div>
-
-                <div class="content-actions">
-
-                    <button
-                        class="secondary-button"
-                        id="btnExportarPedidos"
-                        type="button"
-                    >
-                        ↓ Exportar
-                    </button>
-
-                    <button
-                        class="btn btn-primary"
-                        id="btnNuevoPedido"
-                        type="button"
-                    >
-                        + Nuevo pedido
-                    </button>
-
-                </div>
-
-            </div>
-
-
-            <!-- BUSCADOR -->
 
             <div class="toolbar">
+
 
                 <div class="search-box">
 
                     <span class="search-icon">
-                        ⌕
+                        🔎
                     </span>
 
-                    <input
-                        type="search"
-                        id="searchPedidos"
-                        autocomplete="off"
-                        placeholder="Buscar por cliente, teléfono, producto o número..."
-                    >
-
-                    <button
-                        class="clear-search"
-                        id="btnLimpiarPedidos"
-                        type="button"
-                    >
-                        ×
-                    </button>
+                    <input type="text"
+                           id="searchPedidos"
+                           placeholder="Buscar por pedido, cliente o teléfono...">
 
                 </div>
 
 
-                <div class="filter-container">
+                <div class="filters">
 
-                    <button
-                        class="filter-button active"
-                        data-estado="todos"
-                        type="button"
-                    >
-                        Todos
-                        <span id="countPedidosTodos">0</span>
-                    </button>
+                    <select id="filtroEstado">
 
-                    <button
-                        class="filter-button"
-                        data-estado="pendiente"
-                        type="button"
-                    >
-                        ⏳ Pendientes
-                        <span id="countPedidosPendientes">0</span>
-                    </button>
+                        <option value="todos">
+                            Todos los estados
+                        </option>
 
-                    <button
-                        class="filter-button"
-                        data-estado="preparando"
-                        type="button"
-                    >
-                        📦 Preparando
-                        <span id="countPedidosPreparando">0</span>
-                    </button>
+                        <option value="pendiente">
+                            Pendiente
+                        </option>
 
-                    <button
-                        class="filter-button"
-                        data-estado="entregado"
-                        type="button"
-                    >
-                        ✓ Entregados
-                        <span id="countPedidosEntregados">0</span>
-                    </button>
+                        <option value="preparando">
+                            Preparando
+                        </option>
 
-                    <button
-                        class="filter-button"
-                        data-estado="cancelado"
-                        type="button"
-                    >
-                        ✕ Cancelados
-                        <span id="countPedidosCancelados">0</span>
+                        <option value="entregado">
+                            Entregado
+                        </option>
+
+                    </select>
+
+
+                    <button class="btn btn-secondary"
+                            id="btnLimpiarPedidos"
+                            type="button">
+
+                        Limpiar
+
                     </button>
 
                 </div>
@@ -420,120 +320,85 @@
             </div>
 
 
-            <!-- TABLA -->
+            <div class="table-container">
 
-            <div class="table-wrapper">
 
-                <table class="pedidos-table">
+                <table>
 
                     <thead>
 
                         <tr>
 
                             <th>
-                                PEDIDO
+                                Pedido
                             </th>
 
                             <th>
-                                CLIENTE
+                                Cliente
                             </th>
 
                             <th>
-                                PRODUCTOS
+                                Fecha
                             </th>
 
                             <th>
-                                TOTAL
+                                Estado
                             </th>
 
                             <th>
-                                FECHA
+                                Origen
                             </th>
 
                             <th>
-                                ESTADO
+                                Total
                             </th>
 
                             <th>
-                                ACCIONES
+                                Acciones
                             </th>
 
                         </tr>
 
                     </thead>
 
-                    <tbody id="pedidosBody"></tbody>
+
+                    <tbody id="pedidosBody">
+                    </tbody>
 
                 </table>
 
-            </div>
+
+                <!-- ESTADO VACÍO -->
+
+                <div class="empty-state"
+                     id="emptyPedidos">
+
+                    <div class="empty-icon">
+                        📦
+                    </div>
+
+                    <h3>
+                        No hay pedidos registrados
+                    </h3>
+
+                    <p>
+                        Comienza agregando tu primer pedido al sistema.
+                    </p>
 
 
-            <!-- ESTADO VACÍO -->
+                    <button class="btn btn-primary"
+                            id="btnNuevoPedidoVacio"
+                            type="button">
 
-            <div
-                class="empty-state"
-                id="emptyPedidos"
-                hidden
-            >
+                        <span>
+                            ＋
+                        </span>
 
-                <div class="empty-icon">
-                    🛒
+                        Agregar pedido
+
+                    </button>
+
                 </div>
-
-                <h2>
-                    No hay pedidos registrados
-                </h2>
-
-                <p>
-                    Registra un pedido manualmente o recibe uno desde la Tienda.
-                </p>
-
-                <button
-                    class="btn btn-primary"
-                    id="btnNuevoPedidoVacio"
-                    type="button"
-                >
-                    + Registrar pedido
-                </button>
-
-            </div>
-
-
-            <!-- PIE -->
-
-            <div class="table-footer">
-
-                <span id="footerPedidos">
-                    0 pedidos
-                </span>
-
-                <span>
-                    Pedidos almacenados localmente
-                </span>
-
-            </div>
-
-        </section>
-
-
-        <!-- CONSEJO -->
-
-        <section class="help-card">
-
-            <div class="help-icon">
-                💡
-            </div>
-
-            <div>
-
-                <strong>
-                    Sistema conectado
-                </strong>
-
-                <p>
-                    Los pedidos realizados desde la Tienda aparecen automáticamente en este módulo.
-                </p>
 
             </div>
 
@@ -544,182 +409,174 @@
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      OVERLAY
-========================================================== -->
+====================================================== -->
 
-<div
-    class="overlay"
-    id="overlay"
-    hidden
-></div>
+<div class="overlay"
+     id="overlay"
+     hidden>
+</div>
 
 
-<!-- =========================================================
-     PANEL NUEVO / EDITAR PEDIDO
-========================================================== -->
+<!-- =====================================================
+     PANEL DE PEDIDO
+====================================================== -->
 
-<aside
-    class="pedido-panel"
-    id="pedidoPanel"
-    aria-hidden="true"
->
+<aside class="side-panel"
+       id="pedidoPanel">
 
-    <form
-        id="pedidoForm"
-        novalidate
-    >
 
-        <div class="panel-header">
+    <div class="panel-header">
 
-            <div>
+        <div>
 
-                <span class="panel-eyebrow">
-                    PEDIDO
-                </span>
+            <h2>
+                Gestión de pedido
+            </h2>
 
-                <h2 id="pedidoPanelTitulo">
-                    Nuevo pedido
-                </h2>
-
-                <p>
-                    Completa la información del pedido.
-                </p>
-
-            </div>
-
-            <button
-                class="btn-close"
-                id="btnCerrarPedidoPanel"
-                type="button"
-            >
-                ×
-            </button>
+            <p>
+                Completa la información del pedido
+            </p>
 
         </div>
 
 
-        <input
-            type="hidden"
-            id="pedidoId"
-        >
+        <button class="close-btn"
+                id="btnCerrarPedido"
+                type="button">
+
+            ×
+
+        </button>
+
+    </div>
 
 
-        <!-- SECCIÓN 01 -->
-
-        <div class="form-section">
-
-            <div class="section-heading">
-
-                <span class="section-number">
-                    01
-                </span>
-
-                <div>
-
-                    <strong>
-                        Información del pedido
-                    </strong>
-
-                    <small>
-                        Número, fecha, cliente y estado
-                    </small>
-
-                </div>
-
-            </div>
+    <form id="pedidoForm">
 
 
-            <div class="field-row">
-
-                <div class="field">
-
-                    <label
-                        class="field-label"
-                        for="pedidoNumero"
-                    >
-                        No. de pedido
-                    </label>
-
-                    <input
-                        id="pedidoNumero"
-                        type="text"
-                        readonly
-                    >
-
-                </div>
+        <input type="hidden"
+               id="pedidoId">
 
 
-                <div class="field">
-
-                    <label
-                        class="field-label"
-                        for="pedidoFecha"
-                    >
-                        Fecha del pedido
-                        <span>*</span>
-                    </label>
-
-                    <input
-                        id="pedidoFecha"
-                        type="datetime-local"
-                    >
-
-                </div>
-
-            </div>
+        <div class="panel-body">
 
 
-            <div class="field-row">
+            <!-- INFORMACIÓN -->
 
-                <div class="field">
+            <div class="form-section">
 
-                    <label
-                        class="field-label"
-                        for="pedidoCliente"
-                    >
-                        Cliente
-                        <span>*</span>
-                    </label>
+                <h3>
+                    Información del pedido
+                </h3>
 
-                    <select id="pedidoCliente">
-                        <option value="">
-                            Seleccione un cliente
-                        </option>
-                    </select>
+
+                <div class="form-row">
+
+
+                    <div class="form-group">
+
+                        <label for="pedidoNumero">
+                            Número de pedido
+                        </label>
+
+                        <input type="text"
+                               id="pedidoNumero"
+                               readonly>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="pedidoFecha">
+                            Fecha *
+                        </label>
+
+                        <input type="datetime-local"
+                               id="pedidoFecha"
+                               required>
+
+                    </div>
 
                 </div>
 
 
-                <div class="field">
+                <div class="form-row">
 
-                    <label
-                        class="field-label"
-                        for="pedidoOrigen"
-                    >
-                        Origen del pedido
+
+                    <div class="form-group">
+
+                        <label for="pedidoCliente">
+                            Cliente *
+                        </label>
+
+                        <select id="pedidoCliente"
+                                required>
+
+                            <option value="">
+                                Selecciona un cliente
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="pedidoOrigen">
+                            Origen
+                        </label>
+
+                        <select id="pedidoOrigen">
+
+                            <option value="Tienda">
+                                Tienda
+                            </option>
+
+                            <option value="WhatsApp">
+                                WhatsApp
+                            </option>
+
+                            <option value="Facebook">
+                                Facebook
+                            </option>
+
+                            <option value="Instagram">
+                                Instagram
+                            </option>
+
+                            <option value="Teléfono">
+                                Teléfono
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="pedidoEstado">
+                        Estado
                     </label>
 
-                    <select id="pedidoOrigen">
+                    <select id="pedidoEstado">
 
-                        <option value="Tienda / Autoservicio">
-                            Tienda / Autoservicio
+                        <option value="pendiente">
+                            Pendiente
                         </option>
 
-                        <option value="WhatsApp">
-                            WhatsApp
+                        <option value="preparando">
+                            Preparando
                         </option>
 
-                        <option value="Llamada telefónica">
-                            Llamada telefónica
-                        </option>
-
-                        <option value="Presencial">
-                            Presencial
-                        </option>
-
-                        <option value="Otro">
-                            Otro
+                        <option value="entregado">
+                            Entregado
                         </option>
 
                     </select>
@@ -729,199 +586,149 @@
             </div>
 
 
-            <div class="field">
+            <!-- PRODUCTOS -->
 
-                <label
-                    class="field-label"
-                    for="pedidoEstado"
-                >
-                    Estado
-                </label>
+            <div class="form-section">
 
-                <select id="pedidoEstado">
 
-                    <option value="pendiente">
-                        Pendiente
-                    </option>
+                <div class="section-title-row">
 
-                    <option value="preparando">
-                        Preparando
-                    </option>
+                    <h3>
+                        Productos
+                    </h3>
 
-                    <option value="entregado">
-                        Entregado
-                    </option>
 
-                    <option value="cancelado">
-                        Cancelado
-                    </option>
+                    <button class="btn btn-secondary"
+                            id="btnAgregarProducto"
+                            type="button">
 
-                </select>
+                        ＋ Agregar producto
+
+                    </button>
+
+                </div>
+
+
+                <div id="productosPedido"
+                     class="productos-pedido">
+                </div>
+
 
             </div>
+
+
+            <!-- TOTALES -->
+
+            <div class="form-section">
+
+                <h3>
+                    Totales
+                </h3>
+
+
+                <div class="totales-box">
+
+                    <div>
+
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <strong id="pedidoSubtotal">
+                            Q0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Descuento
+                        </span>
+
+                        <strong id="pedidoDescuento">
+                            Q0.00
+                        </strong>
+
+                    </div>
+
+
+                    <div class="total-final">
+
+                        <span>
+                            Total
+                        </span>
+
+                        <strong id="pedidoTotal">
+                            Q0.00
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ENTREGA -->
+
+            <div class="form-section">
+
+                <h3>
+                    Entrega
+                </h3>
+
+
+                <div class="form-group">
+
+                    <label for="pedidoDireccion">
+                        Dirección de entrega
+                    </label>
+
+                    <input type="text"
+                           id="pedidoDireccion">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="pedidoNotas">
+                        Notas
+                    </label>
+
+                    <textarea id="pedidoNotas"
+                              rows="4"></textarea>
+
+                </div>
+
+            </div>
+
 
         </div>
 
-
-        <!-- SECCIÓN 02 -->
-
-        <div class="form-section">
-
-            <div class="section-heading">
-
-                <span class="section-number">
-                    02
-                </span>
-
-                <div>
-
-                    <strong>
-                        Productos solicitados
-                    </strong>
-
-                    <small>
-                        Producto, cantidad y precio
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <div
-                id="productosPedido"
-                class="productos-container"
-            ></div>
-
-
-            <button
-                class="secondary-button add-product"
-                id="btnAgregarProducto"
-                type="button"
-            >
-                + Agregar producto
-            </button>
-
-
-            <div class="totales-box">
-
-                <div>
-                    <span>
-                        Subtotal
-                    </span>
-
-                    <strong id="pedidoSubtotal">
-                        Q0.00
-                    </strong>
-                </div>
-
-                <div>
-                    <span>
-                        Descuento
-                    </span>
-
-                    <strong id="pedidoDescuento">
-                        Q0.00
-                    </strong>
-                </div>
-
-                <div class="total-final">
-
-                    <span>
-                        Total
-                    </span>
-
-                    <strong id="pedidoTotal">
-                        Q0.00
-                    </strong>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- SECCIÓN 03 -->
-
-        <div class="form-section">
-
-            <div class="section-heading">
-
-                <span class="section-number">
-                    03
-                </span>
-
-                <div>
-
-                    <strong>
-                        Entrega y observaciones
-                    </strong>
-
-                    <small>
-                        Información adicional del pedido
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <div class="field">
-
-                <label
-                    class="field-label"
-                    for="pedidoDireccion"
-                >
-                    Dirección de entrega
-                </label>
-
-                <textarea
-                    id="pedidoDireccion"
-                    rows="3"
-                    placeholder="Zona, calle, avenida, referencia..."
-                ></textarea>
-
-            </div>
-
-
-            <div class="field">
-
-                <label
-                    class="field-label"
-                    for="pedidoNotas"
-                >
-                    Notas del pedido
-                </label>
-
-                <textarea
-                    id="pedidoNotas"
-                    rows="3"
-                    placeholder="Color, talla, horario, instrucciones..."
-                ></textarea>
-
-            </div>
-
-        </div>
-
-
-        <!-- FOOTER PANEL -->
 
         <div class="panel-footer">
 
-            <button
-                class="btn btn-secondary"
-                id="btnCancelarPedido"
-                type="button"
-            >
+            <button class="btn btn-secondary"
+                    id="btnCancelarPedido"
+                    type="button">
+
                 Cancelar
+
             </button>
 
-            <button
-                class="btn btn-primary"
-                type="submit"
-            >
-                ✓ Guardar pedido
+
+            <button class="btn btn-primary"
+                    type="submit">
+
+                <span>
+                    ✓
+                </span>
+
+                Guardar pedido
+
             </button>
 
         </div>
@@ -931,169 +738,220 @@
 </aside>
 
 
-<!-- =========================================================
-     MODAL DETALLE
-========================================================== -->
+<!-- =====================================================
+     DETALLE DEL PEDIDO
+====================================================== -->
 
-<dialog id="dialogPedidoDetalle">
-
-    <div class="detail-modal">
-
-        <button
-            class="modal-close"
-            id="btnCerrarPedidoDetalle"
-            type="button"
-        >
-            ×
-        </button>
-
-        <div class="detail-avatar">
-            🛒
-        </div>
-
-        <span class="panel-eyebrow">
-            DETALLE DEL PEDIDO
-        </span>
-
-        <h2 id="detallePedidoNumero">
-            PED-0001
-        </h2>
-
-        <span
-            class="detail-badge"
-            id="detallePedidoEstado"
-        >
-            Pendiente
-        </span>
+<div class="modal-container"
+     id="dialogPedidoDetalle"
+     hidden>
 
 
-        <div class="detail-grid">
+    <div class="modal modal-detalle">
 
-            <div class="detail-item">
-                <span>👤 Cliente</span>
-                <strong id="detallePedidoCliente">-</strong>
+
+        <div class="modal-header">
+
+            <div>
+
+                <h3>
+                    Detalle del pedido
+                </h3>
+
+                <span id="detallePedidoNumero">
+                </span>
+
             </div>
 
-            <div class="detail-item">
-                <span>📞 Teléfono</span>
-                <strong id="detallePedidoTelefono">-</strong>
-            </div>
 
-            <div class="detail-item">
-                <span>📅 Fecha</span>
-                <strong id="detallePedidoFecha">-</strong>
-            </div>
+            <button class="close-btn"
+                    id="btnCerrarDetalle"
+                    type="button">
 
-            <div class="detail-item">
-                <span>📲 Origen</span>
-                <strong id="detallePedidoOrigen">-</strong>
-            </div>
+                ×
 
-            <div class="detail-item">
-                <span>📍 Entrega</span>
-                <strong id="detallePedidoDireccion">-</strong>
-            </div>
-
-            <div class="detail-item">
-                <span>💰 Total</span>
-                <strong id="detallePedidoTotal">Q0.00</strong>
-            </div>
-
-        </div>
-
-
-        <div class="detail-notes">
-
-            <span>
-                📦 Productos
-            </span>
-
-            <div id="detallePedidoProductos"></div>
-
-        </div>
-
-
-        <div class="detail-notes">
-
-            <span>
-                📝 Notas
-            </span>
-
-            <p id="detallePedidoNotas">
-                Sin notas registradas.
-            </p>
-
-        </div>
-
-
-        <div class="detail-actions">
-
-            <button
-                class="btn btn-secondary"
-                id="btnEditarPedidoDetalle"
-                type="button"
-            >
-                ✎ Editar
             </button>
 
-            <button
-                class="btn btn-whatsapp"
-                id="btnWhatsAppPedido"
-                type="button"
-            >
+        </div>
+
+
+        <div class="detalle-body">
+
+
+            <div class="detalle-info">
+
+
+                <div>
+
+                    <span>
+                        Cliente
+                    </span>
+
+                    <strong id="detallePedidoCliente">
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Teléfono
+                    </span>
+
+                    <strong id="detallePedidoTelefono">
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Fecha
+                    </span>
+
+                    <strong id="detallePedidoFecha">
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Origen
+                    </span>
+
+                    <strong id="detallePedidoOrigen">
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Estado
+                    </span>
+
+                    <strong id="detallePedidoEstado">
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Dirección
+                    </span>
+
+                    <strong id="detallePedidoDireccion">
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="detalle-productos">
+
+                <h4>
+                    Productos
+                </h4>
+
+                <div id="detallePedidoProductos">
+                </div>
+
+            </div>
+
+
+            <div class="detalle-total">
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="detallePedidoTotal">
+                    Q0.00
+                </strong>
+
+            </div>
+
+
+            <div class="detalle-notas">
+
+                <h4>
+                    Notas
+                </h4>
+
+                <p id="detallePedidoNotas">
+                    Sin notas.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+
+            <button class="btn btn-secondary"
+                    id="btnWhatsAppPedido"
+                    type="button">
+
                 💬 WhatsApp
+
             </button>
 
-            <button
-                class="btn btn-danger"
-                id="btnEliminarPedidoDetalle"
-                type="button"
-            >
-                🗑 Eliminar
+
+            <button class="btn btn-secondary"
+                    id="btnEditarPedidoDetalle"
+                    type="button">
+
+                ✏️ Editar
+
+            </button>
+
+
+            <button class="btn btn-danger"
+                    id="btnEliminarPedidoDetalle"
+                    type="button">
+
+                🗑️ Eliminar
+
             </button>
 
         </div>
 
     </div>
 
-</dialog>
+</div>
 
 
-<!-- TOAST -->
+<!-- =====================================================
+     TOAST
+====================================================== -->
 
-<div
-    class="toast"
-    id="toast"
-    role="status"
->
+<div class="toast"
+     id="toast">
 
-    <span
-        class="toast-icon"
-        id="toastIcon"
-    >
+    <span id="toastIcon">
         ✓
     </span>
 
     <span id="toastMessage">
-        Operación realizada.
+        Operación realizada correctamente.
     </span>
 
 </div>
 
 
-<!-- BOTÓN FLOTANTE -->
+<!-- JAVASCRIPT -->
 
-<button
-    class="floating-button"
-    id="btnFloating"
-    type="button"
-    title="Nuevo pedido"
->
-    +
-</button>
-
-
-<script src="pedidos.js"></script>
+<script src="./pedidos.js"></script>
 
 </body>
 </html>

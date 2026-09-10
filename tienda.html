@@ -2,567 +2,403 @@
 <html lang="es">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Tienda - Variedades Chiquis</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="./tienda.css">
+    <title>
+        Variedades Chiquis - Tienda
+    </title>
+
+    <link rel="stylesheet"
+          href="./tienda.css">
+
 </head>
 
 <body>
 
-    <!-- ==============================
-         BARRA LATERAL
-    =============================== -->
-    <aside class="sidebar">
+<header class="topbar">
 
-        <div class="logo">
-            <div class="logo-icon">🛍️</div>
+    <div class="logo">
 
-            <div>
-                <h2>Variedades</h2>
-                <span>Chiquis</span>
-            </div>
-        </div>
+        🛍️
 
-        <nav class="menu">
+        <div>
 
-            <!-- CLIENTES -->
-            <a href="./cliente.html" class="menu-item" id="btnNavClientes">
-                <span class="menu-icon">👥</span>
-                <span>Clientes</span>
-            </a>
+            <strong>
+                Variedades Chiquis
+            </strong>
 
-            <!-- PEDIDOS -->
-            <a href="./pedidos.html" class="menu-item" id="btnNavPedidos">
-                <span class="menu-icon">📦</span>
-                <span>Pedidos</span>
-            </a>
-
-            <!-- TIENDA -->
-            <a href="./tienda.html" class="menu-item active" id="btnNavTienda">
-                <span class="menu-icon">🛒</span>
-                <span>Tienda</span>
-            </a>
-
-        </nav>
-
-        <div class="sidebar-bottom">
-
-            <button class="theme-button" id="btnTema" type="button">
-                <span id="themeIcon">🌙</span>
-                <span id="themeText">Modo oscuro</span>
-            </button>
-
-        </div>
-
-    </aside>
-
-
-    <!-- ==============================
-         CONTENIDO PRINCIPAL
-    =============================== -->
-    <main class="main-content">
-
-        <!-- ENCABEZADO -->
-        <header class="top-header">
-
-            <div>
-                <h1>Tienda</h1>
-                <p>Realiza tu pedido de forma rápida y sencilla</p>
-            </div>
-
-            <button class="cart-button" id="btnVerCarrito" type="button">
-                🛒 Carrito
-                <span id="contadorCarrito">0</span>
-            </button>
-
-        </header>
-
-
-        <!-- ==============================
-             SECCIÓN CATÁLOGO
-        =============================== -->
-        <section class="catalog-section">
-
-            <div class="section-header">
-
-                <div>
-                    <h2>Catálogo de productos</h2>
-                    <p>Selecciona los productos y cantidades que deseas comprar.</p>
-                </div>
-
-                <div class="search-box">
-
-                    <span>🔎</span>
-
-                    <input
-                        type="text"
-                        id="buscarProducto"
-                        placeholder="Buscar producto..."
-                    >
-
-                </div>
-
-            </div>
-
-
-            <!-- FILTROS -->
-            <div class="category-buttons">
-
-                <button
-                    type="button"
-                    class="category-button active"
-                    data-categoria="todos">
-                    Todos
-                </button>
-
-                <button
-                    type="button"
-                    class="category-button"
-                    data-categoria="computadoras">
-                    Computadoras
-                </button>
-
-                <button
-                    type="button"
-                    class="category-button"
-                    data-categoria="accesorios">
-                    Accesorios
-                </button>
-
-                <button
-                    type="button"
-                    class="category-button"
-                    data-categoria="oficina">
-                    Oficina
-                </button>
-
-            </div>
-
-
-            <!-- PRODUCTOS -->
-            <div class="products-grid" id="productosGrid">
-
-                <!-- Los productos se generan desde tienda.js -->
-
-            </div>
-
-
-            <div class="empty-products" id="emptyProductos" hidden>
-
-                <div class="empty-icon">🔍</div>
-
-                <h3>No encontramos productos</h3>
-
-                <p>
-                    Intenta buscar otro producto o seleccionar otra categoría.
-                </p>
-
-            </div>
-
-        </section>
-
-
-        <!-- ==============================
-             PANEL DEL PEDIDO
-        =============================== -->
-        <section class="order-section">
-
-            <div class="order-card">
-
-                <div class="section-header">
-
-                    <div>
-                        <h2>Datos del pedido</h2>
-                        <p>Completa tus datos para enviar el pedido.</p>
-                    </div>
-
-                </div>
-
-
-                <form id="formPedidoTienda">
-
-                    <!-- CLIENTE -->
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label for="clienteTienda">
-                                Cliente registrado
-                            </label>
-
-                            <select id="clienteTienda">
-
-                                <option value="">
-                                    Selecciona un cliente
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="telefonoTienda">
-                                Teléfono
-                            </label>
-
-                            <input
-                                type="text"
-                                id="telefonoTienda"
-                                placeholder="Número de teléfono"
-                            >
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- NUEVO CLIENTE -->
-                    <div class="new-client-box">
-
-                        <label class="checkbox-label">
-
-                            <input
-                                type="checkbox"
-                                id="nuevoClienteTienda"
-                            >
-
-                            <span>
-                                Registrar un cliente nuevo
-                            </span>
-
-                        </label>
-
-                    </div>
-
-
-                    <div
-                        class="new-client-form"
-                        id="nuevoClienteForm"
-                        hidden
-                    >
-
-                        <div class="form-grid">
-
-                            <div class="form-group">
-
-                                <label for="nombreNuevoCliente">
-                                    Nombre completo *
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="nombreNuevoCliente"
-                                    placeholder="Nombre del cliente"
-                                >
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label for="telefonoNuevoCliente">
-                                    Teléfono *
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="telefonoNuevoCliente"
-                                    placeholder="Teléfono"
-                                >
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label for="emailNuevoCliente">
-                                    Correo electrónico
-                                </label>
-
-                                <input
-                                    type="email"
-                                    id="emailNuevoCliente"
-                                    placeholder="correo@ejemplo.com"
-                                >
-
-                            </div>
-
-
-                            <div class="form-group">
-
-                                <label for="direccionNuevoCliente">
-                                    Dirección
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="direccionNuevoCliente"
-                                    placeholder="Dirección"
-                                >
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- DIRECCIÓN -->
-                    <div class="form-group">
-
-                        <label for="direccionTienda">
-                            Dirección de entrega
-                        </label>
-
-                        <input
-                            type="text"
-                            id="direccionTienda"
-                            placeholder="Ingresa la dirección de entrega"
-                        >
-
-                    </div>
-
-
-                    <!-- NOTAS -->
-                    <div class="form-group">
-
-                        <label for="notasTienda">
-                            Notas del pedido
-                        </label>
-
-                        <textarea
-                            id="notasTienda"
-                            rows="3"
-                            placeholder="Alguna indicación especial..."
-                        ></textarea>
-
-                    </div>
-
-
-                    <!-- RESUMEN -->
-                    <div class="order-summary">
-
-                        <div class="summary-row">
-
-                            <span>Subtotal</span>
-
-                            <strong id="subtotalTienda">
-                                Q0.00
-                            </strong>
-
-                        </div>
-
-
-                        <div class="summary-row">
-
-                            <span>Descuento</span>
-
-                            <strong id="descuentoTienda">
-                                Q0.00
-                            </strong>
-
-                        </div>
-
-
-                        <div class="summary-total">
-
-                            <span>Total</span>
-
-                            <strong id="totalTienda">
-                                Q0.00
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <!-- BOTÓN -->
-                    <div class="form-actions">
-
-                        <button
-                            type="button"
-                            class="secondary-button"
-                            id="btnVerCarrito2"
-                        >
-                            🛒 Ver carrito
-                        </button>
-
-                        <button
-                            type="submit"
-                            class="primary-button"
-                            id="btnEnviarPedido"
-                        >
-                            📤 Enviar pedido
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- ==============================
-         MODAL CARRITO
-    =============================== -->
-    <div
-        class="modal-overlay"
-        id="carritoModal"
-        hidden
-    >
-
-        <div class="modal">
-
-            <div class="modal-header">
-
-                <div>
-                    <h2>Mi carrito</h2>
-                    <p>Productos seleccionados</p>
-                </div>
-
-                <button
-                    type="button"
-                    class="close-button"
-                    id="btnCerrarCarrito">
-                    ✕
-                </button>
-
-            </div>
-
-
-            <div
-                class="cart-items"
-                id="carritoItems"
-            >
-                <!-- Productos del carrito -->
-            </div>
-
-
-            <div
-                class="empty-cart"
-                id="emptyCarrito"
-                hidden
-            >
-
-                <div class="empty-icon">🛒</div>
-
-                <h3>Tu carrito está vacío</h3>
-
-                <p>
-                    Selecciona algunos productos del catálogo.
-                </p>
-
-            </div>
-
-
-            <div class="cart-footer">
-
-                <div class="summary-row">
-
-                    <span>Subtotal</span>
-
-                    <strong id="carritoSubtotal">
-                        Q0.00
-                    </strong>
-
-                </div>
-
-                <button
-                    type="button"
-                    class="primary-button"
-                    id="btnCerrarYContinuar"
-                >
-                    Continuar comprando
-                </button>
-
-            </div>
+            <span>
+                Tienda en línea
+            </span>
 
         </div>
 
     </div>
 
+    <nav>
 
-    <!-- ==============================
-         MODAL CONFIRMACIÓN
-    =============================== -->
-    <div
-        class="modal-overlay"
-        id="confirmacionModal"
-        hidden
-    >
+        <a href="cliente.html">
+            👥 Clientes
+        </a>
 
-        <div class="modal confirmation-modal">
+        <a href="pedidos.html">
+            📦 Pedidos
+        </a>
 
-            <div class="confirmation-icon">
-                ✓
-            </div>
+        <a href="tienda.html"
+           class="activo">
 
-            <h2>¡Pedido enviado!</h2>
+            🛒 Tienda
+
+        </a>
+
+        <button id="btnTema"
+                type="button">
+
+            🌙
+
+        </button>
+
+    </nav>
+
+</header>
+
+<main>
+
+    <section class="hero">
+
+        <div>
+
+            <span class="etiqueta">
+                AUTOSERVICIO
+            </span>
+
+            <h1>
+                Compra fácil y rápido
+            </h1>
 
             <p>
-                Tu pedido fue registrado correctamente.
+                Consulta nuestro catálogo, selecciona
+                tus productos y envía tu pedido
+                directamente a Variedades Chiquis.
             </p>
 
-            <div class="order-number-box">
+        </div>
 
-                <span>Número de pedido</span>
+        <div class="hero-icon">
+            🛒
+        </div>
 
-                <strong id="numeroPedidoCreado">
-                    PED-0001
+    </section>
+
+    <section class="cliente-section">
+
+        <div class="section-title">
+
+            <h2>
+                Información del cliente
+            </h2>
+
+            <p>
+                Selecciona un cliente registrado para
+                utilizar automáticamente sus datos.
+            </p>
+
+        </div>
+
+        <div class="cliente-box">
+
+            <div class="campo">
+
+                <label>
+                    Cliente registrado
+                </label>
+
+                <select id="clienteTienda">
+
+                    <option value="">
+                        Selecciona un cliente
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div id="clienteInfo"
+                 class="cliente-info">
+
+                <span>
+                    👤 Selecciona un cliente
+                </span>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="catalogo-section">
+
+        <div class="section-title">
+
+            <div>
+
+                <h2>
+                    Catálogo de productos
+                </h2>
+
+                <p>
+                    Selecciona los productos y cantidades que deseas.
+                </p>
+
+            </div>
+
+            <div class="buscador">
+
+                🔎
+
+                <input
+                    type="text"
+                    id="buscarProductos"
+                    placeholder="Buscar producto...">
+
+            </div>
+
+        </div>
+
+        <div class="categorias">
+
+            <button
+                class="categoria activo"
+                data-categoria="todos">
+
+                Todos
+
+            </button>
+
+            <button
+                class="categoria"
+                data-categoria="tecnologia">
+
+                Tecnología
+
+            </button>
+
+            <button
+                class="categoria"
+                data-categoria="accesorios">
+
+                Accesorios
+
+            </button>
+
+            <button
+                class="categoria"
+                data-categoria="hogar">
+
+                Hogar
+
+            </button>
+
+        </div>
+
+        <div id="catalogo"
+             class="catalogo">
+
+        </div>
+
+    </section>
+
+</main>
+
+<aside class="carrito-panel"
+       id="carritoPanel">
+
+    <div class="carrito-header">
+
+        <div>
+
+            <h2>
+                🛒 Mi pedido
+            </h2>
+
+            <span id="cantidadCarrito">
+                0 productos
+            </span>
+
+        </div>
+
+        <button id="cerrarCarrito">
+            ×
+        </button>
+
+    </div>
+
+    <div id="carritoContenido"
+         class="carrito-contenido">
+
+    </div>
+
+    <div class="carrito-footer">
+
+        <div class="resumen">
+
+            <div>
+
+                <span>
+                    Subtotal
+                </span>
+
+                <strong id="subtotalCarrito">
+                    Q0.00
                 </strong>
 
             </div>
 
-            <div class="confirmation-actions">
+            <div>
 
-                <button
-                    type="button"
-                    class="secondary-button"
-                    id="btnCerrarConfirmacion"
-                >
-                    Cerrar
-                </button>
+                <span>
+                    Descuento
+                </span>
 
-                <a
-                    href="./pedidos.html"
-                    class="primary-button"
-                    id="btnIrPedidos"
-                >
-                    📦 Ver pedidos
-                </a>
+                <strong id="descuentoCarrito">
+                    Q0.00
+                </strong>
+
+            </div>
+
+            <div class="total">
+
+                <span>
+                    Total
+                </span>
+
+                <strong id="totalCarrito">
+                    Q0.00
+                </strong>
 
             </div>
 
         </div>
 
+        <button
+            class="btn-principal"
+            id="btnFinalizar">
+
+            ✓ Enviar pedido
+
+        </button>
+
     </div>
 
+</aside>
 
-    <!-- ==============================
-         MENSAJES
-    =============================== -->
-    <div
-        class="toast"
-        id="toast"
-        hidden
-    >
-        <span id="toastIcon">✓</span>
-        <span id="toastMessage"></span>
+<button class="carrito-flotante"
+        id="abrirCarrito">
+
+    🛒
+
+    <span id="contadorCarrito">
+        0
+    </span>
+
+</button>
+
+<div class="modal"
+     id="modalPedido">
+
+    <div class="modal-box">
+
+        <button class="cerrar-modal"
+                id="cerrarModal">
+
+            ×
+
+        </button>
+
+        <div class="modal-icon">
+            📦
+        </div>
+
+        <h2>
+            Confirmar pedido
+        </h2>
+
+        <p>
+            Revisa la información antes de enviar tu pedido.
+        </p>
+
+        <div id="resumenPedido"
+             class="resumen-pedido">
+
+        </div>
+
+        <div class="campo">
+
+            <label>
+                Dirección de entrega
+            </label>
+
+            <input
+                type="text"
+                id="direccionPedido"
+                placeholder="Dirección donde deseas recibirlo">
+
+        </div>
+
+        <div class="campo">
+
+            <label>
+                Notas del pedido
+            </label>
+
+            <textarea
+                id="notasPedido"
+                rows="3"
+                placeholder="Alguna indicación especial..."></textarea>
+
+        </div>
+
+        <div class="modal-botones">
+
+            <button
+                class="btn-secundario"
+                id="cancelarPedido">
+
+                Cancelar
+
+            </button>
+
+            <button
+                class="btn-principal"
+                id="confirmarPedido">
+
+                ✓ Confirmar pedido
+
+            </button>
+
+        </div>
+
     </div>
 
+</div>
 
-    <script src="./tienda.js"></script>
+<div id="toast"
+     class="toast">
+
+    ✓
+
+    <span>
+        Pedido enviado correctamente
+    </span>
+
+</div>
+
+<script src="./tienda.js"></script>
 
 </body>
-
 </html>
