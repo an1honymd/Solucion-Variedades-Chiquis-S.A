@@ -19,13 +19,11 @@
 
 <div class="app">
 
-
     <!-- =====================================================
          BARRA LATERAL
     ====================================================== -->
 
     <aside class="sidebar">
-
 
         <div class="brand">
 
@@ -48,12 +46,19 @@
         </div>
 
 
+        <!-- =================================================
+             MENÚ
+        ================================================== -->
+
         <nav class="menu">
 
+            <!--
+                IMPORTANTE:
+                No usamos href="cliente.html".
+                Usamos historial para regresar a Clientes.
+            -->
 
-            <!-- CLIENTES -->
-
-            <a href="cliente.html"
+            <a href="#"
                class="menu-item"
                id="btnNavClientes">
 
@@ -67,8 +72,6 @@
 
             </a>
 
-
-            <!-- PEDIDOS -->
 
             <a href="pedidos.html"
                class="menu-item active"
@@ -84,27 +87,24 @@
 
             </a>
 
-
         </nav>
 
 
         <div class="sidebar-bottom">
 
-
             <button class="theme-btn"
                     id="btnTema"
                     type="button">
 
-                <span>
+                <span id="themeIcon">
                     🌙
                 </span>
 
-                <span>
+                <span id="themeText">
                     Cambiar tema
                 </span>
 
             </button>
-
 
         </div>
 
@@ -122,7 +122,6 @@
 
         <header class="topbar">
 
-
             <div class="page-title">
 
                 <h2>
@@ -137,7 +136,6 @@
 
 
             <div class="topbar-actions">
-
 
                 <button class="btn btn-secondary"
                         id="btnExportarPedidos"
@@ -164,15 +162,14 @@
 
                 </button>
 
-
             </div>
 
         </header>
 
 
-        <!-- =================================================
+        <!-- =====================================================
              ESTADÍSTICAS
-        ================================================== -->
+        ====================================================== -->
 
         <section class="stats-grid"
                  id="pedidosStats">
@@ -261,13 +258,12 @@
 
             </div>
 
-
         </section>
 
 
-        <!-- =================================================
-             TABLA DE PEDIDOS
-        ================================================== -->
+        <!-- =====================================================
+             TABLA
+        ====================================================== -->
 
         <section class="content-card pedidos-view">
 
@@ -289,7 +285,6 @@
 
 
                 <div class="filters">
-
 
                     <select id="filtroEstado">
 
@@ -319,7 +314,6 @@
                         Limpiar
 
                     </button>
-
 
                 </div>
 
@@ -404,7 +398,6 @@
 
                     </button>
 
-
                 </div>
 
             </div>
@@ -418,7 +411,6 @@
 
 <!-- =====================================================
      OVERLAY
-     IMPORTANTE: comienza OCULTO
 ====================================================== -->
 
 <div class="overlay"
@@ -428,7 +420,7 @@
 
 
 <!-- =====================================================
-     PANEL NUEVO / EDITAR PEDIDO
+     PANEL DE PEDIDO
 ====================================================== -->
 
 <aside class="side-panel"
@@ -436,7 +428,6 @@
 
 
     <div class="panel-header">
-
 
         <div>
 
@@ -459,7 +450,6 @@
 
         </button>
 
-
     </div>
 
 
@@ -473,10 +463,9 @@
         <div class="panel-body">
 
 
-            <!-- INFORMACIÓN DEL PEDIDO -->
+            <!-- INFORMACIÓN -->
 
             <div class="form-section">
-
 
                 <h3>
                     Información del pedido
@@ -511,7 +500,6 @@
 
                     </div>
 
-
                 </div>
 
 
@@ -523,7 +511,6 @@
                         <label for="pedidoCliente">
                             Cliente *
                         </label>
-
 
                         <select id="pedidoCliente"
                                 required>
@@ -542,7 +529,6 @@
                         <label for="pedidoOrigen">
                             Origen
                         </label>
-
 
                         <select id="pedidoOrigen">
 
@@ -570,7 +556,6 @@
 
                     </div>
 
-
                 </div>
 
 
@@ -579,7 +564,6 @@
                     <label for="pedidoEstado">
                         Estado
                     </label>
-
 
                     <select id="pedidoEstado">
 
@@ -599,7 +583,6 @@
 
                 </div>
 
-
             </div>
 
 
@@ -609,7 +592,6 @@
 
 
                 <div class="section-title-row">
-
 
                     <h3>
                         Productos
@@ -624,13 +606,11 @@
 
                     </button>
 
-
                 </div>
 
 
                 <div id="productosPedido"
                      class="productos-pedido">
-
                 </div>
 
 
@@ -641,14 +621,12 @@
 
             <div class="form-section">
 
-
                 <h3>
                     Totales
                 </h3>
 
 
                 <div class="totales-box">
-
 
                     <div>
 
@@ -688,7 +666,6 @@
 
                     </div>
 
-
                 </div>
 
             </div>
@@ -697,7 +674,6 @@
             <!-- ENTREGA -->
 
             <div class="form-section">
-
 
                 <h3>
                     Entrega
@@ -727,17 +703,13 @@
 
                 </div>
 
-
             </div>
 
 
         </div>
 
 
-        <!-- BOTONES -->
-
         <div class="panel-footer">
-
 
             <button class="btn btn-secondary"
                     id="btnCancelarPedido"
@@ -759,9 +731,7 @@
 
             </button>
 
-
         </div>
-
 
     </form>
 
@@ -769,7 +739,7 @@
 
 
 <!-- =====================================================
-     MODAL DETALLE DEL PEDIDO
+     DETALLE DEL PEDIDO
 ====================================================== -->
 
 <div class="modal-container"
@@ -781,7 +751,6 @@
 
 
         <div class="modal-header">
-
 
             <div>
 
@@ -802,7 +771,6 @@
                 ×
 
             </button>
-
 
         </div>
 
@@ -884,11 +852,8 @@
 
                 </div>
 
-
             </div>
 
-
-            <!-- PRODUCTOS DEL DETALLE -->
 
             <div class="detalle-productos">
 
@@ -901,8 +866,6 @@
 
             </div>
 
-
-            <!-- TOTAL -->
 
             <div class="detalle-total">
 
@@ -917,8 +880,6 @@
             </div>
 
 
-            <!-- NOTAS -->
-
             <div class="detalle-notas">
 
                 <h4>
@@ -931,11 +892,8 @@
 
             </div>
 
-
         </div>
 
-
-        <!-- ACCIONES DEL DETALLE -->
 
         <div class="modal-actions">
 
@@ -966,9 +924,7 @@
 
             </button>
 
-
         </div>
-
 
     </div>
 
@@ -976,32 +932,26 @@
 
 
 <!-- =====================================================
-     MENSAJE TOAST
+     TOAST
 ====================================================== -->
 
 <div class="toast"
      id="toast">
 
-
     <span id="toastIcon">
         ✓
     </span>
-
 
     <span id="toastMessage">
         Operación realizada correctamente.
     </span>
 
-
 </div>
 
 
-<!-- =====================================================
-     JAVASCRIPT
-====================================================== -->
+<!-- JAVASCRIPT -->
 
 <script src="./pedidos.js"></script>
-
 
 </body>
 </html>
