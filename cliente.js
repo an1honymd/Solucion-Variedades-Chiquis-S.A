@@ -1,1160 +1,578 @@
-'use strict';
-
-const STORAGE_KEY = 'clientesChiquis';
-const THEME_KEY = 'temaChiquis';
-
-const $ = id => document.getElementById(id);
-
-function on(id, event, callback) {
-
-    const element = $(id);
-
-    if (element) {
-        element.addEventListener(event, callback);
-    }
-}
-
-function escapeHTML(value) {
-
-    if (value === null || value === undefined) {
-        return '';
-    }
-
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
+const STORAGE_KEY = "clientesChiquis";
+const THEME_KEY = "temaChiquis";
 
 let clientes = [];
 let clienteEditando = null;
 let clienteEliminar = null;
 let toastTimer = null;
 
-function cargarClientes() {
+const $ = id => document.getElementById(id);
 
-    try {
+function escaparHTML(texto) {
+    const div = document.createElement("div");
+    div.textContent = texto ?? "";
+    return div.innerHTML;
+}
 
-        const datos =
-            localStorage.getItem(STORAGE_KEY);
+function mostrarToast(mensaje) {
+    const toast = $("toast");
 
-        if (!datos) {
-            clientes = [];
-            return;
-        }
+    toast.textContent = mensaje;
+    toast.classList.add("show");
 
-        const parsed = JSON.parse(datos);
+    clearTimeout(toastTimer);
 
-        clientes =
-            Array.isArray(parsed)
-                ? parsed
-                : [];
-
-    } catch (error) {
-
-        console.error(error);
-
-        clientes = [];
-
-        mostrarToast(
-            'No se pudieron cargar los clientes.',
-            'error'
-        );
-    }
+    toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+    }, 3000);
 }
 
 function guardarClientes() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clientes));
+}
 
+function cargarClientes() {
     try {
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(clientes)
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(error);
-
-        mostrarToast(
-            'No se pudieron guardar los clientes.',
-            'error'
-        );
-
-        return false;
+        clientes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    } catch {
+        clientes = [];
     }
 }
 
-function generarId(prefijo = 'CLI-') {
+function aplicarTema() {
+    const tema = localStorage.getItem(THEME_KEY);
 
-    return (
-        prefijo +
-        Date.now() +
-        '-' +
-        Math.floor(Math.random() * 1000)
+    if (tema === "dark") {
+        document.body.classList.add("dark-theme");
+    } else {
+        document.body.classList.remove("dark-theme");
+    }
+}
+
+function cambiarTema() {
+    const oscuro = document.body.classList.toggle("dark-theme");
+
+    localStorage.setItem(
+        THEME_KEY,
+        oscuro ? "dark" : "light"
     );
-}
-
-function obtenerTipoCliente() {
-
-    if ($('tipoMayorista')?.checked) {
-        return 'mayorista';
-    }
-
-    return 'minorista';
 }
 
 function abrirPanelCliente(cliente = null) {
 
     clienteEditando = cliente;
 
-    const panel = $('panelCliente');
-    const overlay = $('overlay');
-
-    if (!panel) {
-        return;
-    }
-
     if (cliente) {
 
-        $('tituloPanel').textContent =
-            'Editar cliente';
+        $("tituloPanel").textContent = "Editar cliente";
 
-        $('clienteId').value =
-            cliente.id || '';
+        $("clienteId").value = cliente.id;
+        $("nombre").value = cliente.nombre || "";
+        $("telefono").value = cliente.telefono || "";
+        $("email").value = cliente.email || "";
+        $("dpi").value = cliente.dpi || "";
+        $("nit").value = cliente.nit || "";
+        $("direccion").value = cliente.direccion || "";
+        $("descuento").value = cliente.descuento || 0;
+        $("limiteCredito").value = cliente.limiteCredito || 0;
 
-        $('nombre').value =
-            cliente.nombre || '';
+        const radio = document.querySelector(
+            `input[name="tipoCliente"][value="${cliente.tipo || "minorista"}"]`
+        );
 
-        $('telefono').value =
-            cliente.telefono || '';
-
-        $('email').value =
-            cliente.email || '';
-
-        $('dpi').value =
-            cliente.dpi || '';
-
-        $('nit').value =
-            cliente.nit || '';
-
-        $('direccion').value =
-            cliente.direccion || '';
-
-        $('descuento').value =
-            cliente.descuento ?? 0;
-
-        $('limiteCredito').value =
-            cliente.limiteCredito ?? 0;
-
-        if (cliente.tipo === 'mayorista') {
-
-            $('tipoMayorista').checked = true;
-
-        } else {
-
-            $('tipoMinorista').checked = true;
-        }
+        if (radio) radio.checked = true;
 
     } else {
 
-        $('tituloPanel').textContent =
-            'Nuevo cliente';
+        $("tituloPanel").textContent = "Nuevo cliente";
 
-        limpiarFormularioCliente();
+        $("clienteForm").reset();
+
+        $("clienteId").value = "";
+
+        const minorista = document.querySelector(
+            'input[name="tipoCliente"][value="minorista"]'
+        );
+
+        if (minorista) minorista.checked = true;
+
+        $("descuento").value = 0;
+        $("limiteCredito").value = 0;
     }
 
-    panel.classList.add('show');
+    $("overlay").classList.add("show");
+    $("panelCliente").classList.add("show");
+    document.body.classList.add("modal-open");
 
-    if (overlay) {
-        overlay.classList.add('show');
-    }
-
-    setTimeout(() => {
-
-        $('nombre')?.focus();
-
-    }, 100);
+    setTimeout(() => $("nombre").focus(), 250);
 }
 
 function cerrarPanelCliente() {
 
-    $('panelCliente')?.classList.remove('show');
+    $("panelCliente").classList.remove("show");
+    $("overlay").classList.remove("show");
 
-    $('overlay')?.classList.remove('show');
+    document.body.classList.remove("modal-open");
 
     clienteEditando = null;
-
-    limpiarFormularioCliente();
-}
-
-function limpiarFormularioCliente() {
-
-    $('clienteForm')?.reset();
-
-    if ($('clienteId')) {
-        $('clienteId').value = '';
-    }
-
-    if ($('tipoMinorista')) {
-        $('tipoMinorista').checked = true;
-    }
-
-    if ($('descuento')) {
-        $('descuento').value = 0;
-    }
-
-    if ($('limiteCredito')) {
-        $('limiteCredito').value = 0;
-    }
 }
 
 function validarCliente() {
 
-    const nombre =
-        $('nombre').value.trim();
+    const nombre = $("nombre").value.trim();
+    const telefono = $("telefono").value.trim();
+    const email = $("email").value.trim();
+    const nit = $("nit").value.trim();
+    const tipo = document.querySelector(
+        'input[name="tipoCliente"]:checked'
+    )?.value || "minorista";
 
-    const telefono =
-        $('telefono').value.trim();
+    const descuento = Number($("descuento").value);
 
-    const email =
-        $('email').value.trim();
-
-    const nit =
-        $('nit').value.trim();
-
-    const tipo =
-        obtenerTipoCliente();
-
-    const descuento =
-        Number($('descuento').value || 0);
-
-    if (nombre.length < 3) {
-
-        mostrarToast(
-            'El nombre debe tener al menos 3 caracteres.',
-            'error'
-        );
-
-        $('nombre').focus();
-
+    if (!nombre) {
+        mostrarToast("Ingresa el nombre del cliente.");
+        $("nombre").focus();
         return false;
     }
 
-    const telefonoNumeros =
-        telefono.replace(/\D/g, '');
-
-    if (telefonoNumeros.length < 8) {
-
-        mostrarToast(
-            'El teléfono debe tener al menos 8 dígitos.',
-            'error'
-        );
-
-        $('telefono').focus();
-
-        return false;
-    }
-
-    if (email) {
-
-        const emailValido =
-            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-        if (!emailValido) {
-
-            mostrarToast(
-                'Ingresa un correo electrónico válido.',
-                'error'
-            );
-
-            $('email').focus();
-
-            return false;
-        }
-    }
-
-    if (tipo === 'mayorista' && !nit) {
-
-        mostrarToast(
-            'El NIT es obligatorio para clientes mayoristas.',
-            'error'
-        );
-
-        $('nit').focus();
-
+    if (!telefono) {
+        mostrarToast("Ingresa el teléfono.");
+        $("telefono").focus();
         return false;
     }
 
     if (
-        Number.isNaN(descuento) ||
-        descuento < 0 ||
-        descuento > 100
+        email &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     ) {
+        mostrarToast("Ingresa un correo válido.");
+        $("email").focus();
+        return false;
+    }
 
-        mostrarToast(
-            'El descuento debe estar entre 0 y 100%.',
-            'error'
-        );
+    if (tipo === "mayorista" && !nit) {
+        mostrarToast("Los clientes mayoristas necesitan NIT.");
+        $("nit").focus();
+        return false;
+    }
 
-        $('descuento').focus();
-
+    if (descuento < 0 || descuento > 100) {
+        mostrarToast("El descuento debe estar entre 0 y 100.");
         return false;
     }
 
     return true;
 }
 
-function guardarCliente(event) {
+function guardarCliente(evento) {
 
-    event.preventDefault();
+    evento.preventDefault();
 
-    if (!validarCliente()) {
-        return;
-    }
+    if (!validarCliente()) return;
 
-    const id =
-        $('clienteId').value ||
-        generarId();
+    const tipo = document.querySelector(
+        'input[name="tipoCliente"]:checked'
+    )?.value || "minorista";
 
-    const cliente = {
-
-        id,
-
-        nombre:
-            $('nombre').value.trim(),
-
-        telefono:
-            $('telefono').value.trim(),
-
-        email:
-            $('email').value.trim(),
-
-        dpi:
-            $('dpi').value.trim(),
-
-        nit:
-            $('nit').value.trim(),
-
-        direccion:
-            $('direccion').value.trim(),
-
-        tipo:
-            obtenerTipoCliente(),
-
-        descuento:
-            Number($('descuento').value || 0),
-
-        limiteCredito:
-            Number(
-                $('limiteCredito').value || 0
-            ),
-
-        fechaRegistro:
-            clienteEditando?.fechaRegistro ||
+    const datos = {
+        id: $("clienteId").value || Date.now().toString(),
+        nombre: $("nombre").value.trim(),
+        telefono: $("telefono").value.trim(),
+        email: $("email").value.trim(),
+        dpi: $("dpi").value.trim(),
+        nit: $("nit").value.trim(),
+        direccion: $("direccion").value.trim(),
+        tipo,
+        descuento: Number($("descuento").value) || 0,
+        limiteCredito: Number($("limiteCredito").value) || 0,
+        activo: clienteEditando?.activo !== false,
+        fechaCreacion:
+            clienteEditando?.fechaCreacion ||
             new Date().toISOString()
     };
 
-    const indice =
-        clientes.findIndex(
-            c => String(c.id) === String(id)
+    if (clienteEditando) {
+
+        const indice = clientes.findIndex(
+            c => c.id === clienteEditando.id
         );
 
-    if (indice >= 0) {
-
-        clientes[indice] = cliente;
-
-        if (guardarClientes()) {
-
-            mostrarToast(
-                'Cliente actualizado correctamente.',
-                'success'
-            );
-
-            cerrarPanelCliente();
-
-            mostrarClientes();
-
-            actualizarEstadisticas();
+        if (indice !== -1) {
+            clientes[indice] = datos;
         }
+
+        mostrarToast("Cliente actualizado correctamente.");
 
     } else {
 
-        clientes.push(cliente);
+        clientes.push(datos);
 
-        if (guardarClientes()) {
-
-            mostrarToast(
-                'Cliente creado correctamente.',
-                'success'
-            );
-
-            cerrarPanelCliente();
-
-            mostrarClientes();
-
-            actualizarEstadisticas();
-        }
+        mostrarToast("Cliente guardado correctamente.");
     }
+
+    guardarClientes();
+    renderClientes();
+    actualizarEstadisticas();
+    cerrarPanelCliente();
 }
 
-function obtenerIniciales(nombre) {
+function obtenerClientesFiltrados() {
 
-    const partes =
-        String(nombre || '')
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
+    const texto = $("searchClientes").value
+        .trim()
+        .toLowerCase();
 
-    if (!partes.length) {
-        return '?';
-    }
+    const tipo = $("filtroTipo").value;
 
-    if (partes.length === 1) {
+    return clientes.filter(cliente => {
 
-        return partes[0]
-            .substring(0, 2)
-            .toUpperCase();
-    }
+        const coincideTexto =
+            !texto ||
+            (cliente.nombre || "").toLowerCase().includes(texto) ||
+            (cliente.telefono || "").toLowerCase().includes(texto) ||
+            (cliente.email || "").toLowerCase().includes(texto) ||
+            (cliente.nit || "").toLowerCase().includes(texto);
 
-    return (
-        partes[0][0] +
-        partes[partes.length - 1][0]
-    ).toUpperCase();
-}
+        const coincideTipo =
+            !tipo || cliente.tipo === tipo;
 
-function formatearFecha(fecha) {
-
-    if (!fecha) {
-        return '—';
-    }
-
-    const date = new Date(fecha);
-
-    if (Number.isNaN(date.getTime())) {
-        return '—';
-    }
-
-    return date.toLocaleDateString(
-        'es-GT',
-        {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        }
-    );
-}
-
-function mostrarClientes() {
-
-    const tabla = $('clientesTabla');
-    const estadoVacio = $('estadoVacio');
-
-    if (!tabla) {
-        return;
-    }
-
-    const busqueda =
-        ($('buscar')?.value || '')
-            .trim()
-            .toLowerCase();
-
-    const filtroTipo =
-        ($('filtroTipo')?.value || '')
-            .toLowerCase();
-
-    const filtrados =
-        clientes.filter(cliente => {
-
-            const texto = [
-
-                cliente.nombre,
-                cliente.telefono,
-                cliente.email,
-                cliente.nit,
-                cliente.dpi,
-                cliente.direccion,
-                cliente.id
-
-            ]
-                .filter(Boolean)
-                .join(' ')
-                .toLowerCase();
-
-            const coincideBusqueda =
-                !busqueda ||
-                texto.includes(busqueda);
-
-            const coincideTipo =
-                !filtroTipo ||
-                String(cliente.tipo || '')
-                    .toLowerCase() ===
-                filtroTipo;
-
-            return coincideBusqueda &&
-                   coincideTipo;
-        });
-
-    tabla.innerHTML = '';
-
-    if (!filtrados.length) {
-
-        estadoVacio?.classList.add('show');
-
-        return;
-    }
-
-    estadoVacio?.classList.remove('show');
-
-    filtrados.forEach(cliente => {
-
-        const fila =
-            document.createElement('tr');
-
-        const nombre =
-            cliente.nombre || 'Sin nombre';
-
-        const tipo =
-            cliente.tipo || 'minorista';
-
-        const descuento =
-            Number(cliente.descuento || 0);
-
-        fila.innerHTML = `
-
-            <td>
-
-                <div class="client-cell">
-
-                    <div class="client-avatar">
-
-                        ${escapeHTML(
-                            obtenerIniciales(nombre)
-                        )}
-
-                    </div>
-
-                    <div>
-
-                        <div class="client-name">
-
-                            ${escapeHTML(nombre)}
-
-                        </div>
-
-                        <span class="client-id">
-
-                            ${escapeHTML(
-                                cliente.id || ''
-                            )}
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </td>
-
-            <td>
-                ${escapeHTML(
-                    cliente.telefono || '—'
-                )}
-            </td>
-
-            <td>
-                ${escapeHTML(
-                    cliente.email || '—'
-                )}
-            </td>
-
-            <td>
-
-                <span class="badge ${
-                    tipo === 'mayorista'
-                        ? 'badge-mayorista'
-                        : 'badge-minorista'
-                }">
-
-                    ${
-                        tipo === 'mayorista'
-                            ? '🏪 Mayorista'
-                            : '🛒 Minorista'
-                    }
-
-                </span>
-
-            </td>
-
-            <td>
-                ${descuento.toFixed(2)}%
-            </td>
-
-            <td>
-                ${escapeHTML(
-                    formatearFecha(
-                        cliente.fechaRegistro
-                    )
-                )}
-            </td>
-
-            <td>
-
-                <div class="actions">
-
-                    <button
-                        class="action-btn"
-                        type="button"
-                        data-action="editar"
-                        data-id="${escapeHTML(cliente.id)}">
-
-                        ✏️
-
-                    </button>
-
-                    <button
-                        class="action-btn"
-                        type="button"
-                        data-action="whatsapp"
-                        data-id="${escapeHTML(cliente.id)}">
-
-                        💬
-
-                    </button>
-
-                    <button
-                        class="action-btn delete"
-                        type="button"
-                        data-action="eliminar"
-                        data-id="${escapeHTML(cliente.id)}">
-
-                        🗑️
-
-                    </button>
-
-                </div>
-
-            </td>
-        `;
-
-        tabla.appendChild(fila);
+        return coincideTexto && coincideTipo;
     });
 }
 
-function actualizarEstadisticas() {
+function renderClientes() {
 
-    const total = clientes.length;
+    const body = $("clientesBody");
+    const vacio = $("emptyClientes");
 
-    const minoristas =
-        clientes.filter(
-            c => c.tipo === 'minorista'
-        ).length;
+    const lista = obtenerClientesFiltrados();
 
-    const mayoristas =
-        clientes.filter(
-            c => c.tipo === 'mayorista'
-        ).length;
+    body.innerHTML = "";
 
-    $('totalClientes').textContent =
-        total;
+    if (!lista.length) {
+        vacio.style.display = "block";
+        return;
+    }
 
-    $('totalMinoristas').textContent =
-        minoristas;
+    vacio.style.display = "none";
 
-    $('totalMayoristas').textContent =
-        mayoristas;
+    lista.forEach(cliente => {
 
-    $('totalActivos').textContent =
-        total;
+        const fila = document.createElement("tr");
+
+        fila.innerHTML = `
+            <td>
+                <div class="client-name">
+                    ${escaparHTML(cliente.nombre)}
+                </div>
+                <div class="client-sub">
+                    ${escaparHTML(cliente.direccion || "Sin dirección")}
+                </div>
+            </td>
+
+            <td>${escaparHTML(cliente.telefono)}</td>
+
+            <td>${escaparHTML(cliente.email || "—")}</td>
+
+            <td>${escaparHTML(cliente.nit || "—")}</td>
+
+            <td>
+                <span class="badge ${
+                    cliente.tipo === "mayorista"
+                        ? "badge-mayorista"
+                        : "badge-minorista"
+                }">
+                    ${
+                        cliente.tipo === "mayorista"
+                            ? "Mayorista"
+                            : "Minorista"
+                    }
+                </span>
+            </td>
+
+            <td>${cliente.descuento || 0}%</td>
+
+            <td>
+                <div class="action-buttons">
+
+                    <button
+                        class="action-btn"
+                        title="Editar"
+                        onclick="editarCliente('${cliente.id}')"
+                    >
+                        ✎
+                    </button>
+
+                    <button
+                        class="action-btn"
+                        title="WhatsApp"
+                        onclick="abrirWhatsApp('${cliente.id}')"
+                    >
+                        ☎
+                    </button>
+
+                    <button
+                        class="action-btn"
+                        title="Eliminar"
+                        onclick="solicitarEliminar('${cliente.id}')"
+                    >
+                        🗑
+                    </button>
+
+                </div>
+            </td>
+        `;
+
+        body.appendChild(fila);
+    });
 }
 
 function editarCliente(id) {
 
-    const cliente =
-        clientes.find(
-            c => String(c.id) === String(id)
-        );
+    const cliente = clientes.find(c => c.id === id);
 
-    if (!cliente) {
-        return;
+    if (cliente) {
+        abrirPanelCliente(cliente);
     }
-
-    abrirPanelCliente(cliente);
 }
 
-function solicitarEliminarCliente(id) {
+function solicitarEliminar(id) {
 
-    const cliente =
-        clientes.find(
-            c => String(c.id) === String(id)
-        );
+    const cliente = clientes.find(c => c.id === id);
 
-    if (!cliente) {
-        return;
-    }
+    if (!cliente) return;
 
     clienteEliminar = cliente;
 
-    $('modalTitulo').textContent =
-        '¿Eliminar cliente?';
-
-    $('modalMensaje').textContent =
-        `¿Deseas eliminar a "${cliente.nombre}"? Esta acción no se puede deshacer.`;
-
-    $('modalConfirmacion')
-        .classList.add('show');
+    $("modalConfirmacion").classList.add("show");
 }
 
-function cerrarModal() {
-
-    $('modalConfirmacion')
-        ?.classList.remove('show');
+function cerrarModalEliminar() {
 
     clienteEliminar = null;
+
+    $("modalConfirmacion").classList.remove("show");
 }
 
-function confirmarEliminar() {
+function eliminarCliente() {
 
-    if (!clienteEliminar) {
-        return;
-    }
+    if (!clienteEliminar) return;
 
-    const id = clienteEliminar.id;
+    clientes = clientes.filter(
+        c => c.id !== clienteEliminar.id
+    );
 
-    clientes =
-        clientes.filter(
-            c => String(c.id) !== String(id)
-        );
+    guardarClientes();
+    renderClientes();
+    actualizarEstadisticas();
 
-    if (guardarClientes()) {
+    cerrarModalEliminar();
 
-        mostrarToast(
-            'Cliente eliminado correctamente.',
-            'success'
-        );
-
-        cerrarModal();
-
-        mostrarClientes();
-
-        actualizarEstadisticas();
-    }
+    mostrarToast("Cliente eliminado correctamente.");
 }
 
 function abrirWhatsApp(id) {
 
-    const cliente =
-        clientes.find(
-            c => String(c.id) === String(id)
-        );
+    const cliente = clientes.find(c => c.id === id);
 
-    if (!cliente) {
+    if (!cliente || !cliente.telefono) {
+        mostrarToast("Este cliente no tiene teléfono.");
         return;
     }
 
-    let telefono =
-        String(cliente.telefono || '')
-            .replace(/\D/g, '');
+    const telefono = cliente.telefono.replace(/\D/g, "");
 
-    if (telefono.length === 8) {
-        telefono = '502' + telefono;
+    let numero = telefono;
+
+    if (numero.length === 8) {
+        numero = "502" + numero;
     }
 
-    if (!telefono) {
-
-        mostrarToast(
-            'Este cliente no tiene teléfono registrado.',
-            'error'
-        );
-
-        return;
-    }
-
-    const mensaje =
-        encodeURIComponent(
-            `Hola ${cliente.nombre}, le saluda Variedades Chiquis.`
-        );
-
-    const url =
-        `https://wa.me/${telefono}?text=${mensaje}`;
+    const mensaje = encodeURIComponent(
+        `Hola ${cliente.nombre}, le escribimos de Variedades Chiquis.`
+    );
 
     window.open(
-        url,
-        '_blank',
-        'noopener,noreferrer'
+        `https://wa.me/${numero}?text=${mensaje}`,
+        "_blank"
     );
+}
+
+function actualizarEstadisticas() {
+
+    $("totalClientes").textContent = clientes.length;
+
+    $("clientesActivos").textContent =
+        clientes.filter(c => c.activo !== false).length;
+
+    $("clientesMayoristas").textContent =
+        clientes.filter(c => c.tipo === "mayorista").length;
+
+    $("clientesCredito").textContent =
+        clientes.filter(c => Number(c.limiteCredito) > 0).length;
 }
 
 function exportarClientes() {
 
-    const contenido =
-        JSON.stringify(
-            clientes,
-            null,
-            2
-        );
+    const archivo = new Blob(
+        [JSON.stringify(clientes, null, 2)],
+        { type: "application/json" }
+    );
 
-    const blob =
-        new Blob(
-            [contenido],
-            {
-                type: 'application/json'
-            }
-        );
+    const url = URL.createObjectURL(archivo);
 
-    const url =
-        URL.createObjectURL(blob);
-
-    const enlace =
-        document.createElement('a');
+    const enlace = document.createElement("a");
 
     enlace.href = url;
-
-    enlace.download =
-        `clientes-chiquis-${new Date()
-            .toISOString()
-            .slice(0, 10)}.json`;
-
-    document.body.appendChild(enlace);
+    enlace.download = "clientesChiquis.json";
 
     enlace.click();
 
-    enlace.remove();
-
     URL.revokeObjectURL(url);
 
-    mostrarToast(
-        'Clientes exportados correctamente.',
-        'success'
-    );
+    mostrarToast("Clientes exportados correctamente.");
 }
 
-function importarClientes(event) {
+function importarClientes(evento) {
 
-    const archivo =
-        event.target.files?.[0];
+    const archivo = evento.target.files[0];
 
-    if (!archivo) {
-        return;
-    }
+    if (!archivo) return;
 
-    const lector =
-        new FileReader();
+    const lector = new FileReader();
 
-    lector.onload = () => {
+    lector.onload = e => {
 
         try {
 
-            const datos =
-                JSON.parse(lector.result);
+            const datos = JSON.parse(e.target.result);
 
             if (!Array.isArray(datos)) {
                 throw new Error();
             }
 
-            clientes =
-                datos.map(cliente => ({
-
-                    ...cliente,
-
-                    id:
-                        cliente.id ||
-                        generarId(),
-
-                    fechaRegistro:
-                        cliente.fechaRegistro ||
-                        new Date().toISOString()
-
-                }));
+            clientes = datos;
 
             guardarClientes();
-
-            mostrarClientes();
-
+            renderClientes();
             actualizarEstadisticas();
 
-            mostrarToast(
-                'Clientes importados correctamente.',
-                'success'
-            );
+            mostrarToast("Clientes importados correctamente.");
 
         } catch {
-
-            mostrarToast(
-                'El archivo seleccionado no es válido.',
-                'error'
-            );
+            mostrarToast("El archivo no tiene un formato válido.");
         }
 
-        event.target.value = '';
+        evento.target.value = "";
     };
 
     lector.readAsText(archivo);
 }
 
-function aplicarTema() {
+document.addEventListener("DOMContentLoaded", () => {
 
-    const tema =
-        localStorage.getItem(
-            THEME_KEY
-        ) || 'claro';
+    cargarClientes();
+    aplicarTema();
 
-    document.body.classList.toggle(
-        'dark',
-        tema === 'oscuro'
+    renderClientes();
+    actualizarEstadisticas();
+
+    $("btnNuevo").addEventListener(
+        "click",
+        () => abrirPanelCliente()
     );
 
-    actualizarBotonTema();
-}
-
-function cambiarTema() {
-
-    const oscuro =
-        document.body.classList.toggle('dark');
-
-    localStorage.setItem(
-        THEME_KEY,
-        oscuro ? 'oscuro' : 'claro'
+    $("btnNuevoVacio").addEventListener(
+        "click",
+        () => abrirPanelCliente()
     );
 
-    actualizarBotonTema();
-}
+    $("btnCerrarPanel").addEventListener(
+        "click",
+        cerrarPanelCliente
+    );
 
-function actualizarBotonTema() {
+    $("btnCancelar").addEventListener(
+        "click",
+        cerrarPanelCliente
+    );
 
-    const boton = $('btnTema');
+    $("overlay").addEventListener(
+        "click",
+        cerrarPanelCliente
+    );
 
-    if (!boton) {
-        return;
-    }
+    $("clienteForm").addEventListener(
+        "submit",
+        guardarCliente
+    );
 
-    const oscuro =
-        document.body.classList.contains('dark');
+    $("btnTema").addEventListener(
+        "click",
+        cambiarTema
+    );
 
-    boton.innerHTML =
-        oscuro
-            ? '<span>☀️</span><span>Tema claro</span>'
-            : '<span>🌙</span><span>Tema oscuro</span>';
-}
+    $("searchClientes").addEventListener(
+        "input",
+        renderClientes
+    );
 
-function mostrarToast(
-    mensaje,
-    tipo = 'success'
-) {
+    $("filtroTipo").addEventListener(
+        "change",
+        renderClientes
+    );
 
-    const toast = $('toast');
-    const texto = $('toastMensaje');
-    const icono = $('toastIcon');
+    $("btnLimpiar").addEventListener("click", () => {
 
-    if (!toast) {
-        return;
-    }
+        $("searchClientes").value = "";
+        $("filtroTipo").value = "";
 
-    texto.textContent = mensaje;
+        renderClientes();
+    });
 
-    icono.textContent =
-        tipo === 'error'
-            ? '✕'
-            : '✓';
+    $("btnExportar").addEventListener(
+        "click",
+        exportarClientes
+    );
 
-    toast.classList.add('show');
+    $("inputImportar").addEventListener(
+        "change",
+        importarClientes
+    );
 
-    clearTimeout(toastTimer);
+    $("btnCancelarEliminar").addEventListener(
+        "click",
+        cerrarModalEliminar
+    );
 
-    toastTimer =
-        setTimeout(
-            () => {
-                toast.classList.remove('show');
-            },
-            3000
-        );
-}
+    $("btnConfirmarEliminar").addEventListener(
+        "click",
+        eliminarCliente
+    );
 
-document.addEventListener(
-    'click',
-    event => {
+    document.addEventListener("keydown", evento => {
 
-        const boton =
-            event.target.closest(
-                '[data-action]'
-            );
-
-        if (!boton) {
-            return;
-        }
-
-        const id =
-            boton.dataset.id;
-
-        const accion =
-            boton.dataset.action;
-
-        if (accion === 'editar') {
-            editarCliente(id);
-        }
-
-        if (accion === 'eliminar') {
-            solicitarEliminarCliente(id);
-        }
-
-        if (accion === 'whatsapp') {
-            abrirWhatsApp(id);
-        }
-    }
-);
-
-on(
-    'btnNuevo',
-    'click',
-    () => abrirPanelCliente()
-);
-
-on(
-    'btnNuevoVacio',
-    'click',
-    () => abrirPanelCliente()
-);
-
-on(
-    'btnCerrarPanel',
-    'click',
-    cerrarPanelCliente
-);
-
-on(
-    'btnCancelar',
-    'click',
-    cerrarPanelCliente
-);
-
-on(
-    'overlay',
-    'click',
-    cerrarPanelCliente
-);
-
-on(
-    'clienteForm',
-    'submit',
-    guardarCliente
-);
-
-on(
-    'buscar',
-    'input',
-    mostrarClientes
-);
-
-on(
-    'filtroTipo',
-    'change',
-    mostrarClientes
-);
-
-on(
-    'btnModalCancelar',
-    'click',
-    cerrarModal
-);
-
-on(
-    'btnModalConfirmar',
-    'click',
-    confirmarEliminar
-);
-
-on(
-    'btnExportar',
-    'click',
-    exportarClientes
-);
-
-on(
-    'btnImportar',
-    'click',
-    () => $('archivoImportar')?.click()
-);
-
-on(
-    'archivoImportar',
-    'change',
-    importarClientes
-);
-
-on(
-    'btnTema',
-    'click',
-    cambiarTema
-);
-
-document.addEventListener(
-    'keydown',
-    event => {
-
-        if (event.key !== 'Escape') {
-            return;
-        }
-
-        if (
-            $('panelCliente')
-                ?.classList.contains('show')
-        ) {
+        if (evento.key === "Escape") {
 
             cerrarPanelCliente();
-
-            return;
+            cerrarModalEliminar();
         }
 
         if (
-            $('modalConfirmacion')
-                ?.classList.contains('show')
+            evento.ctrlKey &&
+            evento.key.toLowerCase() === "n"
         ) {
-
-            cerrarModal();
-        }
-    }
-);
-
-document.addEventListener(
-    'keydown',
-    event => {
-
-        if (
-            event.ctrlKey &&
-            event.key.toLowerCase() === 'n'
-        ) {
-
-            event.preventDefault();
-
+            evento.preventDefault();
             abrirPanelCliente();
         }
 
         if (
-            event.ctrlKey &&
-            event.key.toLowerCase() === 'f'
+            evento.ctrlKey &&
+            evento.key.toLowerCase() === "f"
         ) {
-
-            event.preventDefault();
-
-            $('buscar')?.focus();
+            evento.preventDefault();
+            $("searchClientes").focus();
         }
-    }
-);
+    });
 
-document.addEventListener(
-    'DOMContentLoaded',
-    () => {
-
-        aplicarTema();
-
-        cargarClientes();
-
-        mostrarClientes();
-
-        actualizarEstadisticas();
-    }
-);
+});

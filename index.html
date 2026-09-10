@@ -3,250 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Variedades Chiquis - Clientes</title>
-
-    <link href="cliente.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="cliente.css">
 </head>
 
 <body>
 
-    <!-- CONTENEDOR PRINCIPAL -->
-    <div class="app">
+    <aside class="sidebar">
 
-        <!-- BARRA LATERAL -->
-        <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">VC</div>
+            <div>
+                <h2>Variedades Chiquis</h2>
+                <span>Sistema de gestión</span>
+            </div>
+        </div>
 
-            <div class="brand">
-                <div class="brand-icon">🛍️</div>
+        <nav class="menu">
 
-                <div class="brand-text">
-                    <h1>Variedades Chiquis</h1>
-                    <span>Sistema de gestión</span>
-                </div>
+            <a href="cliente.html" class="menu-item active" id="btnNavClientes">
+                <span class="menu-icon">👥</span>
+                <span>Clientes</span>
+            </a>
+
+            <a href="pedidos.html" class="menu-item" id="btnNavPedidos">
+                <span class="menu-icon">🛒</span>
+                <span>Pedidos</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <span>Variedades Chiquis, S.A.</span>
+        </div>
+
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h1>Gestión de Clientes</h1>
+                <p>Administra la información de tus clientes</p>
             </div>
 
-            <nav class="menu">
+            <div class="topbar-actions">
 
-                <a href="cliente.html" class="menu-item active" id="btnNavClientes">
-                    <span class="menu-icon">👥</span>
-                    <span>Clientes</span>
-                </a>
+                <button class="btn-secondary" id="btnExportar">
+                    ↥ Exportar
+                </button>
 
-                <a href="pedidos.html" class="menu-item" id="btnNavPedidos">
-                    <span class="menu-icon">📦</span>
-                    <span>Pedidos</span>
-                </a>
+                <label class="btn-secondary import-label">
+                    ↧ Importar
+                    <input type="file" id="inputImportar" accept=".json" hidden>
+                </label>
 
-            </nav>
+                <button class="btn-primary" id="btnNuevo">
+                    + Nuevo cliente
+                </button>
 
-            <div class="sidebar-bottom">
-
-                <button class="theme-btn" id="btnTema" type="button">
-                    <span>🌙</span>
-                    <span>Cambiar tema</span>
+                <button class="theme-toggle" id="btnTema" title="Cambiar tema">
+                    ☼
                 </button>
 
             </div>
 
-        </aside>
+        </header>
 
 
-        <!-- CONTENIDO PRINCIPAL -->
-        <main class="main-content">
+        <section class="stats-grid">
 
-            <!-- ENCABEZADO -->
-            <header class="topbar">
-
-                <div class="page-title">
-                    <h2>Gestión de Clientes</h2>
-                    <p>Administra los clientes de Variedades Chiquis</p>
+            <div class="stat-card">
+                <div class="stat-icon blue">👥</div>
+                <div>
+                    <span>Total clientes</span>
+                    <strong id="totalClientes">0</strong>
                 </div>
+            </div>
 
-                <div class="topbar-actions">
+            <div class="stat-card">
+                <div class="stat-icon green">✓</div>
+                <div>
+                    <span>Clientes activos</span>
+                    <strong id="clientesActivos">0</strong>
+                </div>
+            </div>
 
-                    <button class="btn btn-secondary" id="btnExportar" type="button">
-                        <span>📤</span>
-                        Exportar
-                    </button>
+            <div class="stat-card">
+                <div class="stat-icon orange">★</div>
+                <div>
+                    <span>Mayoristas</span>
+                    <strong id="clientesMayoristas">0</strong>
+                </div>
+            </div>
 
-                    <button class="btn btn-secondary" id="btnImportar" type="button">
-                        <span>📥</span>
-                        Importar
-                    </button>
+            <div class="stat-card">
+                <div class="stat-icon purple">▣</div>
+                <div>
+                    <span>Con crédito</span>
+                    <strong id="clientesCredito">0</strong>
+                </div>
+            </div>
 
+        </section>
+
+
+        <section class="content-card">
+
+            <div class="table-toolbar">
+
+                <div class="search-box">
+                    <span>⌕</span>
                     <input
-                        type="file"
-                        id="archivoImportar"
-                        accept=".json,application/json"
-                        hidden
+                        type="text"
+                        id="searchClientes"
+                        placeholder="Buscar cliente..."
                     >
+                </div>
 
-                    <button class="btn btn-primary" id="btnNuevo" type="button">
-                        <span>＋</span>
-                        Nuevo cliente
+                <select id="filtroTipo">
+                    <option value="">Todos los tipos</option>
+                    <option value="minorista">Minorista</option>
+                    <option value="mayorista">Mayorista</option>
+                </select>
+
+                <button class="btn-secondary" id="btnLimpiar">
+                    Limpiar
+                </button>
+
+            </div>
+
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>NIT</th>
+                            <th>Tipo</th>
+                            <th>Descuento</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="clientesBody"></tbody>
+
+                </table>
+
+                <div class="empty-state" id="emptyClientes">
+                    <div class="empty-icon">👥</div>
+                    <h3>No hay clientes</h3>
+                    <p>Agrega tu primer cliente para comenzar.</p>
+                    <button class="btn-primary" id="btnNuevoVacio">
+                        + Nuevo cliente
                     </button>
-
                 </div>
 
-            </header>
+            </div>
+
+        </section>
+
+    </main>
 
 
-            <!-- ESTADÍSTICAS -->
-            <section class="stats-grid">
-
-                <div class="stat-card">
-
-                    <div class="stat-icon blue">
-                        👥
-                    </div>
-
-                    <div class="stat-info">
-                        <span class="stat-label">Total clientes</span>
-                        <strong id="totalClientes">0</strong>
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-icon green">
-                        🛒
-                    </div>
-
-                    <div class="stat-info">
-                        <span class="stat-label">Minoristas</span>
-                        <strong id="totalMinoristas">0</strong>
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-icon purple">
-                        🏪
-                    </div>
-
-                    <div class="stat-info">
-                        <span class="stat-label">Mayoristas</span>
-                        <strong id="totalMayoristas">0</strong>
-                    </div>
-
-                </div>
-
-
-                <div class="stat-card">
-
-                    <div class="stat-icon orange">
-                        ⭐
-                    </div>
-
-                    <div class="stat-info">
-                        <span class="stat-label">Clientes activos</span>
-                        <strong id="totalActivos">0</strong>
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- CONTROLES -->
-            <section class="content-card">
-
-                <div class="toolbar">
-
-                    <div class="search-box">
-
-                        <span class="search-icon">🔎</span>
-
-                        <input
-                            type="text"
-                            id="buscar"
-                            placeholder="Buscar cliente por nombre, teléfono, correo o NIT..."
-                        >
-
-                    </div>
-
-
-                    <div class="filters">
-
-                        <select id="filtroTipo">
-                            <option value="">Todos los tipos</option>
-                            <option value="minorista">Minorista</option>
-                            <option value="mayorista">Mayorista</option>
-                        </select>
-
-                    </div>
-
-                </div>
-
-
-                <!-- TABLA -->
-                <div class="table-container">
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Teléfono</th>
-                                <th>Correo</th>
-                                <th>Tipo</th>
-                                <th>Descuento</th>
-                                <th>Registro</th>
-                                <th>Acciones</th>
-                            </tr>
-
-                        </thead>
-
-                        <tbody id="clientesTabla">
-                        </tbody>
-
-                    </table>
-
-
-                    <!-- ESTADO VACÍO -->
-                    <div class="empty-state" id="estadoVacio">
-
-                        <div class="empty-icon">
-                            👥
-                        </div>
-
-                        <h3>No hay clientes registrados</h3>
-
-                        <p>
-                            Comienza agregando tu primer cliente al sistema.
-                        </p>
-
-                        <button
-                            class="btn btn-primary"
-                            id="btnNuevoVacio"
-                            type="button"
-                        >
-                            <span>＋</span>
-                            Agregar cliente
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-        </main>
-
-    </div>
-
-
-    <!-- OVERLAY -->
     <div class="overlay" id="overlay"></div>
 
 
-    <!-- PANEL DE CLIENTE -->
     <aside class="side-panel" id="panelCliente">
 
         <div class="panel-header">
@@ -256,12 +184,7 @@
                 <p>Completa la información del cliente</p>
             </div>
 
-            <button
-                class="close-btn"
-                id="btnCerrarPanel"
-                type="button"
-                aria-label="Cerrar"
-            >
+            <button class="btn-cerrar-panel" id="btnCerrarPanel">
                 ×
             </button>
 
@@ -272,215 +195,141 @@
 
             <input type="hidden" id="clienteId">
 
-
             <div class="panel-body">
 
-                <!-- INFORMACIÓN PERSONAL -->
-                <div class="form-section">
+                <section class="form-section">
 
-                    <h3>Información personal</h3>
-
-
-                    <div class="form-group">
-
-                        <label for="nombre">
-                            Nombre completo
-                            <span>*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            id="nombre"
-                            placeholder="Ej. María López"
-                            autocomplete="name"
-                        >
-
+                    <div class="section-title">
+                        <h3>Información personal</h3>
+                        <p>Datos principales del cliente</p>
                     </div>
 
+                    <div class="form-grid">
 
-                    <div class="form-row">
-
-                        <div class="form-group">
-
-                            <label for="telefono">
-                                Teléfono
-                                <span>*</span>
-                            </label>
-
+                        <div class="form-group full">
+                            <label for="nombre">Nombre completo *</label>
                             <input
-                                type="tel"
-                                id="telefono"
-                                placeholder="Ej. 5555-5555"
-                                autocomplete="tel"
+                                type="text"
+                                id="nombre"
+                                placeholder="Nombre del cliente"
+                                required
                             >
-
                         </div>
 
+                        <div class="form-group">
+                            <label for="telefono">Teléfono *</label>
+                            <input
+                                type="text"
+                                id="telefono"
+                                placeholder="0000-0000"
+                                required
+                            >
+                        </div>
 
                         <div class="form-group">
-
-                            <label for="email">
-                                Correo electrónico
-                            </label>
-
+                            <label for="email">Correo electrónico</label>
                             <input
                                 type="email"
                                 id="email"
-                                placeholder="cliente@correo.com"
-                                autocomplete="email"
+                                placeholder="correo@ejemplo.com"
                             >
-
                         </div>
 
-                    </div>
-
-
-                    <div class="form-row">
-
                         <div class="form-group">
-
-                            <label for="dpi">
-                                DPI
-                            </label>
-
+                            <label for="dpi">DPI</label>
                             <input
                                 type="text"
                                 id="dpi"
-                                placeholder="Número de DPI"
+                                placeholder="0000 00000 0000"
                             >
-
                         </div>
 
-
                         <div class="form-group">
-
-                            <label for="nit">
-                                NIT
-                            </label>
-
+                            <label for="nit">NIT</label>
                             <input
                                 type="text"
                                 id="nit"
-                                placeholder="Ej. 1234567-8"
+                                placeholder="0000000-0"
                             >
+                        </div>
 
+                        <div class="form-group full">
+                            <label for="direccion">Dirección</label>
+                            <textarea
+                                id="direccion"
+                                rows="3"
+                                placeholder="Dirección del cliente"
+                            ></textarea>
                         </div>
 
                     </div>
 
+                </section>
 
-                    <div class="form-group">
 
-                        <label for="direccion">
-                            Dirección
-                        </label>
+                <section class="form-section">
 
-                        <textarea
-                            id="direccion"
-                            rows="3"
-                            placeholder="Dirección del cliente"
-                        ></textarea>
-
+                    <div class="section-title">
+                        <h3>Tipo de cliente</h3>
+                        <p>Selecciona la categoría</p>
                     </div>
 
-                </div>
+                    <div class="radio-cards">
 
-
-                <!-- TIPO DE CLIENTE -->
-                <div class="form-section">
-
-                    <h3>Tipo de cliente</h3>
-
-
-                    <div class="type-options">
-
-                        <label class="type-option">
-
+                        <label class="radio-card">
                             <input
                                 type="radio"
                                 name="tipoCliente"
-                                id="tipoMinorista"
                                 value="minorista"
                                 checked
                             >
-
-                            <span class="type-card">
-
-                                <span class="type-icon">
-                                    🛒
-                                </span>
-
-                                <span>
-                                    <strong>Minorista</strong>
-                                    <small>Compra para consumo personal</small>
-                                </span>
-
+                            <span>
+                                <strong>Minorista</strong>
+                                <small>Compra individual</small>
                             </span>
-
                         </label>
 
-
-                        <label class="type-option">
-
+                        <label class="radio-card">
                             <input
                                 type="radio"
                                 name="tipoCliente"
-                                id="tipoMayorista"
                                 value="mayorista"
                             >
-
-                            <span class="type-card">
-
-                                <span class="type-icon">
-                                    🏪
-                                </span>
-
-                                <span>
-                                    <strong>Mayorista</strong>
-                                    <small>Compra grandes cantidades</small>
-                                </span>
-
+                            <span>
+                                <strong>Mayorista</strong>
+                                <small>Compras al por mayor</small>
                             </span>
-
                         </label>
 
                     </div>
 
-                </div>
+                </section>
 
 
-                <!-- CONDICIONES COMERCIALES -->
-                <div class="form-section">
+                <section class="form-section">
 
-                    <h3>Condiciones comerciales</h3>
+                    <div class="section-title">
+                        <h3>Condiciones comerciales</h3>
+                        <p>Configuración de compra</p>
+                    </div>
 
-
-                    <div class="form-row">
+                    <div class="form-grid">
 
                         <div class="form-group">
-
-                            <label for="descuento">
-                                Descuento (%)
-                            </label>
-
+                            <label for="descuento">Descuento (%)</label>
                             <input
                                 type="number"
                                 id="descuento"
                                 min="0"
                                 max="100"
-                                step="0.01"
                                 value="0"
                             >
-
                         </div>
 
-
                         <div class="form-group">
-
                             <label for="limiteCredito">
                                 Límite de crédito (Q)
                             </label>
-
                             <input
                                 type="number"
                                 id="limiteCredito"
@@ -488,32 +337,29 @@
                                 step="0.01"
                                 value="0"
                             >
-
                         </div>
 
                     </div>
 
-                </div>
+                </section>
 
             </div>
 
 
-            <!-- FOOTER DEL FORMULARIO -->
             <div class="panel-footer">
 
                 <button
-                    class="btn btn-secondary"
-                    id="btnCancelar"
                     type="button"
+                    class="btn-cancelar"
+                    id="btnCancelar"
                 >
                     Cancelar
                 </button>
 
                 <button
-                    class="btn btn-primary"
                     type="submit"
+                    class="btn-guardar"
                 >
-                    <span>✓</span>
                     Guardar cliente
                 </button>
 
@@ -524,38 +370,26 @@
     </aside>
 
 
-    <!-- MODAL DE CONFIRMACIÓN -->
-    <div class="modal-container" id="modalConfirmacion">
+    <div class="modal" id="modalConfirmacion">
 
-        <div class="modal">
+        <div class="modal-content">
 
-            <div class="modal-icon warning">
-                ⚠️
-            </div>
+            <div class="modal-icon">⚠</div>
 
-            <h3 id="modalTitulo">
-                ¿Eliminar cliente?
-            </h3>
+            <h3>Eliminar cliente</h3>
 
-            <p id="modalMensaje">
+            <p>
+                ¿Estás seguro de que deseas eliminar este cliente?
                 Esta acción no se puede deshacer.
             </p>
 
             <div class="modal-actions">
 
-                <button
-                    class="btn btn-secondary"
-                    id="btnModalCancelar"
-                    type="button"
-                >
+                <button class="btn-cancelar" id="btnCancelarEliminar">
                     Cancelar
                 </button>
 
-                <button
-                    class="btn btn-danger"
-                    id="btnModalConfirmar"
-                    type="button"
-                >
+                <button class="btn-danger" id="btnConfirmarEliminar">
                     Eliminar
                 </button>
 
@@ -566,17 +400,7 @@
     </div>
 
 
-    <!-- NOTIFICACIÓN -->
-    <div class="toast" id="toast">
-
-        <span id="toastIcon">✓</span>
-
-        <span id="toastMensaje">
-            Operación realizada correctamente.
-        </span>
-
-    </div>
-
+    <div class="toast" id="toast"></div>
 
     <script src="cliente.js"></script>
 
