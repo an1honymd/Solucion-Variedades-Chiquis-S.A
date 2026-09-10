@@ -1,1387 +1,1753 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // ============================================================
-    // VARIEDADES CHIQUIS - CLIENTES
-    // ============================================================
+/* =========================================================
+   VARIEDADES CHIQUIS
+   JAVASCRIPT - GESTIÓN DE CLIENTES
+   ========================================================= */
 
-    const $ = (id) => document.getElementById(id);
+'use strict';
 
-    const on = (id, event, fn) => {
-        const el = $(id);
-        if (el) el.addEventListener(event, fn);
-        return el;
-    };
 
-    const overlay = $('overlay');
-    const panel = $('panel');
-    const clienteForm = $('clienteForm');
+/* =========================================================
+   CONFIGURACIÓN
+   ========================================================= */
 
-    let clientes = cargarClientes();
-    let clienteDetalle = null;
-    let clienteAEliminar = null;
+const STORAGE_KEY = 'clientesChiquis';
+const THEME_KEY = 'temaChiquis';
 
-    // ============================================================
-    // UTILIDADES
-    // ============================================================
 
-    function escaparHTML(valor) {
-        return String(valor ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+/* =========================================================
+   FUNCIONES AUXILIARES
+   ========================================================= */
+
+const $ = (id) => document.getElementById(id);
+
+
+function on(id, event, callback) {
+
+    const element = $(id);
+
+    if (element) {
+        element.addEventListener(event, callback);
     }
 
-    function dinero(valor) {
-        return 'Q' + Number(valor || 0).toFixed(2);
+}
+
+
+function escapeHTML(value) {
+
+    if (value === null || value === undefined) {
+        return '';
     }
 
-    function generarId(prefijo = '') {
-        return prefijo + Date.now() + Math.random().toString(36).slice(2, 8);
-    }
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 
-    function formatearFecha(fecha) {
-        if (!fecha) return 'Sin fecha';
+}
 
-        const d = new Date(fecha);
 
-        if (Number.isNaN(d.getTime())) {
-            return 'Sin fecha';
-        }
+/* =========================================================
+   DATOS
+   ========================================================= */
 
-        return d.toLocaleDateString('es-GT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    }
+let clientes = [];
+let clienteEditando = null;
+let clienteEliminar = null;
+let toastTimer = null;
 
-    function toast(mensaje, tipo = 'success') {
-        const contenedor = $('toast');
 
-        if (contenedor) {
-            const icono = $('toastIcon');
-            const texto = $('toastMessage');
+/* =========================================================
+   CARGAR CLIENTES
+   ========================================================= */
 
-            if (texto) {
-                texto.textContent = mensaje;
-            }
+function cargarClientes() {
 
-            if (icono) {
-                icono.textContent = tipo === 'error' ? '!' : '✓';
-            }
+    try {
 
-            contenedor.classList.add('show');
+        const datos = localStorage.getItem(STORAGE_KEY);
 
-            clearTimeout(window.__toastTimer);
-
-            window.__toastTimer = setTimeout(() => {
-                contenedor.classList.remove('show');
-            }, 3000);
-
+        if (!datos) {
+            clientes = [];
             return;
         }
 
-        const t = document.createElement('div');
+        const parsed = JSON.parse(datos);
 
-        t.textContent = mensaje;
+        clientes = Array.isArray(parsed) ? parsed : [];
 
-        t.style.cssText = `
-            position: fixed;
-            right: 20px;
-            bottom: 20px;
-            z-index: 99999;
-            padding: 14px 18px;
-            border-radius: 10px;
-            background: ${tipo === 'error' ? '#b42318' : '#16794b'};
-            color: #fff;
-            font-weight: 600;
-            box-shadow: 0 8px 30px rgba(0,0,0,.2);
-        `;
+    } catch (error) {
 
-        document.body.appendChild(t);
+        console.error('Error al cargar clientes:', error);
 
-        setTimeout(() => {
-            t.remove();
-        }, 3000);
-    }
+        clientes = [];
 
-    // ============================================================
-    // LOCAL STORAGE
-    // ============================================================
-
-    function cargarClientes() {
-        try {
-            const datos = JSON.parse(
-                localStorage.getItem('clientesChiquis') || '[]'
-            );
-
-            return Array.isArray(datos) ? datos : [];
-
-        } catch (e) {
-            console.error(e);
-            return [];
-        }
-    }
-
-    function guardarClientes() {
-        try {
-            localStorage.setItem(
-                'clientesChiquis',
-                JSON.stringify(clientes)
-            );
-
-            return true;
-
-        } catch (e) {
-            console.error(
-                'No se pudieron guardar los clientes:',
-                e
-            );
-
-            toast(
-                'No se pudieron guardar los clientes.',
-                'error'
-            );
-
-            return false;
-        }
-    }
-
-    // ============================================================
-    // TIPO DE CLIENTE
-    // ============================================================
-
-    function obtenerTipoCliente() {
-        const mayorista = $('tipoMayorista');
-
-        return mayorista && mayorista.checked
-            ? 'mayorista'
-            : 'minorista';
-    }
-
-    function actualizarCamposTipo() {
-        const mayorista = $('tipoMayorista')?.checked;
-        const campos = $('camposMayorista');
-        const hint = $('tipoHint');
-        const descuento = $('descuento');
-
-        if (campos) {
-            campos.hidden = !mayorista;
-        }
-
-        if (descuento) {
-            descuento.disabled = !mayorista;
-        }
-
-        if (!mayorista && descuento) {
-            descuento.value = '0';
-        }
-
-        if (hint) {
-            hint.textContent = mayorista
-                ? 'Cliente que realiza compras por volumen y puede recibir descuento.'
-                : 'Compra para uso personal, en unidades sueltas.';
-        }
-    }
-
-    // ============================================================
-    // VALIDACIONES
-    // ============================================================
-
-    function limpiarErrores() {
-        document
-            .querySelectorAll('.error-message')
-            .forEach(e => e.remove());
-
-        document
-            .querySelectorAll('.error')
-            .forEach(e => e.classList.remove('error'));
-    }
-
-    function mostrarError(elemento, mensaje) {
-        if (!elemento) return;
-
-        elemento.classList.add('error');
-
-        const error = document.createElement('div');
-
-        error.className = 'error-message';
-        error.textContent = mensaje;
-
-        elemento.parentElement?.appendChild(error);
-    }
-
-    function validarCliente() {
-        limpiarErrores();
-
-        let valido = true;
-
-        const nombre = $('nombre');
-        const telefono = $('telefono');
-        const email = $('email');
-        const nit = $('nit');
-        const descuento = $('descuento');
-
-        const mayorista =
-            $('tipoMayorista')?.checked;
-
-        if (
-            !nombre?.value.trim() ||
-            nombre.value.trim().length < 3
-        ) {
-            mostrarError(
-                nombre,
-                'Ingrese un nombre válido.'
-            );
-
-            valido = false;
-        }
-
-        const telefonoLimpio =
-            (telefono?.value || '').replace(/\D/g, '');
-
-        if (!telefonoLimpio) {
-            mostrarError(
-                telefono,
-                'Ingrese el número de teléfono.'
-            );
-
-            valido = false;
-
-        } else if (telefonoLimpio.length < 8) {
-            mostrarError(
-                telefono,
-                'Ingrese un teléfono válido.'
-            );
-
-            valido = false;
-        }
-
-        if (email?.value.trim()) {
-            const correcto =
-                /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-                    .test(email.value.trim());
-
-            if (!correcto) {
-                mostrarError(
-                    email,
-                    'Ingrese un correo válido.'
-                );
-
-                valido = false;
-            }
-        }
-
-        if (
-            mayorista &&
-            !nit?.value.trim()
-        ) {
-            mostrarError(
-                nit,
-                'El NIT es obligatorio para mayoristas.'
-            );
-
-            valido = false;
-        }
-
-        const desc =
-            Number(descuento?.value || 0);
-
-        if (desc < 0 || desc > 100) {
-            mostrarError(
-                descuento,
-                'El descuento debe estar entre 0 y 100.'
-            );
-
-            valido = false;
-        }
-
-        if (!valido) {
-            toast(
-                'Revisa los campos marcados.',
-                'error'
-            );
-        }
-
-        return valido;
-    }
-
-    // ============================================================
-    // ABRIR PANEL CLIENTE
-    // ============================================================
-
-    function abrirPanelCliente(cliente = null) {
-        if (!panel || !clienteForm) {
-            return;
-        }
-
-        if (overlay) {
-            overlay.hidden = false;
-        }
-
-        panel.classList.add('is-open');
-
-        panel.setAttribute(
-            'aria-hidden',
-            'false'
+        mostrarToast(
+            'No se pudieron cargar los clientes.',
+            'error'
         );
 
-        clienteForm.reset();
-
-        limpiarErrores();
-
-        $('clienteId').value =
-            cliente?.id || '';
-
-        $('panelTitulo').textContent =
-            cliente
-                ? 'Editar cliente'
-                : 'Nuevo cliente';
-
-        if (cliente) {
-            $('nombre').value =
-                cliente.nombre || '';
-
-            $('telefono').value =
-                cliente.telefono || '';
-
-            $('email').value =
-                cliente.email || '';
-
-            $('direccion').value =
-                cliente.direccion || '';
-
-            $('dpi').value =
-                cliente.dpi || '';
-
-            $('nit').value =
-                cliente.nit || '';
-
-            $('descuento').value =
-                cliente.descuento ?? 0;
-
-            $('limiteCredito').value =
-                cliente.limiteCredito ?? 0;
-
-            if (cliente.tipo === 'mayorista') {
-                $('tipoMayorista').checked = true;
-            } else {
-                $('tipoMinorista').checked = true;
-            }
-        }
-
-        actualizarCamposTipo();
-
-        setTimeout(() => {
-            $('nombre')?.focus();
-        }, 100);
     }
 
-    function cerrarPanelCliente() {
-        if (!panel) return;
+}
 
-        panel.classList.remove('is-open');
 
-        panel.setAttribute(
-            'aria-hidden',
-            'true'
-        );
+/* =========================================================
+   GUARDAR CLIENTES
+   ========================================================= */
 
-        if (overlay) {
-            overlay.hidden = true;
-        }
-    }
+function guardarClientes() {
 
-    // ============================================================
-    // GUARDAR CLIENTE
-    // ============================================================
-
-    function guardarCliente(event) {
-        event.preventDefault();
-
-        if (!validarCliente()) {
-            return;
-        }
-
-        const id =
-            $('clienteId')?.value || '';
-
-        const tipo =
-            obtenerTipoCliente();
-
-        const cliente = {
-            id: id || generarId('cli_'),
-            nombre: $('nombre')?.value.trim() || '',
-            telefono: $('telefono')?.value.trim() || '',
-            email: $('email')?.value.trim() || '',
-            direccion: $('direccion')?.value.trim() || '',
-            dpi: $('dpi')?.value.trim() || '',
-            nit: $('nit')?.value.trim() || '',
-            tipo: tipo,
-            descuento: tipo === 'mayorista'
-                ? Number($('descuento')?.value || 0)
-                : 0,
-            limiteCredito: tipo === 'mayorista'
-                ? Number($('limiteCredito')?.value || 0)
-                : 0,
-            actualizado: new Date().toISOString()
-        };
-
-        const indice =
-            clientes.findIndex(
-                c => c.id === cliente.id
-            );
-
-        if (indice >= 0) {
-            cliente.creado =
-                clientes[indice].creado ||
-                new Date().toISOString();
-
-            clientes[indice] = {
-                ...clientes[indice],
-                ...cliente
-            };
-
-            toast(
-                'Cliente actualizado correctamente.'
-            );
-
-        } else {
-            cliente.creado =
-                new Date().toISOString();
-
-            clientes.unshift(cliente);
-
-            toast(
-                'Cliente registrado correctamente.'
-            );
-        }
-
-        if (guardarClientes()) {
-            cerrarPanelCliente();
-            mostrarClientes();
-            actualizarEstadisticas();
-        }
-    }
-
-    // ============================================================
-    // MOSTRAR CLIENTES
-    // ============================================================
-
-    function obtenerFiltroActivo() {
-        return document
-            .querySelector(
-                '.filter-button[data-filter].active'
-            )?.dataset.filter || 'todos';
-    }
-
-    function mostrarClientes() {
-        const tbody = $('clientesBody');
-
-        if (!tbody) {
-            return;
-        }
-
-        const busqueda =
-            ($('searchInput')?.value || '')
-                .trim()
-                .toLowerCase();
-
-        const filtro =
-            obtenerFiltroActivo();
-
-        let lista =
-            clientes.filter(cliente => {
-
-                const texto = [
-                    cliente.nombre,
-                    cliente.telefono,
-                    cliente.email,
-                    cliente.dpi,
-                    cliente.nit,
-                    cliente.direccion
-                ]
-                    .join(' ')
-                    .toLowerCase();
-
-                const coincideBusqueda =
-                    !busqueda ||
-                    texto.includes(busqueda);
-
-                let coincideFiltro = true;
-
-                if (filtro === 'mayorista') {
-                    coincideFiltro =
-                        cliente.tipo === 'mayorista';
-                }
-
-                if (filtro === 'minorista') {
-                    coincideFiltro =
-                        cliente.tipo !== 'mayorista';
-                }
-
-                return coincideBusqueda &&
-                    coincideFiltro;
-            });
-
-        tbody.innerHTML = '';
-
-        if (!lista.length) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="empty-state">
-                        <div class="empty-icon">👥</div>
-                        <strong>No se encontraron clientes</strong>
-                        <span>Agrega un cliente o cambia los filtros.</span>
-                    </td>
-                </tr>
-            `;
-
-            actualizarContador(0);
-            return;
-        }
-
-        lista.forEach(cliente => {
-            const tr =
-                document.createElement('tr');
-
-            const inicial =
-                (cliente.nombre || '?')
-                    .trim()
-                    .charAt(0)
-                    .toUpperCase();
-
-            const tipoTexto =
-                cliente.tipo === 'mayorista'
-                    ? 'Mayorista'
-                    : 'Minorista';
-
-            const tipoClase =
-                cliente.tipo === 'mayorista'
-                    ? 'mayorista'
-                    : 'minorista';
-
-            tr.innerHTML = `
-                <td>
-                    <div class="client-cell">
-                        <div class="avatar">
-                            ${escaparHTML(inicial)}
-                        </div>
-
-                        <div>
-                            <strong>
-                                ${escaparHTML(cliente.nombre)}
-                            </strong>
-
-                            <small>
-                                ${escaparHTML(cliente.email || 'Sin correo')}
-                            </small>
-                        </div>
-                    </div>
-                </td>
-
-                <td>
-                    ${escaparHTML(cliente.telefono || 'Sin teléfono')}
-                </td>
-
-                <td>
-                    ${escaparHTML(cliente.nit || '—')}
-                </td>
-
-                <td>
-                    <span class="type-badge ${tipoClase}">
-                        ${tipoTexto}
-                    </span>
-                </td>
-
-                <td>
-                    ${cliente.tipo === 'mayorista'
-                        ? dinero(cliente.limiteCredito)
-                        : '—'}
-                </td>
-
-                <td>
-                    ${formatearFecha(
-                        cliente.actualizado ||
-                        cliente.creado
-                    )}
-                </td>
-
-                <td>
-                    <div class="actions">
-                        <button
-                            class="action-btn"
-                            type="button"
-                            data-action="view"
-                            data-id="${escaparHTML(cliente.id)}"
-                            title="Ver cliente">
-                            👁
-                        </button>
-
-                        <button
-                            class="action-btn"
-                            type="button"
-                            data-action="edit"
-                            data-id="${escaparHTML(cliente.id)}"
-                            title="Editar cliente">
-                            ✏
-                        </button>
-
-                        <button
-                            class="action-btn danger"
-                            type="button"
-                            data-action="delete"
-                            data-id="${escaparHTML(cliente.id)}"
-                            title="Eliminar cliente">
-                            🗑
-                        </button>
-                    </div>
-                </td>
-            `;
-
-            tbody.appendChild(tr);
-        });
-
-        actualizarContador(lista.length);
-    }
-
-    function actualizarContador(cantidad) {
-        const contador = $('clientesCount');
-
-        if (contador) {
-            contador.textContent =
-                `${cantidad} cliente${cantidad === 1 ? '' : 's'}`;
-        }
-    }
-
-    // ============================================================
-    // ESTADÍSTICAS
-    // ============================================================
-
-    function actualizarEstadisticas() {
-        const total = clientes.length;
-
-        const mayoristas =
-            clientes.filter(
-                c => c.tipo === 'mayorista'
-            ).length;
-
-        const minoristas =
-            clientes.filter(
-                c => c.tipo !== 'mayorista'
-            ).length;
-
-        const limite =
-            clientes.reduce(
-                (total, cliente) =>
-                    total +
-                    Number(cliente.limiteCredito || 0),
-                0
-            );
-
-        if ($('statTotal')) {
-            $('statTotal').textContent =
-                total;
-        }
-
-        if ($('statMayoristas')) {
-            $('statMayoristas').textContent =
-                mayoristas;
-        }
-
-        if ($('statMinoristas')) {
-            $('statMinoristas').textContent =
-                minoristas;
-        }
-
-        if ($('statCredito')) {
-            $('statCredito').textContent =
-                dinero(limite);
-        }
-    }
-
-    // ============================================================
-    // BUSCAR CLIENTE POR ID
-    // ============================================================
-
-    function buscarCliente(id) {
-        return clientes.find(
-            cliente => cliente.id === id
-        );
-    }
-
-    // ============================================================
-    // DETALLE
-    // ============================================================
-
-    function mostrarDetalle(cliente) {
-        if (!cliente) return;
-
-        clienteDetalle = cliente;
-
-        const dialog =
-            $('dialogDetalle');
-
-        if (!dialog) return;
-
-        const inicial =
-            (cliente.nombre || '?')
-                .trim()
-                .charAt(0)
-                .toUpperCase();
-
-        if ($('detalleAvatar')) {
-            $('detalleAvatar').textContent =
-                inicial;
-        }
-
-        if ($('detalleNombre')) {
-            $('detalleNombre').textContent =
-                cliente.nombre || 'Sin nombre';
-        }
-
-        if ($('detalleTipo')) {
-            $('detalleTipo').textContent =
-                cliente.tipo === 'mayorista'
-                    ? 'Mayorista'
-                    : 'Minorista';
-        }
-
-        if ($('detalleTelefono')) {
-            $('detalleTelefono').textContent =
-                cliente.telefono || 'No registrado';
-        }
-
-        if ($('detalleEmail')) {
-            $('detalleEmail').textContent =
-                cliente.email || 'No registrado';
-        }
-
-        if ($('detalleDireccion')) {
-            $('detalleDireccion').textContent =
-                cliente.direccion || 'No registrada';
-        }
-
-        if ($('detalleDpi')) {
-            $('detalleDpi').textContent =
-                cliente.dpi || 'No registrado';
-        }
-
-        if ($('detalleNit')) {
-            $('detalleNit').textContent =
-                cliente.nit || 'No registrado';
-        }
-
-        if ($('detalleDescuento')) {
-            $('detalleDescuento').textContent =
-                cliente.tipo === 'mayorista'
-                    ? `${Number(cliente.descuento || 0)}%`
-                    : '0%';
-        }
-
-        if ($('detalleCredito')) {
-            $('detalleCredito').textContent =
-                cliente.tipo === 'mayorista'
-                    ? dinero(cliente.limiteCredito)
-                    : 'Q0.00';
-        }
-
-        if ($('detalleFecha')) {
-            $('detalleFecha').textContent =
-                formatearFecha(
-                    cliente.actualizado ||
-                    cliente.creado
-                );
-        }
-
-        dialog.showModal();
-    }
-
-    // ============================================================
-    // ELIMINAR
-    // ============================================================
-
-    function eliminarCliente(cliente) {
-        if (!cliente) return;
-
-        clienteAEliminar = cliente;
-
-        const dialog =
-            $('dialogEliminar');
-
-        if (!dialog) return;
-
-        if ($('nombreEliminar')) {
-            $('nombreEliminar').textContent =
-                cliente.nombre;
-        }
-
-        dialog.showModal();
-    }
-
-    function confirmarEliminarCliente() {
-        if (!clienteAEliminar) {
-            return;
-        }
-
-        const id =
-            clienteAEliminar.id;
-
-        clientes =
-            clientes.filter(
-                cliente =>
-                    cliente.id !== id
-            );
-
-        if (guardarClientes()) {
-            toast(
-                'Cliente eliminado correctamente.'
-            );
-
-            $('dialogEliminar')?.close();
-
-            clienteAEliminar = null;
-
-            mostrarClientes();
-            actualizarEstadisticas();
-        }
-    }
-
-    // ============================================================
-    // EVENTOS DEL FORMULARIO
-    // ============================================================
-
-    on(
-        'clienteForm',
-        'submit',
-        guardarCliente
-    );
-
-    on(
-        'btnNuevoCliente',
-        'click',
-        () => abrirPanelCliente()
-    );
-
-    on(
-        'btnCerrarPanel',
-        'click',
-        cerrarPanelCliente
-    );
-
-    on(
-        'btnCancelar',
-        'click',
-        cerrarPanelCliente
-    );
-
-    if (overlay) {
-        overlay.addEventListener(
-            'click',
-            cerrarPanelCliente
-        );
-    }
-
-    on(
-        'tipoMayorista',
-        'change',
-        actualizarCamposTipo
-    );
-
-    on(
-        'tipoMinorista',
-        'change',
-        actualizarCamposTipo
-    );
-
-    // ============================================================
-    // ACCIONES DE LA TABLA
-    // ============================================================
-
-    on(
-        'clientesBody',
-        'click',
-        event => {
-
-            const boton =
-                event.target.closest(
-                    '[data-action]'
-                );
-
-            if (!boton) return;
-
-            const id =
-                boton.dataset.id;
-
-            const accion =
-                boton.dataset.action;
-
-            const cliente =
-                buscarCliente(id);
-
-            if (!cliente) return;
-
-            if (accion === 'view') {
-                mostrarDetalle(cliente);
-            }
-
-            if (accion === 'edit') {
-                abrirPanelCliente(cliente);
-            }
-
-            if (accion === 'delete') {
-                eliminarCliente(cliente);
-            }
-        }
-    );
-
-    // ============================================================
-    // BÚSQUEDA
-    // ============================================================
-
-    on(
-        'searchInput',
-        'input',
-        mostrarClientes
-    );
-
-    on(
-        'btnLimpiarBusqueda',
-        'click',
-        () => {
-
-            if ($('searchInput')) {
-                $('searchInput').value = '';
-            }
-
-            mostrarClientes();
-
-            $('searchInput')?.focus();
-        }
-    );
-
-    // ============================================================
-    // FILTROS
-    // ============================================================
-
-    document
-        .querySelectorAll(
-            '.filter-button[data-filter]'
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                () => {
-
-                    document
-                        .querySelectorAll(
-                            '.filter-button[data-filter]'
-                        )
-                        .forEach(
-                            b =>
-                                b.classList.remove(
-                                    'active'
-                                )
-                        );
-
-                    button.classList.add(
-                        'active'
-                    );
-
-                    mostrarClientes();
-                }
-            );
-        });
-
-    // ============================================================
-    // DETALLE
-    // ============================================================
-
-    on(
-        'btnCerrarDetalle',
-        'click',
-        () =>
-            $('dialogDetalle')?.close()
-    );
-
-    on(
-        'btnEditarDetalle',
-        'click',
-        () => {
-
-            if (!clienteDetalle) return;
-
-            $('dialogDetalle')?.close();
-
-            abrirPanelCliente(
-                clienteDetalle
-            );
-        }
-    );
-
-    on(
-        'btnEliminarDetalle',
-        'click',
-        () => {
-
-            if (!clienteDetalle) return;
-
-            $('dialogDetalle')?.close();
-
-            eliminarCliente(
-                clienteDetalle
-            );
-        }
-    );
-
-    // ============================================================
-    // ELIMINAR
-    // ============================================================
-
-    on(
-        'btnCerrarEliminar',
-        'click',
-        () =>
-            $('dialogEliminar')?.close()
-    );
-
-    on(
-        'btnCancelarEliminar',
-        'click',
-        () =>
-            $('dialogEliminar')?.close()
-    );
-
-    on(
-        'btnConfirmarEliminar',
-        'click',
-        confirmarEliminarCliente
-    );
-
-    // ============================================================
-    // WHATSAPP
-    // ============================================================
-
-    on(
-        'btnWhatsApp',
-        'click',
-        () => {
-
-            if (
-                !clienteDetalle ||
-                !clienteDetalle.telefono
-            ) {
-                toast(
-                    'El cliente no tiene teléfono registrado.',
-                    'error'
-                );
-
-                return;
-            }
-
-            const telefono =
-                clienteDetalle.telefono
-                    .replace(/\D/g, '');
-
-            const mensaje =
-                `Hola ${clienteDetalle.nombre}, le contactamos de Variedades Chiquis.`;
-
-            window.open(
-                `https://wa.me/502${telefono}?text=${encodeURIComponent(mensaje)}`,
-                '_blank'
-            );
-        }
-    );
-
-    // ============================================================
-    // TEMA
-    // ============================================================
-
-    function actualizarTema() {
-        const oscuro =
-            document.body.classList.contains('dark');
-
-        if ($('themeIcon')) {
-            $('themeIcon').textContent =
-                oscuro ? '☀' : '☾';
-        }
-
-        if ($('btnTemaDesktop')) {
-            $('btnTemaDesktop').textContent =
-                oscuro ? '☀' : '☾';
-        }
-    }
-
-    function cambiarTema() {
-        document.body.classList.toggle('dark');
+    try {
 
         localStorage.setItem(
-            'temaChiquis',
-            document.body.classList.contains('dark')
-                ? 'dark'
-                : 'light'
+            STORAGE_KEY,
+            JSON.stringify(clientes)
         );
 
-        actualizarTema();
+        return true;
+
+    } catch (error) {
+
+        console.error('Error al guardar clientes:', error);
+
+        mostrarToast(
+            'No se pudieron guardar los clientes.',
+            'error'
+        );
+
+        return false;
+
     }
 
-    if (
-        localStorage.getItem('temaChiquis') ===
-        'dark'
-    ) {
-        document.body.classList.add('dark');
+}
+
+
+/* =========================================================
+   GENERAR ID
+   ========================================================= */
+
+function generarId(prefijo = 'CLI-') {
+
+    const ahora = Date.now();
+
+    const aleatorio = Math.floor(
+        Math.random() * 1000
+    );
+
+    return `${prefijo}${ahora}-${aleatorio}`;
+
+}
+
+
+/* =========================================================
+   OBTENER TIPO
+   ========================================================= */
+
+function obtenerTipoCliente() {
+
+    const mayorista = $('tipoMayorista');
+
+    if (mayorista && mayorista.checked) {
+        return 'mayorista';
     }
 
-    actualizarTema();
+    return 'minorista';
 
-    on(
-        'btnTema',
-        'click',
-        cambiarTema
-    );
+}
 
-    on(
-        'btnTemaDesktop',
-        'click',
-        cambiarTema
-    );
 
-    // ============================================================
-    // MENÚ MÓVIL
-    // ============================================================
+/* =========================================================
+   ABRIR PANEL
+   ========================================================= */
 
-    on(
-        'btnMenu',
-        'click',
-        () =>
-            $('sidebar')?.classList.toggle('open')
-    );
+function abrirPanelCliente(cliente = null) {
 
-    // ============================================================
-    // NAVEGACIÓN
-    // ============================================================
+    clienteEditando = cliente;
 
-    on(
-        'btnNavPedidos',
-        'click',
-        () => {
-            window.location.href =
-                'pedidos.html';
+    const panel = $('panelCliente');
+    const overlay = $('overlay');
+
+    if (!panel) {
+        return;
+    }
+
+
+    if (cliente) {
+
+        $('tituloPanel').textContent = 'Editar cliente';
+
+        $('clienteId').value = cliente.id || '';
+
+        $('nombre').value = cliente.nombre || '';
+        $('telefono').value = cliente.telefono || '';
+        $('email').value = cliente.email || '';
+        $('dpi').value = cliente.dpi || '';
+        $('nit').value = cliente.nit || '';
+        $('direccion').value = cliente.direccion || '';
+
+        $('descuento').value =
+            cliente.descuento ?? 0;
+
+        $('limiteCredito').value =
+            cliente.limiteCredito ?? 0;
+
+
+        if (cliente.tipo === 'mayorista') {
+
+            $('tipoMayorista').checked = true;
+
+        } else {
+
+            $('tipoMinorista').checked = true;
+
         }
-    );
 
-    on(
-        'btnNavEstadisticas',
-        'click',
-        () => {
+    } else {
 
-            document
-                .querySelector('.stats-grid')
-                ?.scrollIntoView({
-                    behavior: 'smooth'
-                });
-        }
-    );
+        $('tituloPanel').textContent = 'Nuevo cliente';
 
-    // ============================================================
-    // EXPORTAR
-    // ============================================================
+        limpiarFormularioCliente();
 
-    function descargar(
-        nombre,
-        contenido,
-        tipo
-    ) {
-
-        const blob =
-            new Blob(
-                [contenido],
-                { type: tipo }
-            );
-
-        const url =
-            URL.createObjectURL(blob);
-
-        const a =
-            document.createElement('a');
-
-        a.href = url;
-        a.download = nombre;
-
-        document.body.appendChild(a);
-
-        a.click();
-
-        a.remove();
-
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-        }, 1000);
     }
 
-    function exportarClientes() {
 
-        if (!clientes.length) {
-            toast(
-                'No hay clientes para exportar.',
+    actualizarCamposTipo();
+
+
+    panel.classList.add('show');
+
+    if (overlay) {
+        overlay.classList.add('show');
+    }
+
+
+    setTimeout(() => {
+
+        const nombre = $('nombre');
+
+        if (nombre) {
+            nombre.focus();
+        }
+
+    }, 100);
+
+}
+
+
+/* =========================================================
+   CERRAR PANEL
+   ========================================================= */
+
+function cerrarPanelCliente() {
+
+    const panel = $('panelCliente');
+    const overlay = $('overlay');
+
+    if (panel) {
+        panel.classList.remove('show');
+    }
+
+    if (overlay) {
+        overlay.classList.remove('show');
+    }
+
+    clienteEditando = null;
+
+    limpiarFormularioCliente();
+
+}
+
+
+/* =========================================================
+   LIMPIAR FORMULARIO
+   ========================================================= */
+
+function limpiarFormularioCliente() {
+
+    const form = $('clienteForm');
+
+    if (form) {
+        form.reset();
+    }
+
+
+    if ($('clienteId')) {
+        $('clienteId').value = '';
+    }
+
+
+    if ($('tipoMinorista')) {
+        $('tipoMinorista').checked = true;
+    }
+
+
+    if ($('descuento')) {
+        $('descuento').value = 0;
+    }
+
+
+    if ($('limiteCredito')) {
+        $('limiteCredito').value = 0;
+    }
+
+
+    actualizarCamposTipo();
+
+}
+
+
+/* =========================================================
+   ACTUALIZAR CAMPOS SEGÚN TIPO
+   ========================================================= */
+
+function actualizarCamposTipo() {
+
+    const mayorista = obtenerTipoCliente();
+
+    const descuento = $('descuento');
+    const limiteCredito = $('limiteCredito');
+
+    if (!descuento || !limiteCredito) {
+        return;
+    }
+
+
+    if (mayorista === 'mayorista') {
+
+        descuento.disabled = false;
+        limiteCredito.disabled = false;
+
+    } else {
+
+        descuento.disabled = false;
+        limiteCredito.disabled = false;
+
+    }
+
+}
+
+
+/* =========================================================
+   VALIDAR CLIENTE
+   ========================================================= */
+
+function validarCliente() {
+
+    const nombre = $('nombre').value.trim();
+    const telefono = $('telefono').value.trim();
+    const email = $('email').value.trim();
+    const nit = $('nit').value.trim();
+
+    const tipo = obtenerTipoCliente();
+
+    const descuento =
+        Number($('descuento').value || 0);
+
+
+    if (nombre.length < 3) {
+
+        mostrarToast(
+            'El nombre debe tener al menos 3 caracteres.',
+            'error'
+        );
+
+        $('nombre').focus();
+
+        return false;
+
+    }
+
+
+    const telefonoNumeros =
+        telefono.replace(/\D/g, '');
+
+
+    if (telefonoNumeros.length < 8) {
+
+        mostrarToast(
+            'El teléfono debe tener al menos 8 dígitos.',
+            'error'
+        );
+
+        $('telefono').focus();
+
+        return false;
+
+    }
+
+
+    if (email) {
+
+        const emailValido =
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+        if (!emailValido) {
+
+            mostrarToast(
+                'Ingresa un correo electrónico válido.',
                 'error'
             );
 
-            return;
+            $('email').focus();
+
+            return false;
+
         }
 
-        descargar(
-            'clientes-variedades-chiquis.json',
+    }
+
+
+    if (tipo === 'mayorista' && !nit) {
+
+        mostrarToast(
+            'El NIT es obligatorio para clientes mayoristas.',
+            'error'
+        );
+
+        $('nit').focus();
+
+        return false;
+
+    }
+
+
+    if (
+        Number.isNaN(descuento) ||
+        descuento < 0 ||
+        descuento > 100
+    ) {
+
+        mostrarToast(
+            'El descuento debe estar entre 0 y 100%.',
+            'error'
+        );
+
+        $('descuento').focus();
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   GUARDAR CLIENTE
+   ========================================================= */
+
+function guardarCliente(event) {
+
+    event.preventDefault();
+
+
+    if (!validarCliente()) {
+        return;
+    }
+
+
+    const id =
+        $('clienteId').value ||
+        generarId('CLI-');
+
+
+    const tipo =
+        obtenerTipoCliente();
+
+
+    const cliente = {
+
+        id: id,
+
+        nombre:
+            $('nombre').value.trim(),
+
+        telefono:
+            $('telefono').value.trim(),
+
+        email:
+            $('email').value.trim(),
+
+        dpi:
+            $('dpi').value.trim(),
+
+        nit:
+            $('nit').value.trim(),
+
+        direccion:
+            $('direccion').value.trim(),
+
+        tipo: tipo,
+
+        descuento:
+            Number($('descuento').value || 0),
+
+        limiteCredito:
+            Number($('limiteCredito').value || 0),
+
+        fechaRegistro:
+            clienteEditando?.fechaRegistro ||
+            new Date().toISOString()
+
+    };
+
+
+    const indice =
+        clientes.findIndex(
+            c => String(c.id) === String(id)
+        );
+
+
+    if (indice >= 0) {
+
+        clientes[indice] = cliente;
+
+        if (guardarClientes()) {
+
+            mostrarToast(
+                'Cliente actualizado correctamente.',
+                'success'
+            );
+
+            cerrarPanelCliente();
+
+            mostrarClientes();
+
+            actualizarEstadisticas();
+
+        }
+
+    } else {
+
+        clientes.push(cliente);
+
+        if (guardarClientes()) {
+
+            mostrarToast(
+                'Cliente creado correctamente.',
+                'success'
+            );
+
+            cerrarPanelCliente();
+
+            mostrarClientes();
+
+            actualizarEstadisticas();
+
+        }
+
+    }
+
+}
+
+
+/* =========================================================
+   MOSTRAR CLIENTES
+   ========================================================= */
+
+function mostrarClientes() {
+
+    const tabla = $('clientesTabla');
+    const estadoVacio = $('estadoVacio');
+
+    if (!tabla) {
+        return;
+    }
+
+
+    const busqueda =
+        ($('buscar')?.value || '')
+            .trim()
+            .toLowerCase();
+
+
+    const filtroTipo =
+        ($('filtroTipo')?.value || '')
+            .toLowerCase();
+
+
+    let filtrados = clientes.filter(cliente => {
+
+        const texto = [
+
+            cliente.nombre,
+            cliente.telefono,
+            cliente.email,
+            cliente.nit,
+            cliente.dpi,
+            cliente.direccion,
+            cliente.id
+
+        ]
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase();
+
+
+        const coincideBusqueda =
+            !busqueda ||
+            texto.includes(busqueda);
+
+
+        const coincideTipo =
+            !filtroTipo ||
+            String(cliente.tipo || '').toLowerCase()
+                === filtroTipo;
+
+
+        return coincideBusqueda && coincideTipo;
+
+    });
+
+
+    tabla.innerHTML = '';
+
+
+    if (filtrados.length === 0) {
+
+        if (estadoVacio) {
+            estadoVacio.classList.add('show');
+        }
+
+        return;
+
+    }
+
+
+    if (estadoVacio) {
+        estadoVacio.classList.remove('show');
+    }
+
+
+    filtrados.forEach(cliente => {
+
+        const fila =
+            document.createElement('tr');
+
+
+        const nombre =
+            cliente.nombre || 'Sin nombre';
+
+
+        const iniciales =
+            obtenerIniciales(nombre);
+
+
+        const tipo =
+            cliente.tipo || 'minorista';
+
+
+        const descuento =
+            Number(cliente.descuento || 0);
+
+
+        const fecha =
+            formatearFecha(cliente.fechaRegistro);
+
+
+        fila.innerHTML = `
+
+            <td>
+
+                <div class="client-cell">
+
+                    <div class="client-avatar">
+                        ${escapeHTML(iniciales)}
+                    </div>
+
+                    <div>
+
+                        <div class="client-name">
+                            ${escapeHTML(nombre)}
+                        </div>
+
+                        <span class="client-id">
+                            ${escapeHTML(cliente.id || '')}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </td>
+
+
+            <td>
+                ${escapeHTML(cliente.telefono || '—')}
+            </td>
+
+
+            <td>
+                ${escapeHTML(cliente.email || '—')}
+            </td>
+
+
+            <td>
+
+                <span class="badge ${
+                    tipo === 'mayorista'
+                        ? 'badge-mayorista'
+                        : 'badge-minorista'
+                }">
+
+                    ${
+                        tipo === 'mayorista'
+                            ? '🏪 Mayorista'
+                            : '🛒 Minorista'
+                    }
+
+                </span>
+
+            </td>
+
+
+            <td>
+                ${descuento.toFixed(2)}%
+            </td>
+
+
+            <td>
+                ${escapeHTML(fecha)}
+            </td>
+
+
+            <td>
+
+                <div class="actions">
+
+                    <button
+                        class="action-btn"
+                        type="button"
+                        title="Editar cliente"
+                        data-action="editar"
+                        data-id="${escapeHTML(cliente.id)}"
+                    >
+                        ✏️
+                    </button>
+
+
+                    <button
+                        class="action-btn"
+                        type="button"
+                        title="WhatsApp"
+                        data-action="whatsapp"
+                        data-id="${escapeHTML(cliente.id)}"
+                    >
+                        💬
+                    </button>
+
+
+                    <button
+                        class="action-btn delete"
+                        type="button"
+                        title="Eliminar cliente"
+                        data-action="eliminar"
+                        data-id="${escapeHTML(cliente.id)}"
+                    >
+                        🗑️
+                    </button>
+
+                </div>
+
+            </td>
+
+        `;
+
+
+        tabla.appendChild(fila);
+
+    });
+
+}
+
+
+/* =========================================================
+   INICIALES
+   ========================================================= */
+
+function obtenerIniciales(nombre) {
+
+    const partes =
+        String(nombre)
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+
+    if (partes.length === 0) {
+        return '?';
+    }
+
+
+    if (partes.length === 1) {
+
+        return partes[0]
+            .substring(0, 2)
+            .toUpperCase();
+
+    }
+
+
+    return (
+        partes[0][0] +
+        partes[partes.length - 1][0]
+    ).toUpperCase();
+
+}
+
+
+/* =========================================================
+   FECHA
+   ========================================================= */
+
+function formatearFecha(fecha) {
+
+    if (!fecha) {
+        return '—';
+    }
+
+
+    try {
+
+        const date =
+            new Date(fecha);
+
+
+        if (Number.isNaN(date.getTime())) {
+            return '—';
+        }
+
+
+        return date.toLocaleDateString(
+            'es-GT',
+            {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            }
+        );
+
+    } catch {
+
+        return '—';
+
+    }
+
+}
+
+
+/* =========================================================
+   ESTADÍSTICAS
+   ========================================================= */
+
+function actualizarEstadisticas() {
+
+    const total =
+        clientes.length;
+
+
+    const minoristas =
+        clientes.filter(
+            c => c.tipo === 'minorista'
+        ).length;
+
+
+    const mayoristas =
+        clientes.filter(
+            c => c.tipo === 'mayorista'
+        ).length;
+
+
+    const activos =
+        clientes.length;
+
+
+    if ($('totalClientes')) {
+        $('totalClientes').textContent = total;
+    }
+
+
+    if ($('totalMinoristas')) {
+        $('totalMinoristas').textContent =
+            minoristas;
+    }
+
+
+    if ($('totalMayoristas')) {
+        $('totalMayoristas').textContent =
+            mayoristas;
+    }
+
+
+    if ($('totalActivos')) {
+        $('totalActivos').textContent =
+            activos;
+    }
+
+}
+
+
+/* =========================================================
+   EDITAR
+   ========================================================= */
+
+function editarCliente(id) {
+
+    const cliente =
+        clientes.find(
+            c => String(c.id) === String(id)
+        );
+
+
+    if (!cliente) {
+
+        mostrarToast(
+            'No se encontró el cliente.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    abrirPanelCliente(cliente);
+
+}
+
+
+/* =========================================================
+   ELIMINAR
+   ========================================================= */
+
+function solicitarEliminarCliente(id) {
+
+    const cliente =
+        clientes.find(
+            c => String(c.id) === String(id)
+        );
+
+
+    if (!cliente) {
+        return;
+    }
+
+
+    clienteEliminar = cliente;
+
+
+    const titulo =
+        $('modalTitulo');
+
+    const mensaje =
+        $('modalMensaje');
+
+
+    if (titulo) {
+        titulo.textContent =
+            '¿Eliminar cliente?';
+    }
+
+
+    if (mensaje) {
+
+        mensaje.textContent =
+            `¿Deseas eliminar a "${cliente.nombre}"? Esta acción no se puede deshacer.`;
+
+    }
+
+
+    const modal =
+        $('modalConfirmacion');
+
+
+    if (modal) {
+        modal.classList.add('show');
+    }
+
+}
+
+
+/* =========================================================
+   CERRAR MODAL
+   ========================================================= */
+
+function cerrarModal() {
+
+    const modal =
+        $('modalConfirmacion');
+
+
+    if (modal) {
+        modal.classList.remove('show');
+    }
+
+
+    clienteEliminar = null;
+
+}
+
+
+/* =========================================================
+   CONFIRMAR ELIMINACIÓN
+   ========================================================= */
+
+function confirmarEliminar() {
+
+    if (!clienteEliminar) {
+        return;
+    }
+
+
+    const id =
+        clienteEliminar.id;
+
+
+    clientes =
+        clientes.filter(
+            c => String(c.id) !== String(id)
+        );
+
+
+    if (guardarClientes()) {
+
+        mostrarToast(
+            'Cliente eliminado correctamente.',
+            'success'
+        );
+
+        cerrarModal();
+
+        mostrarClientes();
+
+        actualizarEstadisticas();
+
+    }
+
+}
+
+
+/* =========================================================
+   WHATSAPP
+   ========================================================= */
+
+function abrirWhatsApp(id) {
+
+    const cliente =
+        clientes.find(
+            c => String(c.id) === String(id)
+        );
+
+
+    if (!cliente) {
+        return;
+    }
+
+
+    let telefono =
+        String(cliente.telefono || '')
+            .replace(/\D/g, '');
+
+
+    if (!telefono) {
+
+        mostrarToast(
+            'Este cliente no tiene teléfono registrado.',
+            'error'
+        );
+
+        return;
+
+    }
+
+
+    /*
+       Guatemala = 502.
+       Si el número tiene 8 dígitos,
+       agregamos automáticamente el código.
+    */
+
+    if (telefono.length === 8) {
+        telefono = '502' + telefono;
+    }
+
+
+    const mensaje =
+        encodeURIComponent(
+            `Hola ${cliente.nombre}, le saluda Variedades Chiquis.`
+        );
+
+
+    const url =
+        `https://wa.me/${telefono}?text=${mensaje}`;
+
+
+    window.open(
+        url,
+        '_blank',
+        'noopener,noreferrer'
+    );
+
+}
+
+
+/* =========================================================
+   EXPORTAR
+   ========================================================= */
+
+function exportarClientes() {
+
+    try {
+
+        const contenido =
             JSON.stringify(
                 clientes,
                 null,
                 2
-            ),
-            'application/json'
+            );
+
+
+        const blob =
+            new Blob(
+                [contenido],
+                {
+                    type: 'application/json'
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        const enlace =
+            document.createElement('a');
+
+
+        const fecha =
+            new Date()
+                .toISOString()
+                .slice(0, 10);
+
+
+        enlace.href = url;
+
+        enlace.download =
+            `clientes-chiquis-${fecha}.json`;
+
+
+        document.body.appendChild(enlace);
+
+        enlace.click();
+
+        enlace.remove();
+
+
+        URL.revokeObjectURL(url);
+
+
+        mostrarToast(
+            'Clientes exportados correctamente.',
+            'success'
         );
 
-        toast(
-            'Clientes exportados correctamente.'
+    } catch (error) {
+
+        console.error(error);
+
+        mostrarToast(
+            'No se pudo exportar la información.',
+            'error'
         );
+
     }
 
-    on(
-        'btnExportar',
-        'click',
-        exportarClientes
-    );
+}
 
-    on(
-        'btnExportarNav',
-        'click',
-        exportarClientes
-    );
 
-    // ============================================================
-    // IMPORTAR
-    // ============================================================
+/* =========================================================
+   IMPORTAR
+   ========================================================= */
 
-    on(
-        'btnImportar',
-        'click',
-        () =>
-            $('inputImportar')?.click()
-    );
+function importarClientes(event) {
 
-    on(
-        'btnImportarNav',
-        'click',
-        () =>
-            $('inputImportar')?.click()
-    );
+    const archivo =
+        event.target.files?.[0];
 
-    on(
-        'inputImportar',
-        'change',
-        event => {
 
-            const archivo =
-                event.target.files?.[0];
+    if (!archivo) {
+        return;
+    }
 
-            if (!archivo) return;
 
-            const lector =
-                new FileReader();
+    const lector =
+        new FileReader();
 
-            lector.onload = () => {
 
-                try {
+    lector.onload =
+        function () {
 
-                    const datos =
-                        JSON.parse(
-                            lector.result
-                        );
+            try {
 
-                    if (
-                        !Array.isArray(datos)
-                    ) {
-                        throw new Error(
-                            'Formato inválido'
-                        );
-                    }
-
-                    clientes = datos;
-
-                    guardarClientes();
-
-                    mostrarClientes();
-                    actualizarEstadisticas();
-
-                    toast(
-                        'Clientes importados correctamente.'
+                const datos =
+                    JSON.parse(
+                        lector.result
                     );
 
-                } catch (error) {
 
-                    console.error(error);
+                if (!Array.isArray(datos)) {
 
-                    toast(
-                        'El archivo no tiene un formato válido.',
-                        'error'
+                    throw new Error(
+                        'El archivo no contiene una lista válida.'
                     );
+
                 }
 
-                event.target.value = '';
-            };
 
-            lector.readAsText(
-                archivo,
-                'UTF-8'
+                const nuevos =
+                    datos.map(cliente => ({
+
+                        ...cliente,
+
+                        id:
+                            cliente.id ||
+                            generarId('CLI-'),
+
+                        fechaRegistro:
+                            cliente.fechaRegistro ||
+                            new Date().toISOString()
+
+                    }));
+
+
+                clientes = nuevos;
+
+
+                if (guardarClientes()) {
+
+                    mostrarClientes();
+
+                    actualizarEstadisticas();
+
+                    mostrarToast(
+                        'Clientes importados correctamente.',
+                        'success'
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(error);
+
+                mostrarToast(
+                    'El archivo seleccionado no es válido.',
+                    'error'
+                );
+
+            }
+
+
+            event.target.value = '';
+
+        };
+
+
+    lector.onerror =
+        function () {
+
+            mostrarToast(
+                'No se pudo leer el archivo.',
+                'error'
             );
+
+            event.target.value = '';
+
+        };
+
+
+    lector.readAsText(archivo);
+
+}
+
+
+/* =========================================================
+   TEMA
+   ========================================================= */
+
+function aplicarTema() {
+
+    let tema = 'light';
+
+
+    try {
+
+        tema =
+            localStorage.getItem(THEME_KEY)
+            || 'light';
+
+    } catch (error) {
+
+        console.warn(
+            'No se pudo leer el tema.',
+            error
+        );
+
+    }
+
+
+    if (tema === 'dark') {
+
+        document.body.classList.add('dark');
+
+    } else {
+
+        document.body.classList.remove('dark');
+
+    }
+
+
+    actualizarBotonTema();
+
+}
+
+
+/* =========================================================
+   CAMBIAR TEMA
+   ========================================================= */
+
+function cambiarTema() {
+
+    const oscuro =
+        document.body.classList.toggle('dark');
+
+
+    const nuevoTema =
+        oscuro ? 'dark' : 'light';
+
+
+    try {
+
+        localStorage.setItem(
+            THEME_KEY,
+            nuevoTema
+        );
+
+    } catch (error) {
+
+        console.warn(
+            'No se pudo guardar el tema.',
+            error
+        );
+
+    }
+
+
+    actualizarBotonTema();
+
+}
+
+
+/* =========================================================
+   BOTÓN DE TEMA
+   ========================================================= */
+
+function actualizarBotonTema() {
+
+    const boton =
+        $('btnTema');
+
+
+    if (!boton) {
+        return;
+    }
+
+
+    if (
+        document.body.classList.contains('dark')
+    ) {
+
+        boton.innerHTML =
+            '<span>☀️</span><span>Tema claro</span>';
+
+    } else {
+
+        boton.innerHTML =
+            '<span>🌙</span><span>Tema oscuro</span>';
+
+    }
+
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function mostrarToast(
+    mensaje,
+    tipo = 'success'
+) {
+
+    const toast =
+        $('toast');
+
+    const texto =
+        $('toastMensaje');
+
+    const icono =
+        $('toastIcon');
+
+
+    if (!toast || !texto) {
+        return;
+    }
+
+
+    texto.textContent =
+        mensaje;
+
+
+    if (icono) {
+
+        if (tipo === 'error') {
+
+            icono.textContent = '✕';
+
+            icono.style.background =
+                'var(--danger-light)';
+
+            icono.style.color =
+                'var(--danger)';
+
+        } else {
+
+            icono.textContent = '✓';
+
+            icono.style.background =
+                'var(--success-light)';
+
+            icono.style.color =
+                'var(--success)';
+
         }
-    );
 
-    // ============================================================
-    // TECLADO
-    // ============================================================
+    }
 
-    document.addEventListener(
-        'keydown',
-        event => {
 
-            if (
-                event.key === 'Escape' &&
-                panel?.classList.contains(
-                    'is-open'
-                )
-            ) {
-                cerrarPanelCliente();
-            }
+    toast.classList.add('show');
 
-            if (
-                event.ctrlKey &&
-                event.key.toLowerCase() === 'n'
-            ) {
 
-                event.preventDefault();
+    clearTimeout(toastTimer);
 
-                abrirPanelCliente();
-            }
 
-            if (
-                event.ctrlKey &&
-                event.key.toLowerCase() === 'k'
-            ) {
+    toastTimer =
+        setTimeout(
+            () => {
+                toast.classList.remove('show');
+            },
+            3000
+        );
 
-                event.preventDefault();
+}
 
-                $('searchInput')?.focus();
-            }
+
+/* =========================================================
+   EVENTOS DE TABLA
+   ========================================================= */
+
+on(
+    'clientesTabla',
+    'click',
+    function (event) {
+
+        const boton =
+            event.target.closest(
+                '[data-action]'
+            );
+
+
+        if (!boton) {
+            return;
         }
-    );
 
-    // ============================================================
-    // INICIO
-    // ============================================================
 
-    actualizarCamposTipo();
-    mostrarClientes();
-    actualizarEstadisticas();
-});
+        const accion =
+            boton.dataset.action;
+
+
+        const id =
+            boton.dataset.id;
+
+
+        if (accion === 'editar') {
+
+            editarCliente(id);
+
+        }
+
+
+        if (accion === 'eliminar') {
+
+            solicitarEliminarCliente(id);
+
+        }
+
+
+        if (accion === 'whatsapp') {
+
+            abrirWhatsApp(id);
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   EVENTOS PRINCIPALES
+   ========================================================= */
+
+on(
+    'btnNuevo',
+    'click',
+    () => abrirPanelCliente()
+);
+
+
+on(
+    'btnNuevoVacio',
+    'click',
+    () => abrirPanelCliente()
+);
+
+
+on(
+    'btnCerrarPanel',
+    'click',
+    cerrarPanelCliente
+);
+
+
+on(
+    'btnCancelar',
+    'click',
+    cerrarPanelCliente
+);
+
+
+on(
+    'overlay',
+    'click',
+    cerrarPanelCliente
+);
+
+
+on(
+    'clienteForm',
+    'submit',
+    guardarCliente
+);
+
+
+on(
+    'tipoMinorista',
+    'change',
+    actualizarCamposTipo
+);
+
+
+on(
+    'tipoMayorista',
+    'change',
+    actualizarCamposTipo
+);
+
+
+on(
+    'buscar',
+    'input',
+    mostrarClientes
+);
+
+
+on(
+    'filtroTipo',
+    'change',
+    mostrarClientes
+);
+
+
+on(
+    'btnModalCancelar',
+    'click',
+    cerrarModal
+);
+
+
+on(
+    'btnModalConfirmar',
+    'click',
+    confirmarEliminar
+);
+
+
+on(
+    'btnExportar',
+    'click',
+    exportarClientes
+);
+
+
+on(
+    'btnImportar',
+    'click',
+    () => {
+
+        const archivo =
+            $('archivoImportar');
+
+        if (archivo) {
+            archivo.click();
+        }
+
+    }
+);
+
+
+on(
+    'archivoImportar',
+    'change',
+    importarClientes
+);
+
+
+on(
+    'btnTema',
+    'click',
+    cambiarTema
+);
+
+
+/* =========================================================
+   CERRAR CON ESCAPE
+   ========================================================= */
+
+document.addEventListener(
+    'keydown',
+    function (event) {
+
+        if (event.key !== 'Escape') {
+            return;
+        }
+
+
+        const panel =
+            $('panelCliente');
+
+
+        if (
+            panel &&
+            panel.classList.contains('show')
+        ) {
+
+            cerrarPanelCliente();
+
+            return;
+
+        }
+
+
+        const modal =
+            $('modalConfirmacion');
+
+
+        if (
+            modal &&
+            modal.classList.contains('show')
+        ) {
+
+            cerrarModal();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   ATAJOS DE TECLADO
+   ========================================================= */
+
+document.addEventListener(
+    'keydown',
+    function (event) {
+
+        /*
+         * Ctrl + N = Nuevo cliente
+         */
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() === 'n'
+        ) {
+
+            event.preventDefault();
+
+            abrirPanelCliente();
+
+        }
+
+
+        /*
+         * Ctrl + F = Buscar
+         */
+
+        if (
+            event.ctrlKey &&
+            event.key.toLowerCase() === 'f'
+        ) {
+
+            event.preventDefault();
+
+            const buscar =
+                $('buscar');
+
+            if (buscar) {
+
+                buscar.focus();
+
+                buscar.select();
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   INICIALIZACIÓN
+   ========================================================= */
+
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        aplicarTema();
+
+        cargarClientes();
+
+        mostrarClientes();
+
+        actualizarEstadisticas();
+
+        actualizarCamposTipo();
+
+    }
+);
