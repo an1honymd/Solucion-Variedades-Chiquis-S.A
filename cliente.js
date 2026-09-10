@@ -1,25 +1,9 @@
-/* =========================================================
-   VARIEDADES CHIQUIS
-   JAVASCRIPT - GESTIÓN DE CLIENTES
-   ========================================================= */
-
 'use strict';
-
-
-/* =========================================================
-   CONFIGURACIÓN
-   ========================================================= */
 
 const STORAGE_KEY = 'clientesChiquis';
 const THEME_KEY = 'temaChiquis';
 
-
-/* =========================================================
-   FUNCIONES AUXILIARES
-   ========================================================= */
-
-const $ = (id) => document.getElementById(id);
-
+const $ = id => document.getElementById(id);
 
 function on(id, event, callback) {
 
@@ -28,9 +12,7 @@ function on(id, event, callback) {
     if (element) {
         element.addEventListener(event, callback);
     }
-
 }
-
 
 function escapeHTML(value) {
 
@@ -44,29 +26,19 @@ function escapeHTML(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
-
 }
-
-
-/* =========================================================
-   DATOS
-   ========================================================= */
 
 let clientes = [];
 let clienteEditando = null;
 let clienteEliminar = null;
 let toastTimer = null;
 
-
-/* =========================================================
-   CARGAR CLIENTES
-   ========================================================= */
-
 function cargarClientes() {
 
     try {
 
-        const datos = localStorage.getItem(STORAGE_KEY);
+        const datos =
+            localStorage.getItem(STORAGE_KEY);
 
         if (!datos) {
             clientes = [];
@@ -75,11 +47,14 @@ function cargarClientes() {
 
         const parsed = JSON.parse(datos);
 
-        clientes = Array.isArray(parsed) ? parsed : [];
+        clientes =
+            Array.isArray(parsed)
+                ? parsed
+                : [];
 
     } catch (error) {
 
-        console.error('Error al cargar clientes:', error);
+        console.error(error);
 
         clientes = [];
 
@@ -87,15 +62,8 @@ function cargarClientes() {
             'No se pudieron cargar los clientes.',
             'error'
         );
-
     }
-
 }
-
-
-/* =========================================================
-   GUARDAR CLIENTES
-   ========================================================= */
 
 function guardarClientes() {
 
@@ -110,7 +78,7 @@ function guardarClientes() {
 
     } catch (error) {
 
-        console.error('Error al guardar clientes:', error);
+        console.error(error);
 
         mostrarToast(
             'No se pudieron guardar los clientes.',
@@ -118,49 +86,27 @@ function guardarClientes() {
         );
 
         return false;
-
     }
-
 }
-
-
-/* =========================================================
-   GENERAR ID
-   ========================================================= */
 
 function generarId(prefijo = 'CLI-') {
 
-    const ahora = Date.now();
-
-    const aleatorio = Math.floor(
-        Math.random() * 1000
+    return (
+        prefijo +
+        Date.now() +
+        '-' +
+        Math.floor(Math.random() * 1000)
     );
-
-    return `${prefijo}${ahora}-${aleatorio}`;
-
 }
-
-
-/* =========================================================
-   OBTENER TIPO
-   ========================================================= */
 
 function obtenerTipoCliente() {
 
-    const mayorista = $('tipoMayorista');
-
-    if (mayorista && mayorista.checked) {
+    if ($('tipoMayorista')?.checked) {
         return 'mayorista';
     }
 
     return 'minorista';
-
 }
-
-
-/* =========================================================
-   ABRIR PANEL
-   ========================================================= */
 
 function abrirPanelCliente(cliente = null) {
 
@@ -173,26 +119,37 @@ function abrirPanelCliente(cliente = null) {
         return;
     }
 
-
     if (cliente) {
 
-        $('tituloPanel').textContent = 'Editar cliente';
+        $('tituloPanel').textContent =
+            'Editar cliente';
 
-        $('clienteId').value = cliente.id || '';
+        $('clienteId').value =
+            cliente.id || '';
 
-        $('nombre').value = cliente.nombre || '';
-        $('telefono').value = cliente.telefono || '';
-        $('email').value = cliente.email || '';
-        $('dpi').value = cliente.dpi || '';
-        $('nit').value = cliente.nit || '';
-        $('direccion').value = cliente.direccion || '';
+        $('nombre').value =
+            cliente.nombre || '';
+
+        $('telefono').value =
+            cliente.telefono || '';
+
+        $('email').value =
+            cliente.email || '';
+
+        $('dpi').value =
+            cliente.dpi || '';
+
+        $('nit').value =
+            cliente.nit || '';
+
+        $('direccion').value =
+            cliente.direccion || '';
 
         $('descuento').value =
             cliente.descuento ?? 0;
 
         $('limiteCredito').value =
             cliente.limiteCredito ?? 0;
-
 
         if (cliente.tipo === 'mayorista') {
 
@@ -201,20 +158,15 @@ function abrirPanelCliente(cliente = null) {
         } else {
 
             $('tipoMinorista').checked = true;
-
         }
 
     } else {
 
-        $('tituloPanel').textContent = 'Nuevo cliente';
+        $('tituloPanel').textContent =
+            'Nuevo cliente';
 
         limpiarFormularioCliente();
-
     }
-
-
-    actualizarCamposTipo();
-
 
     panel.classList.add('show');
 
@@ -222,129 +174,64 @@ function abrirPanelCliente(cliente = null) {
         overlay.classList.add('show');
     }
 
-
     setTimeout(() => {
 
-        const nombre = $('nombre');
-
-        if (nombre) {
-            nombre.focus();
-        }
+        $('nombre')?.focus();
 
     }, 100);
-
 }
-
-
-/* =========================================================
-   CERRAR PANEL
-   ========================================================= */
 
 function cerrarPanelCliente() {
 
-    const panel = $('panelCliente');
-    const overlay = $('overlay');
+    $('panelCliente')?.classList.remove('show');
 
-    if (panel) {
-        panel.classList.remove('show');
-    }
-
-    if (overlay) {
-        overlay.classList.remove('show');
-    }
+    $('overlay')?.classList.remove('show');
 
     clienteEditando = null;
 
     limpiarFormularioCliente();
-
 }
-
-
-/* =========================================================
-   LIMPIAR FORMULARIO
-   ========================================================= */
 
 function limpiarFormularioCliente() {
 
-    const form = $('clienteForm');
-
-    if (form) {
-        form.reset();
-    }
-
+    $('clienteForm')?.reset();
 
     if ($('clienteId')) {
         $('clienteId').value = '';
     }
 
-
     if ($('tipoMinorista')) {
         $('tipoMinorista').checked = true;
     }
-
 
     if ($('descuento')) {
         $('descuento').value = 0;
     }
 
-
     if ($('limiteCredito')) {
         $('limiteCredito').value = 0;
     }
-
-
-    actualizarCamposTipo();
-
 }
-
-
-/* =========================================================
-   ACTUALIZAR CAMPOS SEGÚN TIPO
-   ========================================================= */
-
-function actualizarCamposTipo() {
-
-    const mayorista = obtenerTipoCliente();
-
-    const descuento = $('descuento');
-    const limiteCredito = $('limiteCredito');
-
-    if (!descuento || !limiteCredito) {
-        return;
-    }
-
-
-    if (mayorista === 'mayorista') {
-
-        descuento.disabled = false;
-        limiteCredito.disabled = false;
-
-    } else {
-
-        descuento.disabled = false;
-        limiteCredito.disabled = false;
-
-    }
-
-}
-
-
-/* =========================================================
-   VALIDAR CLIENTE
-   ========================================================= */
 
 function validarCliente() {
 
-    const nombre = $('nombre').value.trim();
-    const telefono = $('telefono').value.trim();
-    const email = $('email').value.trim();
-    const nit = $('nit').value.trim();
+    const nombre =
+        $('nombre').value.trim();
 
-    const tipo = obtenerTipoCliente();
+    const telefono =
+        $('telefono').value.trim();
+
+    const email =
+        $('email').value.trim();
+
+    const nit =
+        $('nit').value.trim();
+
+    const tipo =
+        obtenerTipoCliente();
 
     const descuento =
         Number($('descuento').value || 0);
-
 
     if (nombre.length < 3) {
 
@@ -356,13 +243,10 @@ function validarCliente() {
         $('nombre').focus();
 
         return false;
-
     }
-
 
     const telefonoNumeros =
         telefono.replace(/\D/g, '');
-
 
     if (telefonoNumeros.length < 8) {
 
@@ -374,9 +258,7 @@ function validarCliente() {
         $('telefono').focus();
 
         return false;
-
     }
-
 
     if (email) {
 
@@ -393,11 +275,8 @@ function validarCliente() {
             $('email').focus();
 
             return false;
-
         }
-
     }
-
 
     if (tipo === 'mayorista' && !nit) {
 
@@ -409,9 +288,7 @@ function validarCliente() {
         $('nit').focus();
 
         return false;
-
     }
-
 
     if (
         Number.isNaN(descuento) ||
@@ -427,41 +304,26 @@ function validarCliente() {
         $('descuento').focus();
 
         return false;
-
     }
 
-
     return true;
-
 }
-
-
-/* =========================================================
-   GUARDAR CLIENTE
-   ========================================================= */
 
 function guardarCliente(event) {
 
     event.preventDefault();
 
-
     if (!validarCliente()) {
         return;
     }
 
-
     const id =
         $('clienteId').value ||
-        generarId('CLI-');
-
-
-    const tipo =
-        obtenerTipoCliente();
-
+        generarId();
 
     const cliente = {
 
-        id: id,
+        id,
 
         nombre:
             $('nombre').value.trim(),
@@ -481,26 +343,26 @@ function guardarCliente(event) {
         direccion:
             $('direccion').value.trim(),
 
-        tipo: tipo,
+        tipo:
+            obtenerTipoCliente(),
 
         descuento:
             Number($('descuento').value || 0),
 
         limiteCredito:
-            Number($('limiteCredito').value || 0),
+            Number(
+                $('limiteCredito').value || 0
+            ),
 
         fechaRegistro:
             clienteEditando?.fechaRegistro ||
             new Date().toISOString()
-
     };
-
 
     const indice =
         clientes.findIndex(
             c => String(c.id) === String(id)
         );
-
 
     if (indice >= 0) {
 
@@ -518,7 +380,6 @@ function guardarCliente(event) {
             mostrarClientes();
 
             actualizarEstadisticas();
-
         }
 
     } else {
@@ -537,17 +398,56 @@ function guardarCliente(event) {
             mostrarClientes();
 
             actualizarEstadisticas();
-
         }
-
     }
-
 }
 
+function obtenerIniciales(nombre) {
 
-/* =========================================================
-   MOSTRAR CLIENTES
-   ========================================================= */
+    const partes =
+        String(nombre || '')
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+    if (!partes.length) {
+        return '?';
+    }
+
+    if (partes.length === 1) {
+
+        return partes[0]
+            .substring(0, 2)
+            .toUpperCase();
+    }
+
+    return (
+        partes[0][0] +
+        partes[partes.length - 1][0]
+    ).toUpperCase();
+}
+
+function formatearFecha(fecha) {
+
+    if (!fecha) {
+        return '—';
+    }
+
+    const date = new Date(fecha);
+
+    if (Number.isNaN(date.getTime())) {
+        return '—';
+    }
+
+    return date.toLocaleDateString(
+        'es-GT',
+        {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }
+    );
+}
 
 function mostrarClientes() {
 
@@ -558,96 +458,71 @@ function mostrarClientes() {
         return;
     }
 
-
     const busqueda =
         ($('buscar')?.value || '')
             .trim()
             .toLowerCase();
 
-
     const filtroTipo =
         ($('filtroTipo')?.value || '')
             .toLowerCase();
 
+    const filtrados =
+        clientes.filter(cliente => {
 
-    let filtrados = clientes.filter(cliente => {
+            const texto = [
 
-        const texto = [
+                cliente.nombre,
+                cliente.telefono,
+                cliente.email,
+                cliente.nit,
+                cliente.dpi,
+                cliente.direccion,
+                cliente.id
 
-            cliente.nombre,
-            cliente.telefono,
-            cliente.email,
-            cliente.nit,
-            cliente.dpi,
-            cliente.direccion,
-            cliente.id
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
 
-        ]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase();
+            const coincideBusqueda =
+                !busqueda ||
+                texto.includes(busqueda);
 
+            const coincideTipo =
+                !filtroTipo ||
+                String(cliente.tipo || '')
+                    .toLowerCase() ===
+                filtroTipo;
 
-        const coincideBusqueda =
-            !busqueda ||
-            texto.includes(busqueda);
-
-
-        const coincideTipo =
-            !filtroTipo ||
-            String(cliente.tipo || '').toLowerCase()
-                === filtroTipo;
-
-
-        return coincideBusqueda && coincideTipo;
-
-    });
-
+            return coincideBusqueda &&
+                   coincideTipo;
+        });
 
     tabla.innerHTML = '';
 
+    if (!filtrados.length) {
 
-    if (filtrados.length === 0) {
-
-        if (estadoVacio) {
-            estadoVacio.classList.add('show');
-        }
+        estadoVacio?.classList.add('show');
 
         return;
-
     }
 
-
-    if (estadoVacio) {
-        estadoVacio.classList.remove('show');
-    }
-
+    estadoVacio?.classList.remove('show');
 
     filtrados.forEach(cliente => {
 
         const fila =
             document.createElement('tr');
 
-
         const nombre =
             cliente.nombre || 'Sin nombre';
-
-
-        const iniciales =
-            obtenerIniciales(nombre);
-
 
         const tipo =
             cliente.tipo || 'minorista';
 
-
         const descuento =
             Number(cliente.descuento || 0);
-
-
-        const fecha =
-            formatearFecha(cliente.fechaRegistro);
-
 
         fila.innerHTML = `
 
@@ -656,17 +531,27 @@ function mostrarClientes() {
                 <div class="client-cell">
 
                     <div class="client-avatar">
-                        ${escapeHTML(iniciales)}
+
+                        ${escapeHTML(
+                            obtenerIniciales(nombre)
+                        )}
+
                     </div>
 
                     <div>
 
                         <div class="client-name">
+
                             ${escapeHTML(nombre)}
+
                         </div>
 
                         <span class="client-id">
-                            ${escapeHTML(cliente.id || '')}
+
+                            ${escapeHTML(
+                                cliente.id || ''
+                            )}
+
                         </span>
 
                     </div>
@@ -675,16 +560,17 @@ function mostrarClientes() {
 
             </td>
 
-
             <td>
-                ${escapeHTML(cliente.telefono || '—')}
+                ${escapeHTML(
+                    cliente.telefono || '—'
+                )}
             </td>
 
-
             <td>
-                ${escapeHTML(cliente.email || '—')}
+                ${escapeHTML(
+                    cliente.email || '—'
+                )}
             </td>
-
 
             <td>
 
@@ -704,16 +590,17 @@ function mostrarClientes() {
 
             </td>
 
-
             <td>
                 ${descuento.toFixed(2)}%
             </td>
 
-
             <td>
-                ${escapeHTML(fecha)}
+                ${escapeHTML(
+                    formatearFecha(
+                        cliente.fechaRegistro
+                    )
+                )}
             </td>
-
 
             <td>
 
@@ -722,178 +609,68 @@ function mostrarClientes() {
                     <button
                         class="action-btn"
                         type="button"
-                        title="Editar cliente"
                         data-action="editar"
-                        data-id="${escapeHTML(cliente.id)}"
-                    >
-                        ✏️
-                    </button>
+                        data-id="${escapeHTML(cliente.id)}">
 
+                        ✏️
+
+                    </button>
 
                     <button
                         class="action-btn"
                         type="button"
-                        title="WhatsApp"
                         data-action="whatsapp"
-                        data-id="${escapeHTML(cliente.id)}"
-                    >
-                        💬
-                    </button>
+                        data-id="${escapeHTML(cliente.id)}">
 
+                        💬
+
+                    </button>
 
                     <button
                         class="action-btn delete"
                         type="button"
-                        title="Eliminar cliente"
                         data-action="eliminar"
-                        data-id="${escapeHTML(cliente.id)}"
-                    >
+                        data-id="${escapeHTML(cliente.id)}">
+
                         🗑️
+
                     </button>
 
                 </div>
 
             </td>
-
         `;
 
-
         tabla.appendChild(fila);
-
     });
-
 }
-
-
-/* =========================================================
-   INICIALES
-   ========================================================= */
-
-function obtenerIniciales(nombre) {
-
-    const partes =
-        String(nombre)
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
-
-
-    if (partes.length === 0) {
-        return '?';
-    }
-
-
-    if (partes.length === 1) {
-
-        return partes[0]
-            .substring(0, 2)
-            .toUpperCase();
-
-    }
-
-
-    return (
-        partes[0][0] +
-        partes[partes.length - 1][0]
-    ).toUpperCase();
-
-}
-
-
-/* =========================================================
-   FECHA
-   ========================================================= */
-
-function formatearFecha(fecha) {
-
-    if (!fecha) {
-        return '—';
-    }
-
-
-    try {
-
-        const date =
-            new Date(fecha);
-
-
-        if (Number.isNaN(date.getTime())) {
-            return '—';
-        }
-
-
-        return date.toLocaleDateString(
-            'es-GT',
-            {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            }
-        );
-
-    } catch {
-
-        return '—';
-
-    }
-
-}
-
-
-/* =========================================================
-   ESTADÍSTICAS
-   ========================================================= */
 
 function actualizarEstadisticas() {
 
-    const total =
-        clientes.length;
-
+    const total = clientes.length;
 
     const minoristas =
         clientes.filter(
             c => c.tipo === 'minorista'
         ).length;
 
-
     const mayoristas =
         clientes.filter(
             c => c.tipo === 'mayorista'
         ).length;
 
+    $('totalClientes').textContent =
+        total;
 
-    const activos =
-        clientes.length;
+    $('totalMinoristas').textContent =
+        minoristas;
 
+    $('totalMayoristas').textContent =
+        mayoristas;
 
-    if ($('totalClientes')) {
-        $('totalClientes').textContent = total;
-    }
-
-
-    if ($('totalMinoristas')) {
-        $('totalMinoristas').textContent =
-            minoristas;
-    }
-
-
-    if ($('totalMayoristas')) {
-        $('totalMayoristas').textContent =
-            mayoristas;
-    }
-
-
-    if ($('totalActivos')) {
-        $('totalActivos').textContent =
-            activos;
-    }
-
+    $('totalActivos').textContent =
+        total;
 }
-
-
-/* =========================================================
-   EDITAR
-   ========================================================= */
 
 function editarCliente(id) {
 
@@ -902,27 +679,12 @@ function editarCliente(id) {
             c => String(c.id) === String(id)
         );
 
-
     if (!cliente) {
-
-        mostrarToast(
-            'No se encontró el cliente.',
-            'error'
-        );
-
         return;
-
     }
 
-
     abrirPanelCliente(cliente);
-
 }
-
-
-/* =========================================================
-   ELIMINAR
-   ========================================================= */
 
 function solicitarEliminarCliente(id) {
 
@@ -931,70 +693,29 @@ function solicitarEliminarCliente(id) {
             c => String(c.id) === String(id)
         );
 
-
     if (!cliente) {
         return;
     }
 
-
     clienteEliminar = cliente;
 
+    $('modalTitulo').textContent =
+        '¿Eliminar cliente?';
 
-    const titulo =
-        $('modalTitulo');
+    $('modalMensaje').textContent =
+        `¿Deseas eliminar a "${cliente.nombre}"? Esta acción no se puede deshacer.`;
 
-    const mensaje =
-        $('modalMensaje');
-
-
-    if (titulo) {
-        titulo.textContent =
-            '¿Eliminar cliente?';
-    }
-
-
-    if (mensaje) {
-
-        mensaje.textContent =
-            `¿Deseas eliminar a "${cliente.nombre}"? Esta acción no se puede deshacer.`;
-
-    }
-
-
-    const modal =
-        $('modalConfirmacion');
-
-
-    if (modal) {
-        modal.classList.add('show');
-    }
-
+    $('modalConfirmacion')
+        .classList.add('show');
 }
-
-
-/* =========================================================
-   CERRAR MODAL
-   ========================================================= */
 
 function cerrarModal() {
 
-    const modal =
-        $('modalConfirmacion');
-
-
-    if (modal) {
-        modal.classList.remove('show');
-    }
-
+    $('modalConfirmacion')
+        ?.classList.remove('show');
 
     clienteEliminar = null;
-
 }
-
-
-/* =========================================================
-   CONFIRMAR ELIMINACIÓN
-   ========================================================= */
 
 function confirmarEliminar() {
 
@@ -1002,16 +723,12 @@ function confirmarEliminar() {
         return;
     }
 
-
-    const id =
-        clienteEliminar.id;
-
+    const id = clienteEliminar.id;
 
     clientes =
         clientes.filter(
             c => String(c.id) !== String(id)
         );
-
 
     if (guardarClientes()) {
 
@@ -1025,15 +742,8 @@ function confirmarEliminar() {
         mostrarClientes();
 
         actualizarEstadisticas();
-
     }
-
 }
-
-
-/* =========================================================
-   WHATSAPP
-   ========================================================= */
 
 function abrirWhatsApp(id) {
 
@@ -1042,16 +752,17 @@ function abrirWhatsApp(id) {
             c => String(c.id) === String(id)
         );
 
-
     if (!cliente) {
         return;
     }
-
 
     let telefono =
         String(cliente.telefono || '')
             .replace(/\D/g, '');
 
+    if (telefono.length === 8) {
+        telefono = '502' + telefono;
+    }
 
     if (!telefono) {
 
@@ -1061,389 +772,198 @@ function abrirWhatsApp(id) {
         );
 
         return;
-
     }
-
-
-    /*
-       Guatemala = 502.
-       Si el número tiene 8 dígitos,
-       agregamos automáticamente el código.
-    */
-
-    if (telefono.length === 8) {
-        telefono = '502' + telefono;
-    }
-
 
     const mensaje =
         encodeURIComponent(
             `Hola ${cliente.nombre}, le saluda Variedades Chiquis.`
         );
 
-
     const url =
         `https://wa.me/${telefono}?text=${mensaje}`;
-
 
     window.open(
         url,
         '_blank',
         'noopener,noreferrer'
     );
-
 }
-
-
-/* =========================================================
-   EXPORTAR
-   ========================================================= */
 
 function exportarClientes() {
 
-    try {
-
-        const contenido =
-            JSON.stringify(
-                clientes,
-                null,
-                2
-            );
-
-
-        const blob =
-            new Blob(
-                [contenido],
-                {
-                    type: 'application/json'
-                }
-            );
-
-
-        const url =
-            URL.createObjectURL(blob);
-
-
-        const enlace =
-            document.createElement('a');
-
-
-        const fecha =
-            new Date()
-                .toISOString()
-                .slice(0, 10);
-
-
-        enlace.href = url;
-
-        enlace.download =
-            `clientes-chiquis-${fecha}.json`;
-
-
-        document.body.appendChild(enlace);
-
-        enlace.click();
-
-        enlace.remove();
-
-
-        URL.revokeObjectURL(url);
-
-
-        mostrarToast(
-            'Clientes exportados correctamente.',
-            'success'
+    const contenido =
+        JSON.stringify(
+            clientes,
+            null,
+            2
         );
 
-    } catch (error) {
-
-        console.error(error);
-
-        mostrarToast(
-            'No se pudo exportar la información.',
-            'error'
+    const blob =
+        new Blob(
+            [contenido],
+            {
+                type: 'application/json'
+            }
         );
 
-    }
+    const url =
+        URL.createObjectURL(blob);
 
+    const enlace =
+        document.createElement('a');
+
+    enlace.href = url;
+
+    enlace.download =
+        `clientes-chiquis-${new Date()
+            .toISOString()
+            .slice(0, 10)}.json`;
+
+    document.body.appendChild(enlace);
+
+    enlace.click();
+
+    enlace.remove();
+
+    URL.revokeObjectURL(url);
+
+    mostrarToast(
+        'Clientes exportados correctamente.',
+        'success'
+    );
 }
-
-
-/* =========================================================
-   IMPORTAR
-   ========================================================= */
 
 function importarClientes(event) {
 
     const archivo =
         event.target.files?.[0];
 
-
     if (!archivo) {
         return;
     }
 
-
     const lector =
         new FileReader();
 
+    lector.onload = () => {
 
-    lector.onload =
-        function () {
+        try {
 
-            try {
+            const datos =
+                JSON.parse(lector.result);
 
-                const datos =
-                    JSON.parse(
-                        lector.result
-                    );
-
-
-                if (!Array.isArray(datos)) {
-
-                    throw new Error(
-                        'El archivo no contiene una lista válida.'
-                    );
-
-                }
-
-
-                const nuevos =
-                    datos.map(cliente => ({
-
-                        ...cliente,
-
-                        id:
-                            cliente.id ||
-                            generarId('CLI-'),
-
-                        fechaRegistro:
-                            cliente.fechaRegistro ||
-                            new Date().toISOString()
-
-                    }));
-
-
-                clientes = nuevos;
-
-
-                if (guardarClientes()) {
-
-                    mostrarClientes();
-
-                    actualizarEstadisticas();
-
-                    mostrarToast(
-                        'Clientes importados correctamente.',
-                        'success'
-                    );
-
-                }
-
-            } catch (error) {
-
-                console.error(error);
-
-                mostrarToast(
-                    'El archivo seleccionado no es válido.',
-                    'error'
-                );
-
+            if (!Array.isArray(datos)) {
+                throw new Error();
             }
 
+            clientes =
+                datos.map(cliente => ({
 
-            event.target.value = '';
+                    ...cliente,
 
-        };
+                    id:
+                        cliente.id ||
+                        generarId(),
 
+                    fechaRegistro:
+                        cliente.fechaRegistro ||
+                        new Date().toISOString()
 
-    lector.onerror =
-        function () {
+                }));
+
+            guardarClientes();
+
+            mostrarClientes();
+
+            actualizarEstadisticas();
 
             mostrarToast(
-                'No se pudo leer el archivo.',
-                'error'
+                'Clientes importados correctamente.',
+                'success'
             );
 
-            event.target.value = '';
+        } catch {
 
-        };
+            mostrarToast(
+                'El archivo seleccionado no es válido.',
+                'error'
+            );
+        }
 
+        event.target.value = '';
+    };
 
     lector.readAsText(archivo);
-
 }
-
-
-/* =========================================================
-   TEMA
-   ========================================================= */
 
 function aplicarTema() {
 
-    let tema = 'light';
+    const tema =
+        localStorage.getItem(
+            THEME_KEY
+        ) || 'claro';
 
-
-    try {
-
-        tema =
-            localStorage.getItem(THEME_KEY)
-            || 'light';
-
-    } catch (error) {
-
-        console.warn(
-            'No se pudo leer el tema.',
-            error
-        );
-
-    }
-
-
-    if (tema === 'dark') {
-
-        document.body.classList.add('dark');
-
-    } else {
-
-        document.body.classList.remove('dark');
-
-    }
-
+    document.body.classList.toggle(
+        'dark',
+        tema === 'oscuro'
+    );
 
     actualizarBotonTema();
-
 }
-
-
-/* =========================================================
-   CAMBIAR TEMA
-   ========================================================= */
 
 function cambiarTema() {
 
     const oscuro =
         document.body.classList.toggle('dark');
 
-
-    const nuevoTema =
-        oscuro ? 'dark' : 'light';
-
-
-    try {
-
-        localStorage.setItem(
-            THEME_KEY,
-            nuevoTema
-        );
-
-    } catch (error) {
-
-        console.warn(
-            'No se pudo guardar el tema.',
-            error
-        );
-
-    }
-
+    localStorage.setItem(
+        THEME_KEY,
+        oscuro ? 'oscuro' : 'claro'
+    );
 
     actualizarBotonTema();
-
 }
-
-
-/* =========================================================
-   BOTÓN DE TEMA
-   ========================================================= */
 
 function actualizarBotonTema() {
 
-    const boton =
-        $('btnTema');
-
+    const boton = $('btnTema');
 
     if (!boton) {
         return;
     }
 
+    const oscuro =
+        document.body.classList.contains('dark');
 
-    if (
-        document.body.classList.contains('dark')
-    ) {
-
-        boton.innerHTML =
-            '<span>☀️</span><span>Tema claro</span>';
-
-    } else {
-
-        boton.innerHTML =
-            '<span>🌙</span><span>Tema oscuro</span>';
-
-    }
-
+    boton.innerHTML =
+        oscuro
+            ? '<span>☀️</span><span>Tema claro</span>'
+            : '<span>🌙</span><span>Tema oscuro</span>';
 }
-
-
-/* =========================================================
-   TOAST
-   ========================================================= */
 
 function mostrarToast(
     mensaje,
     tipo = 'success'
 ) {
 
-    const toast =
-        $('toast');
+    const toast = $('toast');
+    const texto = $('toastMensaje');
+    const icono = $('toastIcon');
 
-    const texto =
-        $('toastMensaje');
-
-    const icono =
-        $('toastIcon');
-
-
-    if (!toast || !texto) {
+    if (!toast) {
         return;
     }
 
+    texto.textContent = mensaje;
 
-    texto.textContent =
-        mensaje;
-
-
-    if (icono) {
-
-        if (tipo === 'error') {
-
-            icono.textContent = '✕';
-
-            icono.style.background =
-                'var(--danger-light)';
-
-            icono.style.color =
-                'var(--danger)';
-
-        } else {
-
-            icono.textContent = '✓';
-
-            icono.style.background =
-                'var(--success-light)';
-
-            icono.style.color =
-                'var(--success)';
-
-        }
-
-    }
-
+    icono.textContent =
+        tipo === 'error'
+            ? '✕'
+            : '✓';
 
     toast.classList.add('show');
 
-
     clearTimeout(toastTimer);
-
 
     toastTimer =
         setTimeout(
@@ -1452,65 +972,40 @@ function mostrarToast(
             },
             3000
         );
-
 }
 
-
-/* =========================================================
-   EVENTOS DE TABLA
-   ========================================================= */
-
-on(
-    'clientesTabla',
+document.addEventListener(
     'click',
-    function (event) {
+    event => {
 
         const boton =
             event.target.closest(
                 '[data-action]'
             );
 
-
         if (!boton) {
             return;
         }
 
+        const id =
+            boton.dataset.id;
 
         const accion =
             boton.dataset.action;
 
-
-        const id =
-            boton.dataset.id;
-
-
         if (accion === 'editar') {
-
             editarCliente(id);
-
         }
-
 
         if (accion === 'eliminar') {
-
             solicitarEliminarCliente(id);
-
         }
-
 
         if (accion === 'whatsapp') {
-
             abrirWhatsApp(id);
-
         }
-
     }
 );
-
-
-/* =========================================================
-   EVENTOS PRINCIPALES
-   ========================================================= */
 
 on(
     'btnNuevo',
@@ -1518,13 +1013,11 @@ on(
     () => abrirPanelCliente()
 );
 
-
 on(
     'btnNuevoVacio',
     'click',
     () => abrirPanelCliente()
 );
-
 
 on(
     'btnCerrarPanel',
@@ -1532,13 +1025,11 @@ on(
     cerrarPanelCliente
 );
 
-
 on(
     'btnCancelar',
     'click',
     cerrarPanelCliente
 );
-
 
 on(
     'overlay',
@@ -1546,27 +1037,11 @@ on(
     cerrarPanelCliente
 );
 
-
 on(
     'clienteForm',
     'submit',
     guardarCliente
 );
-
-
-on(
-    'tipoMinorista',
-    'change',
-    actualizarCamposTipo
-);
-
-
-on(
-    'tipoMayorista',
-    'change',
-    actualizarCamposTipo
-);
-
 
 on(
     'buscar',
@@ -1574,13 +1049,11 @@ on(
     mostrarClientes
 );
 
-
 on(
     'filtroTipo',
     'change',
     mostrarClientes
 );
-
 
 on(
     'btnModalCancelar',
@@ -1588,13 +1061,11 @@ on(
     cerrarModal
 );
 
-
 on(
     'btnModalConfirmar',
     'click',
     confirmarEliminar
 );
-
 
 on(
     'btnExportar',
@@ -1602,22 +1073,11 @@ on(
     exportarClientes
 );
 
-
 on(
     'btnImportar',
     'click',
-    () => {
-
-        const archivo =
-            $('archivoImportar');
-
-        if (archivo) {
-            archivo.click();
-        }
-
-    }
+    () => $('archivoImportar')?.click()
 );
-
 
 on(
     'archivoImportar',
@@ -1625,71 +1085,43 @@ on(
     importarClientes
 );
 
-
 on(
     'btnTema',
     'click',
     cambiarTema
 );
 
-
-/* =========================================================
-   CERRAR CON ESCAPE
-   ========================================================= */
-
 document.addEventListener(
     'keydown',
-    function (event) {
+    event => {
 
         if (event.key !== 'Escape') {
             return;
         }
 
-
-        const panel =
-            $('panelCliente');
-
-
         if (
-            panel &&
-            panel.classList.contains('show')
+            $('panelCliente')
+                ?.classList.contains('show')
         ) {
 
             cerrarPanelCliente();
 
             return;
-
         }
 
-
-        const modal =
-            $('modalConfirmacion');
-
-
         if (
-            modal &&
-            modal.classList.contains('show')
+            $('modalConfirmacion')
+                ?.classList.contains('show')
         ) {
 
             cerrarModal();
-
         }
-
     }
 );
 
-
-/* =========================================================
-   ATAJOS DE TECLADO
-   ========================================================= */
-
 document.addEventListener(
     'keydown',
-    function (event) {
-
-        /*
-         * Ctrl + N = Nuevo cliente
-         */
+    event => {
 
         if (
             event.ctrlKey &&
@@ -1699,13 +1131,7 @@ document.addEventListener(
             event.preventDefault();
 
             abrirPanelCliente();
-
         }
-
-
-        /*
-         * Ctrl + F = Buscar
-         */
 
         if (
             event.ctrlKey &&
@@ -1714,30 +1140,14 @@ document.addEventListener(
 
             event.preventDefault();
 
-            const buscar =
-                $('buscar');
-
-            if (buscar) {
-
-                buscar.focus();
-
-                buscar.select();
-
-            }
-
+            $('buscar')?.focus();
         }
-
     }
 );
 
-
-/* =========================================================
-   INICIALIZACIÓN
-   ========================================================= */
-
 document.addEventListener(
     'DOMContentLoaded',
-    function () {
+    () => {
 
         aplicarTema();
 
@@ -1746,8 +1156,5 @@ document.addEventListener(
         mostrarClientes();
 
         actualizarEstadisticas();
-
-        actualizarCamposTipo();
-
     }
 );

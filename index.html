@@ -19,10 +19,6 @@
 
 <div class="app">
 
-    <!-- =====================================================
-         BARRA LATERAL
-    ====================================================== -->
-
     <aside class="sidebar">
 
         <div class="brand">
@@ -45,10 +41,8 @@
 
         </div>
 
-
         <nav class="menu">
 
-            <!-- CLIENTES -->
             <a href="cliente.html"
                class="menu-item active"
                id="btnNavClientes">
@@ -63,8 +57,6 @@
 
             </a>
 
-
-            <!-- PEDIDOS -->
             <a href="pedidos.html"
                class="menu-item"
                id="btnNavPedidos">
@@ -79,8 +71,21 @@
 
             </a>
 
-        </nav>
+            <a href="tienda.html"
+               class="menu-item"
+               id="btnNavTienda">
 
+                <span class="menu-icon">
+                    🛒
+                </span>
+
+                <span>
+                    Tienda
+                </span>
+
+            </a>
+
+        </nav>
 
         <div class="sidebar-bottom">
 
@@ -102,15 +107,7 @@
 
     </aside>
 
-
-    <!-- =====================================================
-         CONTENIDO PRINCIPAL
-    ====================================================== -->
-
     <main class="main-content">
-
-
-        <!-- ENCABEZADO -->
 
         <header class="topbar">
 
@@ -126,49 +123,36 @@
 
             </div>
 
-
             <div class="topbar-actions">
 
                 <button class="btn btn-secondary"
                         id="btnExportar"
                         type="button">
 
-                    <span>
-                        📤
-                    </span>
-
+                    <span>📤</span>
                     Exportar
 
                 </button>
-
 
                 <button class="btn btn-secondary"
                         id="btnImportar"
                         type="button">
 
-                    <span>
-                        📥
-                    </span>
-
+                    <span>📥</span>
                     Importar
 
                 </button>
-
 
                 <input type="file"
                        id="archivoImportar"
                        accept=".json,application/json"
                        hidden>
 
-
                 <button class="btn btn-primary"
                         id="btnNuevo"
                         type="button">
 
-                    <span>
-                        ＋
-                    </span>
-
+                    <span>＋</span>
                     Nuevo cliente
 
                 </button>
@@ -177,13 +161,7 @@
 
         </header>
 
-
-        <!-- =================================================
-             ESTADÍSTICAS
-        ================================================== -->
-
         <section class="stats-grid">
-
 
             <div class="stat-card">
 
@@ -205,7 +183,6 @@
 
             </div>
 
-
             <div class="stat-card">
 
                 <div class="stat-icon green">
@@ -226,7 +203,6 @@
 
             </div>
 
-
             <div class="stat-card">
 
                 <div class="stat-icon orange">
@@ -246,7 +222,6 @@
                 </div>
 
             </div>
-
 
             <div class="stat-card">
 
@@ -270,16 +245,9 @@
 
         </section>
 
-
-        <!-- =================================================
-             TABLA DE CLIENTES
-        ================================================== -->
-
         <section class="content-card">
 
-
             <div class="toolbar">
-
 
                 <div class="search-box">
 
@@ -292,7 +260,6 @@
                            placeholder="Buscar cliente por nombre, teléfono, correo o NIT...">
 
                 </div>
-
 
                 <div class="filters">
 
@@ -316,9 +283,7 @@
 
             </div>
 
-
             <div class="table-container">
-
 
                 <table>
 
@@ -326,46 +291,21 @@
 
                         <tr>
 
-                            <th>
-                                Cliente
-                            </th>
-
-                            <th>
-                                Teléfono
-                            </th>
-
-                            <th>
-                                Correo
-                            </th>
-
-                            <th>
-                                Tipo
-                            </th>
-
-                            <th>
-                                Descuento
-                            </th>
-
-                            <th>
-                                Registro
-                            </th>
-
-                            <th>
-                                Acciones
-                            </th>
+                            <th>Cliente</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Tipo</th>
+                            <th>Descuento</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
 
                         </tr>
 
                     </thead>
 
-
-                    <tbody id="clientesTabla">
-                    </tbody>
+                    <tbody id="clientesTabla"></tbody>
 
                 </table>
-
-
-                <!-- ESTADO VACÍO -->
 
                 <div class="empty-state"
                      id="estadoVacio">
@@ -386,10 +326,7 @@
                             id="btnNuevoVacio"
                             type="button">
 
-                        <span>
-                            ＋
-                        </span>
-
+                        <span>＋</span>
                         Agregar cliente
 
                     </button>
@@ -404,22 +341,11 @@
 
 </div>
 
-
-<!-- =====================================================
-     FONDO OSCURO DEL PANEL
-====================================================== -->
-
 <div class="overlay"
      id="overlay"></div>
 
-
-<!-- =====================================================
-     PANEL DE CLIENTE
-====================================================== -->
-
 <aside class="side-panel"
        id="panelCliente">
-
 
     <div class="panel-header">
 
@@ -435,11 +361,9 @@
 
         </div>
 
-
         <button class="close-btn"
                 id="btnCerrarPanel"
-                type="button"
-                aria-label="Cerrar">
+                type="button">
 
             ×
 
@@ -447,18 +371,12 @@
 
     </div>
 
-
     <form id="clienteForm">
-
 
         <input type="hidden"
                id="clienteId">
 
-
         <div class="panel-body">
-
-
-            <!-- INFORMACIÓN PERSONAL -->
 
             <div class="form-section">
 
@@ -466,9 +384,7 @@
                     Información personal
                 </h3>
 
-
                 <div class="form-row">
-
 
                     <div class="form-group">
 
@@ -481,7 +397,6 @@
                                required>
 
                     </div>
-
 
                     <div class="form-group">
 
@@ -497,9 +412,7 @@
 
                 </div>
 
-
                 <div class="form-row">
-
 
                     <div class="form-group">
 
@@ -511,7 +424,6 @@
                                id="email">
 
                     </div>
-
 
                     <div class="form-group">
 
@@ -526,9 +438,7 @@
 
                 </div>
 
-
                 <div class="form-row">
-
 
                     <div class="form-group">
 
@@ -540,7 +450,6 @@
                                id="nit">
 
                     </div>
-
 
                     <div class="form-group">
 
@@ -557,18 +466,13 @@
 
             </div>
 
-
-            <!-- TIPO DE CLIENTE -->
-
             <div class="form-section">
 
                 <h3>
                     Tipo de cliente
                 </h3>
 
-
                 <div class="type-options">
-
 
                     <label class="type-card">
 
@@ -578,9 +482,7 @@
                                value="minorista"
                                checked>
 
-                        <span>
-                            🏪
-                        </span>
+                        <span>🏪</span>
 
                         <div>
 
@@ -596,7 +498,6 @@
 
                     </label>
 
-
                     <label class="type-card">
 
                         <input type="radio"
@@ -604,9 +505,7 @@
                                id="tipoMayorista"
                                value="mayorista">
 
-                        <span>
-                            🏢
-                        </span>
+                        <span>🏢</span>
 
                         <div>
 
@@ -622,13 +521,9 @@
 
                     </label>
 
-
                 </div>
 
             </div>
-
-
-            <!-- CONDICIONES COMERCIALES -->
 
             <div class="form-section">
 
@@ -636,9 +531,7 @@
                     Condiciones comerciales
                 </h3>
 
-
                 <div class="form-row">
-
 
                     <div class="form-group">
 
@@ -654,7 +547,6 @@
                                value="0">
 
                     </div>
-
 
                     <div class="form-group">
 
@@ -676,11 +568,7 @@
 
         </div>
 
-
-        <!-- BOTONES -->
-
         <div class="panel-footer">
-
 
             <button class="btn btn-secondary"
                     id="btnCancelar"
@@ -690,18 +578,13 @@
 
             </button>
 
-
             <button class="btn btn-primary"
                     type="submit">
 
-                <span>
-                    ✓
-                </span>
-
+                <span>✓</span>
                 Guardar cliente
 
             </button>
-
 
         </div>
 
@@ -709,35 +592,24 @@
 
 </aside>
 
-
-<!-- =====================================================
-     MODAL ELIMINAR
-====================================================== -->
-
 <div class="modal-container"
      id="modalConfirmacion">
 
-
     <div class="modal">
-
 
         <div class="modal-icon warning">
             ⚠️
         </div>
 
-
         <h3 id="modalTitulo">
             ¿Eliminar cliente?
         </h3>
-
 
         <p id="modalMensaje">
             Esta acción no se puede deshacer.
         </p>
 
-
         <div class="modal-actions">
-
 
             <button class="btn btn-secondary"
                     id="btnModalCancelar"
@@ -747,7 +619,6 @@
 
             </button>
 
-
             <button class="btn btn-danger"
                     id="btnModalConfirmar"
                     type="button">
@@ -756,17 +627,11 @@
 
             </button>
 
-
         </div>
 
     </div>
 
 </div>
-
-
-<!-- =====================================================
-     TOAST
-====================================================== -->
 
 <div class="toast"
      id="toast">
@@ -780,9 +645,6 @@
     </span>
 
 </div>
-
-
-<!-- JAVASCRIPT -->
 
 <script src="./cliente.js"></script>
 
