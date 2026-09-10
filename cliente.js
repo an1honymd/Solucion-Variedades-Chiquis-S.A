@@ -405,47 +405,57 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const id =
-            $('clienteId').value ||
-            generarId('CLI-');
+            $('clienteId')?.value || '';
 
         const tipo =
             obtenerTipoCliente();
 
         const cliente = {
-            id: id,
-            nombre: $('nombre').value.trim(),
-            telefono: $('telefono').value.trim(),
-            email: $('email').value.trim(),
-            dpi: $('dpi').value.trim(),
-            nit: $('nit').value.trim(),
-            direccion: $('direccion').value.trim(),
+            id: id || generarId('cli_'),
+            nombre: $('nombre')?.value.trim() || '',
+            telefono: $('telefono')?.value.trim() || '',
+            email: $('email')?.value.trim() || '',
+            direccion: $('direccion')?.value.trim() || '',
+            dpi: $('dpi')?.value.trim() || '',
+            nit: $('nit')?.value.trim() || '',
             tipo: tipo,
-            descuento: Number($('descuento').value || 0),
-            limiteCredito: Number($('limiteCredito').value || 0),
-            fechaRegistro: new Date().toISOString()
+            descuento: tipo === 'mayorista'
+                ? Number($('descuento')?.value || 0)
+                : 0,
+            limiteCredito: tipo === 'mayorista'
+                ? Number($('limiteCredito')?.value || 0)
+                : 0,
+            actualizado: new Date().toISOString()
         };
 
         const indice =
             clientes.findIndex(
-                c => String(c.id) === String(id)
+                c => c.id === cliente.id
             );
 
         if (indice >= 0) {
-            cliente.fechaRegistro =
-                clientes[indice].fechaRegistro ||
-                cliente.fechaRegistro;
+            cliente.creado =
+                clientes[indice].creado ||
+                new Date().toISOString();
 
             clientes[indice] = {
                 ...clientes[indice],
                 ...cliente
             };
 
-            toast('Cliente actualizado correctamente.');
+            toast(
+                'Cliente actualizado correctamente.'
+            );
 
         } else {
-            clientes.push(cliente);
+            cliente.creado =
+                new Date().toISOString();
 
-            toast('Cliente registrado correctamente.');
+            clientes.unshift(cliente);
+
+            toast(
+                'Cliente registrado correctamente.'
+            );
         }
 
         if (guardarClientes()) {
@@ -459,59 +469,86 @@ document.addEventListener('DOMContentLoaded', () => {
     // MOSTRAR CLIENTES
     // ============================================================
 
-    function obtenerClientesFiltrados() {
+    function obtenerFiltroActivo() {
+        return document
+            .querySelector(
+                '.filter-button[data-filter].active'
+            )?.dataset.filter || 'todos';
+    }
+
+    function mostrarClientes() {
+        const tbody = $('clientesBody');
+
+        if (!tbody) {
+            return;
+        }
+
         const busqueda =
             ($('searchInput')?.value || '')
                 .trim()
                 .toLowerCase();
 
         const filtro =
-            document.querySelector(
-                '.filter-button.active'
-            )?.dataset.filter || 'todos';
+            obtenerFiltroActivo();
 
-        return clientes.filter(cliente => {
+        let lista =
+            clientes.filter(cliente => {
 
-            const coincideBusqueda =
-                !busqueda ||
-                [
+                const texto = [
                     cliente.nombre,
                     cliente.telefono,
                     cliente.email,
+                    cliente.dpi,
                     cliente.nit,
-                    cliente.dpi
+                    cliente.direccion
                 ]
                     .join(' ')
-                    .toLowerCase()
-                    .includes(busqueda);
+                    .toLowerCase();
 
-            const coincideFiltro =
-                filtro === 'todos' ||
-                cliente.tipo === filtro;
+                const coincideBusqueda =
+                    !busqueda ||
+                    texto.includes(busqueda);
 
-            return coincideBusqueda &&
-                coincideFiltro;
-        });
-    }
+                let coincideFiltro = true;
 
-    function mostrarClientes() {
-        const tbody = $('tablaBody');
-        const empty = $('emptyState');
+                if (filtro === 'mayorista') {
+                    coincideFiltro =
+                        cliente.tipo === 'mayorista';
+                }
 
-        if (!tbody) return;
+                if (filtro === 'minorista') {
+                    coincideFiltro =
+                        cliente.tipo !== 'mayorista';
+                }
 
-        const lista =
-            obtenerClientesFiltrados();
+                return coincideBusqueda &&
+                    coincideFiltro;
+            });
 
         tbody.innerHTML = '';
 
-        lista.forEach(cliente => {
+        if (!lista.length) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <strong>No se encontraron clientes</strong>
+                        <span>Agrega un cliente o cambia los filtros.</span>
+                    </td>
+                </tr>
+            `;
 
+            actualizarContador(0);
+            return;
+        }
+
+        lista.forEach(cliente => {
             const tr =
                 document.createElement('tr');
 
             const inicial =
                 (cliente.nombre || '?')
+                    .trim()
                     .charAt(0)
                     .toUpperCase();
 
@@ -520,10 +557,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? 'Mayorista'
                     : 'Minorista';
 
+            const tipoClase =
+                cliente.tipo === 'mayorista'
+                    ? 'mayorista'
+                    : 'minorista';
+
             tr.innerHTML = `
                 <td>
                     <div class="client-cell">
-                        <div class="client-avatar">
+                        <div class="avatar">
                             ${escaparHTML(inicial)}
                         </div>
 
@@ -540,62 +582,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 </td>
 
                 <td>
-                    <span class="type-badge ${cliente.tipo}">
+                    ${escaparHTML(cliente.telefono || 'Sin teléfono')}
+                </td>
+
+                <td>
+                    ${escaparHTML(cliente.nit || '—')}
+                </td>
+
+                <td>
+                    <span class="type-badge ${tipoClase}">
                         ${tipoTexto}
                     </span>
                 </td>
 
                 <td>
-                    <div class="contact-cell">
-                        <strong>
-                            ${escaparHTML(cliente.telefono || '-')}
-                        </strong>
-
-                        <small>
-                            ${escaparHTML(cliente.email || 'Sin correo')}
-                        </small>
-                    </div>
+                    ${cliente.tipo === 'mayorista'
+                        ? dinero(cliente.limiteCredito)
+                        : '—'}
                 </td>
 
                 <td>
-                    <div class="info-cell">
-                        <span>
-                            ${escaparHTML(cliente.nit || 'Sin NIT')}
-                        </span>
-
-                        <small>
-                            ${escaparHTML(cliente.direccion || 'Sin dirección')}
-                        </small>
-                    </div>
+                    ${formatearFecha(
+                        cliente.actualizado ||
+                        cliente.creado
+                    )}
                 </td>
 
                 <td>
-                    ${formatearFecha(cliente.fechaRegistro)}
-                </td>
-
-                <td>
-                    <div class="row-actions">
+                    <div class="actions">
                         <button
-                            class="table-action"
-                            data-action="ver"
+                            class="action-btn"
+                            type="button"
+                            data-action="view"
                             data-id="${escaparHTML(cliente.id)}"
                             title="Ver cliente">
                             👁
                         </button>
 
                         <button
-                            class="table-action"
-                            data-action="editar"
+                            class="action-btn"
+                            type="button"
+                            data-action="edit"
                             data-id="${escaparHTML(cliente.id)}"
-                            title="Editar">
-                            ✎
+                            title="Editar cliente">
+                            ✏
                         </button>
 
                         <button
-                            class="table-action danger"
-                            data-action="eliminar"
+                            class="action-btn danger"
+                            type="button"
+                            data-action="delete"
                             data-id="${escaparHTML(cliente.id)}"
-                            title="Eliminar">
+                            title="Eliminar cliente">
                             🗑
                         </button>
                     </div>
@@ -605,62 +643,15 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.appendChild(tr);
         });
 
-        if (empty) {
-            empty.hidden = lista.length > 0;
-        }
-
-        const resultado =
-            $('resultadoTexto');
-
-        if (resultado) {
-            resultado.textContent =
-                `Mostrando ${lista.length} de ${clientes.length} clientes`;
-        }
-
-        const footer =
-            $('tableFooterText');
-
-        if (footer) {
-            footer.textContent =
-                `${lista.length} cliente${lista.length === 1 ? '' : 's'}`;
-        }
-
-        if ($('statVisibles')) {
-            $('statVisibles').textContent =
-                lista.length;
-        }
-
-        actualizarContadores();
+        actualizarContador(lista.length);
     }
 
-    // ============================================================
-    // CONTADORES
-    // ============================================================
+    function actualizarContador(cantidad) {
+        const contador = $('clientesCount');
 
-    function actualizarContadores() {
-        const minoristas =
-            clientes.filter(
-                c => c.tipo === 'minorista'
-            ).length;
-
-        const mayoristas =
-            clientes.filter(
-                c => c.tipo === 'mayorista'
-            ).length;
-
-        if ($('countTodos')) {
-            $('countTodos').textContent =
-                clientes.length;
-        }
-
-        if ($('countMinoristas')) {
-            $('countMinoristas').textContent =
-                minoristas;
-        }
-
-        if ($('countMayoristas')) {
-            $('countMayoristas').textContent =
-                mayoristas;
+        if (contador) {
+            contador.textContent =
+                `${cantidad} cliente${cantidad === 1 ? '' : 's'}`;
         }
     }
 
@@ -671,53 +662,62 @@ document.addEventListener('DOMContentLoaded', () => {
     function actualizarEstadisticas() {
         const total = clientes.length;
 
-        const minoristas =
-            clientes.filter(
-                c => c.tipo === 'minorista'
-            ).length;
-
         const mayoristas =
             clientes.filter(
                 c => c.tipo === 'mayorista'
             ).length;
+
+        const minoristas =
+            clientes.filter(
+                c => c.tipo !== 'mayorista'
+            ).length;
+
+        const limite =
+            clientes.reduce(
+                (total, cliente) =>
+                    total +
+                    Number(cliente.limiteCredito || 0),
+                0
+            );
 
         if ($('statTotal')) {
             $('statTotal').textContent =
                 total;
         }
 
-        if ($('statMinorista')) {
-            $('statMinorista').textContent =
-                minoristas;
-        }
-
-        if ($('statMayorista')) {
-            $('statMayorista').textContent =
+        if ($('statMayoristas')) {
+            $('statMayoristas').textContent =
                 mayoristas;
         }
 
-        if ($('porcentajeMinorista')) {
-            $('porcentajeMinorista').textContent =
-                total
-                    ? `${Math.round((minoristas / total) * 100)}% del total`
-                    : '0% del total';
+        if ($('statMinoristas')) {
+            $('statMinoristas').textContent =
+                minoristas;
         }
 
-        if ($('porcentajeMayorista')) {
-            $('porcentajeMayorista').textContent =
-                total
-                    ? `${Math.round((mayoristas / total) * 100)}% del total`
-                    : '0% del total';
+        if ($('statCredito')) {
+            $('statCredito').textContent =
+                dinero(limite);
         }
-
-        actualizarContadores();
     }
 
     // ============================================================
-    // DETALLE CLIENTE
+    // BUSCAR CLIENTE POR ID
     // ============================================================
 
-    function mostrarDetalleCliente(cliente) {
+    function buscarCliente(id) {
+        return clientes.find(
+            cliente => cliente.id === id
+        );
+    }
+
+    // ============================================================
+    // DETALLE
+    // ============================================================
+
+    function mostrarDetalle(cliente) {
+        if (!cliente) return;
+
         clienteDetalle = cliente;
 
         const dialog =
@@ -725,34 +725,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!dialog) return;
 
+        const inicial =
+            (cliente.nombre || '?')
+                .trim()
+                .charAt(0)
+                .toUpperCase();
+
+        if ($('detalleAvatar')) {
+            $('detalleAvatar').textContent =
+                inicial;
+        }
+
         if ($('detalleNombre')) {
             $('detalleNombre').textContent =
-                cliente.nombre || '-';
-        }
-
-        if ($('detalleTelefono')) {
-            $('detalleTelefono').textContent =
-                cliente.telefono || '-';
-        }
-
-        if ($('detalleEmail')) {
-            $('detalleEmail').textContent =
-                cliente.email || '-';
-        }
-
-        if ($('detalleDpi')) {
-            $('detalleDpi').textContent =
-                cliente.dpi || '-';
-        }
-
-        if ($('detalleNit')) {
-            $('detalleNit').textContent =
-                cliente.nit || '-';
-        }
-
-        if ($('detalleDireccion')) {
-            $('detalleDireccion').textContent =
-                cliente.direccion || '-';
+                cliente.nombre || 'Sin nombre';
         }
 
         if ($('detalleTipo')) {
@@ -762,140 +748,118 @@ document.addEventListener('DOMContentLoaded', () => {
                     : 'Minorista';
         }
 
+        if ($('detalleTelefono')) {
+            $('detalleTelefono').textContent =
+                cliente.telefono || 'No registrado';
+        }
+
+        if ($('detalleEmail')) {
+            $('detalleEmail').textContent =
+                cliente.email || 'No registrado';
+        }
+
+        if ($('detalleDireccion')) {
+            $('detalleDireccion').textContent =
+                cliente.direccion || 'No registrada';
+        }
+
+        if ($('detalleDpi')) {
+            $('detalleDpi').textContent =
+                cliente.dpi || 'No registrado';
+        }
+
+        if ($('detalleNit')) {
+            $('detalleNit').textContent =
+                cliente.nit || 'No registrado';
+        }
+
         if ($('detalleDescuento')) {
             $('detalleDescuento').textContent =
-                `${Number(cliente.descuento || 0)}%`;
+                cliente.tipo === 'mayorista'
+                    ? `${Number(cliente.descuento || 0)}%`
+                    : '0%';
         }
 
-        if ($('detalleLimiteCredito')) {
-            $('detalleLimiteCredito').textContent =
-                dinero(cliente.limiteCredito);
+        if ($('detalleCredito')) {
+            $('detalleCredito').textContent =
+                cliente.tipo === 'mayorista'
+                    ? dinero(cliente.limiteCredito)
+                    : 'Q0.00';
         }
 
-        if ($('detalleRegistro')) {
-            $('detalleRegistro').textContent =
-                formatearFecha(cliente.fechaRegistro);
+        if ($('detalleFecha')) {
+            $('detalleFecha').textContent =
+                formatearFecha(
+                    cliente.actualizado ||
+                    cliente.creado
+                );
         }
 
-        if (typeof dialog.showModal === 'function') {
-            dialog.showModal();
-        } else {
-            dialog.setAttribute('open', '');
-        }
+        dialog.showModal();
     }
 
     // ============================================================
-    // ELIMINAR CLIENTE
+    // ELIMINAR
     // ============================================================
 
     function eliminarCliente(cliente) {
+        if (!cliente) return;
+
         clienteAEliminar = cliente;
 
         const dialog =
             $('dialogEliminar');
 
-        if (!dialog) {
-            if (
-                confirm(
-                    `¿Deseas eliminar al cliente "${cliente.nombre}"?`
-                )
-            ) {
-                confirmarEliminarCliente();
-            }
-
-            return;
-        }
+        if (!dialog) return;
 
         if ($('nombreEliminar')) {
             $('nombreEliminar').textContent =
                 cliente.nombre;
         }
 
-        if (typeof dialog.showModal === 'function') {
-            dialog.showModal();
-        } else {
-            dialog.setAttribute('open', '');
-        }
+        dialog.showModal();
     }
 
     function confirmarEliminarCliente() {
-        if (!clienteAEliminar) return;
+        if (!clienteAEliminar) {
+            return;
+        }
+
+        const id =
+            clienteAEliminar.id;
 
         clientes =
             clientes.filter(
-                c =>
-                    String(c.id) !==
-                    String(clienteAEliminar.id)
+                cliente =>
+                    cliente.id !== id
             );
 
-        guardarClientes();
+        if (guardarClientes()) {
+            toast(
+                'Cliente eliminado correctamente.'
+            );
 
-        clienteAEliminar = null;
+            $('dialogEliminar')?.close();
 
-        $('dialogEliminar')?.close();
+            clienteAEliminar = null;
 
-        mostrarClientes();
-        actualizarEstadisticas();
-
-        toast(
-            'Cliente eliminado correctamente.'
-        );
+            mostrarClientes();
+            actualizarEstadisticas();
+        }
     }
 
     // ============================================================
-    // TABLA
+    // EVENTOS DEL FORMULARIO
     // ============================================================
 
     on(
-        'tablaBody',
-        'click',
-        event => {
-
-            const button =
-                event.target.closest(
-                    'button[data-id]'
-                );
-
-            if (!button) return;
-
-            const cliente =
-                clientes.find(
-                    c =>
-                        String(c.id) ===
-                        String(button.dataset.id)
-                );
-
-            if (!cliente) return;
-
-            const accion =
-                button.dataset.action;
-
-            if (accion === 'ver') {
-                mostrarDetalleCliente(cliente);
-            }
-
-            if (accion === 'editar') {
-                abrirPanelCliente(cliente);
-            }
-
-            if (accion === 'eliminar') {
-                eliminarCliente(cliente);
-            }
-        }
-    );
-
-    // ============================================================
-    // BOTONES
-    // ============================================================
-
-    on(
-        'btnNuevo',
-        'click',
-        () => abrirPanelCliente()
+        'clienteForm',
+        'submit',
+        guardarCliente
     );
 
     on(
-        'btnNuevoVacio',
+        'btnNuevoCliente',
         'click',
         () => abrirPanelCliente()
     );
@@ -912,27 +876,12 @@ document.addEventListener('DOMContentLoaded', () => {
         cerrarPanelCliente
     );
 
-    on(
-        'overlay',
-        'click',
-        cerrarPanelCliente
-    );
-
-    on(
-        'clienteForm',
-        'submit',
-        guardarCliente
-    );
-
-    // ============================================================
-    // TIPO
-    // ============================================================
-
-    on(
-        'tipoMinorista',
-        'change',
-        actualizarCamposTipo
-    );
+    if (overlay) {
+        overlay.addEventListener(
+            'click',
+            cerrarPanelCliente
+        );
+    }
 
     on(
         'tipoMayorista',
@@ -940,8 +889,55 @@ document.addEventListener('DOMContentLoaded', () => {
         actualizarCamposTipo
     );
 
+    on(
+        'tipoMinorista',
+        'change',
+        actualizarCamposTipo
+    );
+
     // ============================================================
-    // BUSCADOR
+    // ACCIONES DE LA TABLA
+    // ============================================================
+
+    on(
+        'clientesBody',
+        'click',
+        event => {
+
+            const boton =
+                event.target.closest(
+                    '[data-action]'
+                );
+
+            if (!boton) return;
+
+            const id =
+                boton.dataset.id;
+
+            const accion =
+                boton.dataset.action;
+
+            const cliente =
+                buscarCliente(id);
+
+            if (!cliente) return;
+
+            if (accion === 'view') {
+                mostrarDetalle(cliente);
+            }
+
+            if (accion === 'edit') {
+                abrirPanelCliente(cliente);
+            }
+
+            if (accion === 'delete') {
+                eliminarCliente(cliente);
+            }
+        }
+    );
+
+    // ============================================================
+    // BÚSQUEDA
     // ============================================================
 
     on(
