@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
-    // VARIEDADES CHIQUIS - CLIENTES Y PEDIDOS
+    // VARIEDADES CHIQUIS - CLIENTES
     // ============================================================
 
     const $ = (id) => document.getElementById(id);
@@ -11,27 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return el;
     };
 
-    // ============================================================
-    // ELEMENTOS PRINCIPALES
-    // ============================================================
-
     const overlay = $('overlay');
     const panel = $('panel');
     const clienteForm = $('clienteForm');
-    const pedidoPanel = $('pedidoPanel');
-    const pedidoForm = $('pedidoForm');
-
-    // ============================================================
-    // ESTADO
-    // ============================================================
 
     let clientes = cargarClientes();
-    let pedidos = cargarPedidos();
-
     let clienteDetalle = null;
     let clienteAEliminar = null;
-    let pedidoDetalleActual = null;
-    let filtroPedido = 'todos';
 
     // ============================================================
     // UTILIDADES
@@ -68,34 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
             month: '2-digit',
             year: 'numeric'
         });
-    }
-
-    function formatearFechaHora(fecha) {
-        if (!fecha) return 'Sin fecha';
-
-        const d = new Date(fecha);
-
-        if (Number.isNaN(d.getTime())) {
-            return 'Sin fecha';
-        }
-
-        return d.toLocaleString('es-GT', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    function fechaActualInput() {
-        const d = new Date();
-
-        d.setMinutes(
-            d.getMinutes() - d.getTimezoneOffset()
-        );
-
-        return d.toISOString().slice(0, 16);
     }
 
     function toast(mensaje, tipo = 'success') {
@@ -149,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    // LOCAL STORAGE - CLIENTES
+    // LOCAL STORAGE
     // ============================================================
 
     function cargarClientes() {
@@ -191,49 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    // LOCAL STORAGE - PEDIDOS
-    // ============================================================
-
-    function cargarPedidos() {
-        try {
-            const datos = JSON.parse(
-                localStorage.getItem('pedidosChiquis') || '[]'
-            );
-
-            return Array.isArray(datos) ? datos : [];
-
-        } catch (e) {
-            console.error(e);
-            return [];
-        }
-    }
-
-    function guardarPedidos() {
-        try {
-            localStorage.setItem(
-                'pedidosChiquis',
-                JSON.stringify(pedidos)
-            );
-
-            return true;
-
-        } catch (e) {
-            console.error(
-                'No se pudieron guardar los pedidos:',
-                e
-            );
-
-            toast(
-                'No se pudieron guardar los pedidos.',
-                'error'
-            );
-
-            return false;
-        }
-    }
-
-    // ============================================================
-    // CLIENTES
+    // TIPO DE CLIENTE
     // ============================================================
 
     function obtenerTipoCliente() {
@@ -268,6 +184,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 : 'Compra para uso personal, en unidades sueltas.';
         }
     }
+
+    // ============================================================
+    // VALIDACIONES
+    // ============================================================
 
     function limpiarErrores() {
         document
@@ -306,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const mayorista =
             $('tipoMayorista')?.checked;
 
-        // NOMBRE
         if (
             !nombre?.value.trim() ||
             nombre.value.trim().length < 3
@@ -319,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
             valido = false;
         }
 
-        // TELÉFONO
         const telefonoLimpio =
             (telefono?.value || '').replace(/\D/g, '');
 
@@ -340,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
             valido = false;
         }
 
-        // EMAIL
         if (email?.value.trim()) {
             const correcto =
                 /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -356,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // NIT MAYORISTA
         if (
             mayorista &&
             !nit?.value.trim()
@@ -369,7 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
             valido = false;
         }
 
-        // DESCUENTO
         const desc =
             Number(descuento?.value || 0);
 
@@ -406,6 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         panel.classList.add('is-open');
+
         panel.setAttribute(
             'aria-hidden',
             'false'
@@ -415,104 +331,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
         limpiarErrores();
 
-        if ($('clienteId')) {
-            $('clienteId').value =
-                cliente?.id || '';
-        }
+        $('clienteId').value =
+            cliente?.id || '';
 
-        if ($('panelTitulo')) {
-            $('panelTitulo').textContent =
-                cliente
-                    ? 'Editar cliente'
-                    : 'Nuevo cliente';
-        }
+        $('panelTitulo').textContent =
+            cliente
+                ? 'Editar cliente'
+                : 'Nuevo cliente';
 
         if (cliente) {
+            $('nombre').value =
+                cliente.nombre || '';
 
-            if ($('nombre')) {
-                $('nombre').value =
-                    cliente.nombre || '';
-            }
+            $('telefono').value =
+                cliente.telefono || '';
 
-            if ($('telefono')) {
-                $('telefono').value =
-                    cliente.telefono || '';
-            }
+            $('email').value =
+                cliente.email || '';
 
-            if ($('email')) {
-                $('email').value =
-                    cliente.email || '';
-            }
+            $('direccion').value =
+                cliente.direccion || '';
 
-            if ($('direccion')) {
-                $('direccion').value =
-                    cliente.direccion || '';
-            }
+            $('dpi').value =
+                cliente.dpi || '';
 
-            if ($('dpi')) {
-                $('dpi').value =
-                    cliente.dpi || '';
-            }
+            $('nit').value =
+                cliente.nit || '';
 
-            if ($('nit')) {
-                $('nit').value =
-                    cliente.nit || '';
-            }
+            $('descuento').value =
+                cliente.descuento ?? 0;
 
-            if ($('descuento')) {
-                $('descuento').value =
-                    cliente.descuento ?? 0;
-            }
+            $('limiteCredito').value =
+                cliente.limiteCredito ?? 0;
 
-            if ($('limiteCredito')) {
-                $('limiteCredito').value =
-                    cliente.limiteCredito ?? 0;
-            }
-
-            if ($('notas')) {
-                $('notas').value =
-                    cliente.notas || '';
-            }
-
-            if (
-                cliente.tipo === 'mayorista'
-            ) {
-                if ($('tipoMayorista')) {
-                    $('tipoMayorista').checked = true;
-                }
-
+            if (cliente.tipo === 'mayorista') {
+                $('tipoMayorista').checked = true;
             } else {
-                if ($('tipoMinorista')) {
-                    $('tipoMinorista').checked = true;
-                }
-            }
-
-        } else {
-
-            if ($('tipoMinorista')) {
                 $('tipoMinorista').checked = true;
-            }
-
-            if ($('descuento')) {
-                $('descuento').value = 0;
-            }
-
-            if ($('limiteCredito')) {
-                $('limiteCredito').value = 0;
             }
         }
 
         actualizarCamposTipo();
-        actualizarContadorNotas();
 
         setTimeout(() => {
             $('nombre')?.focus();
         }, 100);
     }
-
-    // ============================================================
-    // CERRAR PANEL CLIENTE
-    // ============================================================
 
     function cerrarPanelCliente() {
         if (!panel) return;
@@ -524,12 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
             'true'
         );
 
-        if (
-            !pedidoPanel?.classList.contains('is-open')
-        ) {
-            if (overlay) {
-                overlay.hidden = true;
-            }
+        if (overlay) {
+            overlay.hidden = true;
         }
     }
 
@@ -537,93 +397,61 @@ document.addEventListener('DOMContentLoaded', () => {
     // GUARDAR CLIENTE
     // ============================================================
 
-    function guardarClienteDesdeFormulario(e) {
-        e.preventDefault();
-        e.stopPropagation();
+    function guardarCliente(event) {
+        event.preventDefault();
 
         if (!validarCliente()) {
             return;
         }
 
         const id =
-            $('clienteId')?.value ||
-            generarId('cliente-');
-
-        const existente =
-            clientes.find(c => c.id === id);
+            $('clienteId').value ||
+            generarId('CLI-');
 
         const tipo =
             obtenerTipoCliente();
 
-        const datos = {
+        const cliente = {
             id: id,
-
+            nombre: $('nombre').value.trim(),
+            telefono: $('telefono').value.trim(),
+            email: $('email').value.trim(),
+            dpi: $('dpi').value.trim(),
+            nit: $('nit').value.trim(),
+            direccion: $('direccion').value.trim(),
             tipo: tipo,
-
-            nombre:
-                $('nombre')?.value.trim() || '',
-
-            telefono:
-                $('telefono')?.value.trim() || '',
-
-            email:
-                $('email')?.value.trim() || '',
-
-            direccion:
-                $('direccion')?.value.trim() || '',
-
-            dpi:
-                $('dpi')?.value.trim() || '',
-
-            nit:
-                $('nit')?.value.trim() || '',
-
-            descuento:
-                tipo === 'mayorista'
-                    ? Number(
-                        $('descuento')?.value || 0
-                    )
-                    : 0,
-
-            limiteCredito:
-                Number(
-                    $('limiteCredito')?.value || 0
-                ),
-
-            notas:
-                $('notas')?.value.trim() || '',
-
-            fecha:
-                existente?.fecha ||
-                new Date().toISOString()
+            descuento: Number($('descuento').value || 0),
+            limiteCredito: Number($('limiteCredito').value || 0),
+            fechaRegistro: new Date().toISOString()
         };
 
-        if (existente) {
-
-            clientes =
-                clientes.map(c =>
-                    c.id === id
-                        ? datos
-                        : c
-                );
-
-            toast(
-                'Cliente actualizado correctamente.'
+        const indice =
+            clientes.findIndex(
+                c => String(c.id) === String(id)
             );
+
+        if (indice >= 0) {
+            cliente.fechaRegistro =
+                clientes[indice].fechaRegistro ||
+                cliente.fechaRegistro;
+
+            clientes[indice] = {
+                ...clientes[indice],
+                ...cliente
+            };
+
+            toast('Cliente actualizado correctamente.');
 
         } else {
+            clientes.push(cliente);
 
-            clientes.push(datos);
-
-            toast(
-                'Cliente registrado correctamente.'
-            );
+            toast('Cliente registrado correctamente.');
         }
 
         if (guardarClientes()) {
-            mostrarClientes();
-            cargarClientesEnSelect();
             cerrarPanelCliente();
+            mostrarClientes();
+            actualizarEstadisticas();
         }
     }
 
@@ -631,102 +459,145 @@ document.addEventListener('DOMContentLoaded', () => {
     // MOSTRAR CLIENTES
     // ============================================================
 
-    function mostrarClientes(lista = clientes) {
-        const tbody = $('tablaBody');
+    function obtenerClientesFiltrados() {
+        const busqueda =
+            ($('searchInput')?.value || '')
+                .trim()
+                .toLowerCase();
 
-        if (!tbody) {
-            return;
-        }
+        const filtro =
+            document.querySelector(
+                '.filter-button.active'
+            )?.dataset.filter || 'todos';
+
+        return clientes.filter(cliente => {
+
+            const coincideBusqueda =
+                !busqueda ||
+                [
+                    cliente.nombre,
+                    cliente.telefono,
+                    cliente.email,
+                    cliente.nit,
+                    cliente.dpi
+                ]
+                    .join(' ')
+                    .toLowerCase()
+                    .includes(busqueda);
+
+            const coincideFiltro =
+                filtro === 'todos' ||
+                cliente.tipo === filtro;
+
+            return coincideBusqueda &&
+                coincideFiltro;
+        });
+    }
+
+    function mostrarClientes() {
+        const tbody = $('tablaBody');
+        const empty = $('emptyState');
+
+        if (!tbody) return;
+
+        const lista =
+            obtenerClientesFiltrados();
 
         tbody.innerHTML = '';
-
-        const empty =
-            $('emptyState');
-
-        if (empty) {
-            empty.hidden =
-                lista.length !== 0;
-        }
 
         lista.forEach(cliente => {
 
             const tr =
                 document.createElement('tr');
 
-            const tipo =
+            const inicial =
+                (cliente.nombre || '?')
+                    .charAt(0)
+                    .toUpperCase();
+
+            const tipoTexto =
                 cliente.tipo === 'mayorista'
                     ? 'Mayorista'
                     : 'Minorista';
 
             tr.innerHTML = `
                 <td>
-                    <div class="cliente-nombre">
+                    <div class="client-cell">
+                        <div class="client-avatar">
+                            ${escaparHTML(inicial)}
+                        </div>
+
+                        <div>
+                            <strong>
+                                ${escaparHTML(cliente.nombre)}
+                            </strong>
+
+                            <small>
+                                ${escaparHTML(cliente.email || 'Sin correo')}
+                            </small>
+                        </div>
+                    </div>
+                </td>
+
+                <td>
+                    <span class="type-badge ${cliente.tipo}">
+                        ${tipoTexto}
+                    </span>
+                </td>
+
+                <td>
+                    <div class="contact-cell">
                         <strong>
-                            ${escaparHTML(cliente.nombre)}
+                            ${escaparHTML(cliente.telefono || '-')}
                         </strong>
 
                         <small>
-                            ${escaparHTML(
-                                cliente.telefono || ''
-                            )}
+                            ${escaparHTML(cliente.email || 'Sin correo')}
                         </small>
                     </div>
                 </td>
 
                 <td>
-                    <span class="tipo-cliente">
-                        ${tipo}
-                    </span>
+                    <div class="info-cell">
+                        <span>
+                            ${escaparHTML(cliente.nit || 'Sin NIT')}
+                        </span>
+
+                        <small>
+                            ${escaparHTML(cliente.direccion || 'Sin dirección')}
+                        </small>
+                    </div>
                 </td>
 
                 <td>
-                    ${escaparHTML(
-                        cliente.email || '—'
-                    )}
+                    ${formatearFecha(cliente.fechaRegistro)}
                 </td>
 
                 <td>
-                    ${escaparHTML(
-                        cliente.nit || '—'
-                    )}
-                </td>
-
-                <td>
-                    ${Number(
-                        cliente.descuento || 0
-                    )}%
-                </td>
-
-                <td>
-                    ${formatearFecha(
-                        cliente.fecha
-                    )}
-                </td>
-
-                <td>
-                    <div class="acciones">
-
+                    <div class="row-actions">
                         <button
-                            type="button"
-                            class="btn-accion btn-ver"
-                            data-id="${cliente.id}">
+                            class="table-action"
+                            data-action="ver"
+                            data-id="${escaparHTML(cliente.id)}"
+                            title="Ver cliente">
                             👁
                         </button>
 
                         <button
-                            type="button"
-                            class="btn-accion btn-editar"
-                            data-id="${cliente.id}">
-                            ✏
+                            class="table-action"
+                            data-action="editar"
+                            data-id="${escaparHTML(cliente.id)}"
+                            title="Editar">
+                            ✎
                         </button>
 
                         <button
-                            type="button"
-                            class="btn-accion btn-eliminar"
-                            data-id="${cliente.id}">
+                            class="table-action danger"
+                            data-action="eliminar"
+                            data-id="${escaparHTML(cliente.id)}"
+                            title="Eliminar">
                             🗑
                         </button>
-
                     </div>
                 </td>
             `;
@@ -734,42 +605,75 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.appendChild(tr);
         });
 
-        actualizarEstadisticasClientes();
-        actualizarContadoresClientes();
+        if (empty) {
+            empty.hidden = lista.length > 0;
+        }
 
         const resultado =
             $('resultadoTexto');
 
+        if (resultado) {
+            resultado.textContent =
+                `Mostrando ${lista.length} de ${clientes.length} clientes`;
+        }
+
         const footer =
             $('tableFooterText');
 
-        if (resultado) {
-            resultado.textContent =
-                `${lista.length} ${
-                    lista.length === 1
-                        ? 'cliente'
-                        : 'clientes'
-                }`;
-        }
-
         if (footer) {
             footer.textContent =
-                `${lista.length} de ${clientes.length} clientes`;
+                `${lista.length} cliente${lista.length === 1 ? '' : 's'}`;
+        }
+
+        if ($('statVisibles')) {
+            $('statVisibles').textContent =
+                lista.length;
+        }
+
+        actualizarContadores();
+    }
+
+    // ============================================================
+    // CONTADORES
+    // ============================================================
+
+    function actualizarContadores() {
+        const minoristas =
+            clientes.filter(
+                c => c.tipo === 'minorista'
+            ).length;
+
+        const mayoristas =
+            clientes.filter(
+                c => c.tipo === 'mayorista'
+            ).length;
+
+        if ($('countTodos')) {
+            $('countTodos').textContent =
+                clientes.length;
+        }
+
+        if ($('countMinoristas')) {
+            $('countMinoristas').textContent =
+                minoristas;
+        }
+
+        if ($('countMayoristas')) {
+            $('countMayoristas').textContent =
+                mayoristas;
         }
     }
 
     // ============================================================
-    // ESTADÍSTICAS CLIENTES
+    // ESTADÍSTICAS
     // ============================================================
 
-    function actualizarEstadisticasClientes() {
-
-        const total =
-            clientes.length;
+    function actualizarEstadisticas() {
+        const total = clientes.length;
 
         const minoristas =
             clientes.filter(
-                c => c.tipo !== 'mayorista'
+                c => c.tipo === 'minorista'
             ).length;
 
         const mayoristas =
@@ -792,54 +696,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 mayoristas;
         }
 
-        if ($('statVisibles')) {
-            $('statVisibles').textContent =
-                total;
-        }
-
         if ($('porcentajeMinorista')) {
             $('porcentajeMinorista').textContent =
                 total
-                    ? Math.round(
-                        minoristas * 100 / total
-                    ) + '% del total'
+                    ? `${Math.round((minoristas / total) * 100)}% del total`
                     : '0% del total';
         }
 
         if ($('porcentajeMayorista')) {
             $('porcentajeMayorista').textContent =
                 total
-                    ? Math.round(
-                        mayoristas * 100 / total
-                    ) + '% del total'
+                    ? `${Math.round((mayoristas / total) * 100)}% del total`
                     : '0% del total';
         }
-    }
 
-    // ============================================================
-    // CONTADORES CLIENTES
-    // ============================================================
-
-    function actualizarContadoresClientes() {
-
-        if ($('countTodos')) {
-            $('countTodos').textContent =
-                clientes.length;
-        }
-
-        if ($('countMinoristas')) {
-            $('countMinoristas').textContent =
-                clientes.filter(
-                    c => c.tipo !== 'mayorista'
-                ).length;
-        }
-
-        if ($('countMayoristas')) {
-            $('countMayoristas').textContent =
-                clientes.filter(
-                    c => c.tipo === 'mayorista'
-                ).length;
-        }
+        actualizarContadores();
     }
 
     // ============================================================
@@ -847,19 +718,41 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
 
     function mostrarDetalleCliente(cliente) {
-
         clienteDetalle = cliente;
 
-        if ($('detalleAvatar')) {
-            $('detalleAvatar').textContent =
-                (cliente.nombre || 'C')
-                    .charAt(0)
-                    .toUpperCase();
-        }
+        const dialog =
+            $('dialogDetalle');
+
+        if (!dialog) return;
 
         if ($('detalleNombre')) {
             $('detalleNombre').textContent =
-                cliente.nombre || '—';
+                cliente.nombre || '-';
+        }
+
+        if ($('detalleTelefono')) {
+            $('detalleTelefono').textContent =
+                cliente.telefono || '-';
+        }
+
+        if ($('detalleEmail')) {
+            $('detalleEmail').textContent =
+                cliente.email || '-';
+        }
+
+        if ($('detalleDpi')) {
+            $('detalleDpi').textContent =
+                cliente.dpi || '-';
+        }
+
+        if ($('detalleNit')) {
+            $('detalleNit').textContent =
+                cliente.nit || '-';
+        }
+
+        if ($('detalleDireccion')) {
+            $('detalleDireccion').textContent =
+                cliente.direccion || '-';
         }
 
         if ($('detalleTipo')) {
@@ -869,47 +762,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     : 'Minorista';
         }
 
-        if ($('detalleTelefono')) {
-            $('detalleTelefono').textContent =
-                cliente.telefono || '—';
+        if ($('detalleDescuento')) {
+            $('detalleDescuento').textContent =
+                `${Number(cliente.descuento || 0)}%`;
         }
 
-        if ($('detalleEmail')) {
-            $('detalleEmail').textContent =
-                cliente.email || '—';
+        if ($('detalleLimiteCredito')) {
+            $('detalleLimiteCredito').textContent =
+                dinero(cliente.limiteCredito);
         }
 
-        if ($('detalleDireccion')) {
-            $('detalleDireccion').textContent =
-                cliente.direccion || '—';
+        if ($('detalleRegistro')) {
+            $('detalleRegistro').textContent =
+                formatearFecha(cliente.fechaRegistro);
         }
 
-        if ($('detalleFecha')) {
-            $('detalleFecha').textContent =
-                formatearFecha(cliente.fecha);
+        if (typeof dialog.showModal === 'function') {
+            dialog.showModal();
+        } else {
+            dialog.setAttribute('open', '');
         }
-
-        if ($('detalleIdentificacion')) {
-            $('detalleIdentificacion').textContent =
-                `DPI: ${cliente.dpi || '—'} | NIT: ${cliente.nit || '—'}`;
-        }
-
-        if ($('detalleComercial')) {
-            $('detalleComercial').textContent =
-                `Descuento: ${
-                    Number(cliente.descuento || 0)
-                }% | Crédito: ${
-                    dinero(cliente.limiteCredito || 0)
-                }`;
-        }
-
-        if ($('detalleNotas')) {
-            $('detalleNotas').textContent =
-                cliente.notas ||
-                'Sin notas registradas.';
-        }
-
-        $('dialogDetalle')?.showModal();
     }
 
     // ============================================================
@@ -917,29 +789,53 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
 
     function eliminarCliente(cliente) {
+        clienteAEliminar = cliente;
 
-        if (!cliente) {
+        const dialog =
+            $('dialogEliminar');
+
+        if (!dialog) {
+            if (
+                confirm(
+                    `¿Deseas eliminar al cliente "${cliente.nombre}"?`
+                )
+            ) {
+                confirmarEliminarCliente();
+            }
+
             return;
         }
 
-        if (
-            !confirm(
-                `¿Deseas eliminar al cliente "${cliente.nombre}"?`
-            )
-        ) {
-            return;
+        if ($('nombreEliminar')) {
+            $('nombreEliminar').textContent =
+                cliente.nombre;
         }
+
+        if (typeof dialog.showModal === 'function') {
+            dialog.showModal();
+        } else {
+            dialog.setAttribute('open', '');
+        }
+    }
+
+    function confirmarEliminarCliente() {
+        if (!clienteAEliminar) return;
 
         clientes =
             clientes.filter(
-                c => c.id !== cliente.id
+                c =>
+                    String(c.id) !==
+                    String(clienteAEliminar.id)
             );
 
         guardarClientes();
 
-        mostrarClientes();
+        clienteAEliminar = null;
 
-        cargarClientesEnSelect();
+        $('dialogEliminar')?.close();
+
+        mostrarClientes();
+        actualizarEstadisticas();
 
         toast(
             'Cliente eliminado correctamente.'
@@ -947,1264 +843,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ============================================================
-    // PEDIDOS
+    // TABLA
     // ============================================================
 
-    function numeroPedido() {
+    on(
+        'tablaBody',
+        'click',
+        event => {
 
-        let max = 0;
-
-        pedidos.forEach(p => {
-
-            const n =
-                parseInt(
-                    String(
-                        p.numero || ''
-                    ).replace(/\D/g, ''),
-                    10
+            const button =
+                event.target.closest(
+                    'button[data-id]'
                 );
 
-            if (!Number.isNaN(n)) {
-                max = Math.max(max, n);
-            }
-        });
+            if (!button) return;
 
-        return (
-            'PED-' +
-            String(max + 1).padStart(4, '0')
-        );
-    }
+            const cliente =
+                clientes.find(
+                    c =>
+                        String(c.id) ===
+                        String(button.dataset.id)
+                );
 
-    // ============================================================
-    // CLIENTES EN SELECT DE PEDIDOS
-    // ============================================================
+            if (!cliente) return;
 
-    function cargarClientesEnSelect(
-        seleccionado = ''
-    ) {
+            const accion =
+                button.dataset.action;
 
-        const select =
-            $('pedidoCliente');
-
-        if (!select) {
-            return;
-        }
-
-        select.innerHTML =
-            '<option value="">Seleccione un cliente</option>';
-
-        clientes.forEach(c => {
-
-            const op =
-                document.createElement('option');
-
-            op.value = c.id;
-
-            op.textContent =
-                `${c.nombre} — ${
-                    c.telefono ||
-                    'sin teléfono'
-                }`;
-
-            if (
-                String(c.id) ===
-                String(seleccionado)
-            ) {
-                op.selected = true;
+            if (accion === 'ver') {
+                mostrarDetalleCliente(cliente);
             }
 
-            select.appendChild(op);
-        });
-    }
-
-    // ============================================================
-    // AGREGAR PRODUCTO AL PEDIDO
-    // ============================================================
-
-    function agregarFilaProducto(
-        producto = {}
-    ) {
-
-        const contenedor =
-            $('productosPedido');
-
-        if (!contenedor) {
-            return;
-        }
-
-        const row =
-            document.createElement('div');
-
-        row.className =
-            'producto-pedido-row';
-
-        row.innerHTML = `
-            <div>
-                <label>Producto</label>
-
-                <input
-                    type="text"
-                    class="producto-nombre"
-                    placeholder="Ej. Camisa"
-                    value="${escaparHTML(
-                        producto.nombre || ''
-                    )}">
-            </div>
-
-            <div>
-                <label>Cantidad</label>
-
-                <input
-                    type="number"
-                    class="producto-cantidad"
-                    min="1"
-                    step="1"
-                    value="${Number(
-                        producto.cantidad || 1
-                    )}">
-            </div>
-
-            <div>
-                <label>Precio unitario</label>
-
-                <input
-                    type="number"
-                    class="producto-precio"
-                    min="0"
-                    step="0.01"
-                    value="${Number(
-                        producto.precio || 0
-                    )}">
-            </div>
-
-            <div>
-                <label>Subtotal</label>
-
-                <input
-                    type="text"
-                    class="producto-subtotal"
-                    readonly
-                    value="${dinero(
-                        Number(
-                            producto.cantidad || 1
-                        ) *
-                        Number(
-                            producto.precio || 0
-                        )
-                    )}">
-            </div>
-
-            <div>
-                <button
-                    type="button"
-                    class="btn-quitar-producto"
-                    title="Quitar producto">
-                    ×
-                </button>
-            </div>
-        `;
-
-        contenedor.appendChild(row);
-
-        row
-            .querySelectorAll(
-                '.producto-cantidad, .producto-precio'
-            )
-            .forEach(input => {
-
-                input.addEventListener(
-                    'input',
-                    calcularTotalesPedido
-                );
-            });
-
-        row
-            .querySelector(
-                '.btn-quitar-producto'
-            )
-            ?.addEventListener(
-                'click',
-                () => {
-
-                    row.remove();
-
-                    calcularTotalesPedido();
-                }
-            );
-
-        calcularTotalesPedido();
-    }
-
-    // ============================================================
-    // OBTENER PRODUCTOS
-    // ============================================================
-
-    function obtenerProductosPedido() {
-
-        return [
-            ...document.querySelectorAll(
-                '#productosPedido .producto-pedido-row'
-            )
-        ]
-
-        .map(row => ({
-
-            nombre:
-                row
-                    .querySelector(
-                        '.producto-nombre'
-                    )
-                    ?.value.trim() || '',
-
-            cantidad:
-                Number(
-                    row
-                        .querySelector(
-                            '.producto-cantidad'
-                        )
-                        ?.value || 0
-                ),
-
-            precio:
-                Number(
-                    row
-                        .querySelector(
-                            '.producto-precio'
-                        )
-                        ?.value || 0
-                )
-        }))
-
-        .filter(
-            p =>
-                p.nombre &&
-                p.cantidad > 0 &&
-                p.precio >= 0
-        );
-    }
-
-    // ============================================================
-    // CALCULAR TOTALES
-    // ============================================================
-
-    function calcularTotalesPedido() {
-
-        let subtotal = 0;
-
-        document
-            .querySelectorAll(
-                '#productosPedido .producto-pedido-row'
-            )
-            .forEach(row => {
-
-                const cantidad =
-                    Number(
-                        row
-                            .querySelector(
-                                '.producto-cantidad'
-                            )
-                            ?.value || 0
-                    );
-
-                const precio =
-                    Number(
-                        row
-                            .querySelector(
-                                '.producto-precio'
-                            )
-                            ?.value || 0
-                    );
-
-                const sub =
-                    cantidad * precio;
-
-                subtotal += sub;
-
-                const campo =
-                    row.querySelector(
-                        '.producto-subtotal'
-                    );
-
-                if (campo) {
-                    campo.value =
-                        dinero(sub);
-                }
-            });
-
-        const cliente =
-            clientes.find(
-                c =>
-                    String(c.id) ===
-                    String(
-                        $('pedidoCliente')?.value
-                    )
-            );
-
-        const porcentaje =
-            cliente?.tipo === 'mayorista'
-                ? Number(
-                    cliente.descuento || 0
-                )
-                : 0;
-
-        const descuento =
-            subtotal * porcentaje / 100;
-
-        const total =
-            subtotal - descuento;
-
-        if ($('pedidoSubtotal')) {
-            $('pedidoSubtotal').textContent =
-                dinero(subtotal);
-        }
-
-        if ($('pedidoDescuento')) {
-            $('pedidoDescuento').textContent =
-                dinero(descuento);
-        }
-
-        if ($('pedidoTotal')) {
-            $('pedidoTotal').textContent =
-                dinero(total);
-        }
-
-        return {
-            subtotal,
-            descuento,
-            total,
-            porcentaje
-        };
-    }
-
-    // ============================================================
-    // ABRIR PANEL PEDIDO
-    // ============================================================
-
-    function abrirPanelPedido(
-        pedido = null
-    ) {
-
-        if (
-            !pedidoPanel ||
-            !pedidoForm
-        ) {
-            return;
-        }
-
-        if (overlay) {
-            overlay.hidden = false;
-        }
-
-        pedidoPanel.classList.add(
-            'is-open'
-        );
-
-        pedidoPanel.setAttribute(
-            'aria-hidden',
-            'false'
-        );
-
-        if ($('pedidoPanelTitulo')) {
-            $('pedidoPanelTitulo').textContent =
-                pedido
-                    ? 'Editar pedido'
-                    : 'Nuevo pedido';
-        }
-
-        if ($('pedidoId')) {
-            $('pedidoId').value =
-                pedido?.id || '';
-        }
-
-        if ($('pedidoNumero')) {
-            $('pedidoNumero').value =
-                pedido?.numero ||
-                numeroPedido();
-        }
-
-        if ($('pedidoFecha')) {
-            $('pedidoFecha').value =
-                pedido?.fecha
-                    ? new Date(
-                        pedido.fecha
-                    )
-                        .toISOString()
-                        .slice(0, 16)
-                    : fechaActualInput();
-        }
-
-        if ($('pedidoOrigen')) {
-            $('pedidoOrigen').value =
-                pedido?.origen ||
-                'WhatsApp';
-        }
-
-        if ($('pedidoEstado')) {
-            $('pedidoEstado').value =
-                pedido?.estado ||
-                'pendiente';
-        }
-
-        if ($('pedidoDireccion')) {
-            $('pedidoDireccion').value =
-                pedido?.direccion || '';
-        }
-
-        if ($('pedidoNotas')) {
-            $('pedidoNotas').value =
-                pedido?.notas || '';
-        }
-
-        cargarClientesEnSelect(
-            pedido?.clienteId || ''
-        );
-
-        if ($('productosPedido')) {
-            $('productosPedido').innerHTML = '';
-        }
-
-        if (
-            pedido?.productos &&
-            pedido.productos.length
-        ) {
-
-            pedido.productos.forEach(
-                producto => {
-                    agregarFilaProducto(
-                        producto
-                    );
-                }
-            );
-
-        } else {
-
-            agregarFilaProducto();
-        }
-
-        calcularTotalesPedido();
-    }
-
-    // ============================================================
-    // CERRAR PANEL PEDIDO
-    // ============================================================
-
-    function cerrarPanelPedido() {
-
-        pedidoPanel?.classList.remove(
-            'is-open'
-        );
-
-        pedidoPanel?.setAttribute(
-            'aria-hidden',
-            'true'
-        );
-
-        if (
-            !panel?.classList.contains(
-                'is-open'
-            )
-        ) {
-            if (overlay) {
-                overlay.hidden = true;
+            if (accion === 'editar') {
+                abrirPanelCliente(cliente);
+            }
+
+            if (accion === 'eliminar') {
+                eliminarCliente(cliente);
             }
         }
-    }
-
-    // ============================================================
-    // GUARDAR PEDIDO
-    // ============================================================
-
-    function guardarPedidoDesdeFormulario(e) {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        const clienteId =
-            $('pedidoCliente')?.value;
-
-        const fecha =
-            $('pedidoFecha')?.value;
-
-        const productos =
-            obtenerProductosPedido();
-
-        // CLIENTE
-        if (!clienteId) {
-
-            toast(
-                'Selecciona un cliente para el pedido.',
-                'error'
-            );
-
-            $('pedidoCliente')?.focus();
-
-            return;
-        }
-
-        // FECHA
-        if (!fecha) {
-
-            toast(
-                'Ingresa la fecha del pedido.',
-                'error'
-            );
-
-            $('pedidoFecha')?.focus();
-
-            return;
-        }
-
-        // PRODUCTOS
-        if (!productos.length) {
-
-            toast(
-                'Agrega al menos un producto con nombre y cantidad.',
-                'error'
-            );
-
-            return;
-        }
-
-        const cliente =
-            clientes.find(
-                c =>
-                    String(c.id) ===
-                    String(clienteId)
-            );
-
-        if (!cliente) {
-
-            toast(
-                'El cliente seleccionado no existe.',
-                'error'
-            );
-
-            return;
-        }
-
-        const totales =
-            calcularTotalesPedido();
-
-        const id =
-            $('pedidoId')?.value ||
-            generarId('pedido-');
-
-        const existente =
-            pedidos.find(
-                p => p.id === id
-            );
-
-        const datos = {
-
-            id,
-
-            numero:
-                $('pedidoNumero')?.value ||
-                numeroPedido(),
-
-            clienteId:
-                cliente.id,
-
-            clienteNombre:
-                cliente.nombre,
-
-            clienteTelefono:
-                cliente.telefono || '',
-
-            productos:
-                productos.map(p => ({
-                    ...p,
-                    subtotal:
-                        p.cantidad *
-                        p.precio
-                })),
-
-            subtotal:
-                totales.subtotal,
-
-            descuento:
-                totales.descuento,
-
-            porcentajeDescuento:
-                totales.porcentaje,
-
-            total:
-                totales.total,
-
-            fecha:
-                new Date(fecha).toISOString(),
-
-            origen:
-                $('pedidoOrigen')?.value ||
-                'WhatsApp',
-
-            estado:
-                $('pedidoEstado')?.value ||
-                'pendiente',
-
-            direccion:
-                $('pedidoDireccion')
-                    ?.value.trim() || '',
-
-            notas:
-                $('pedidoNotas')
-                    ?.value.trim() || ''
-        };
-
-        if (existente) {
-
-            pedidos =
-                pedidos.map(p =>
-                    p.id === id
-                        ? datos
-                        : p
-                );
-
-            toast(
-                'Pedido actualizado correctamente.'
-            );
-
-        } else {
-
-            pedidos.push(datos);
-
-            toast(
-                'Pedido registrado correctamente.'
-            );
-        }
-
-        if (guardarPedidos()) {
-
-            mostrarPedidos();
-
-            actualizarEstadisticasPedidos();
-
-            cerrarPanelPedido();
-        }
-    }
-
-    // ============================================================
-    // ESTADO DEL PEDIDO
-    // ============================================================
-
-    function estadoTexto(estado) {
-
-        return {
-
-            pendiente: 'Pendiente',
-
-            preparando: 'Preparando',
-
-            entregado: 'Entregado',
-
-            cancelado: 'Cancelado'
-
-        }[estado] ||
-            estado ||
-            'Pendiente';
-    }
-
-    // ============================================================
-    // MOSTRAR PEDIDOS
-    // ============================================================
-
-    function mostrarPedidos() {
-
-        const tbody =
-            $('pedidosBody');
-
-        if (!tbody) {
-            return;
-        }
-
-        tbody.innerHTML = '';
-
-        const texto =
-            (
-                $('searchPedidos')
-                    ?.value || ''
-            )
-                .toLowerCase()
-                .trim();
-
-        let lista =
-            pedidos.filter(p => {
-
-                const estadoOk =
-                    filtroPedido === 'todos' ||
-                    p.estado === filtroPedido;
-
-                const contenido =
-                    `${p.numero} ${
-                        p.clienteNombre || ''
-                    } ${
-                        p.clienteTelefono || ''
-                    } ${
-                        p.origen || ''
-                    }`
-                        .toLowerCase();
-
-                return (
-                    estadoOk &&
-                    (
-                        !texto ||
-                        contenido.includes(texto)
-                    )
-                );
-            });
-
-        lista.sort(
-            (a, b) =>
-                new Date(b.fecha) -
-                new Date(a.fecha)
-        );
-
-        const empty =
-            $('emptyPedidos');
-
-        if (empty) {
-            empty.hidden =
-                lista.length !== 0;
-        }
-
-        lista.forEach(p => {
-
-            const tr =
-                document.createElement('tr');
-
-            const productos =
-                (p.productos || [])
-                    .map(
-                        x =>
-                            `${x.nombre} (${x.cantidad})`
-                    )
-                    .join(', ');
-
-            tr.innerHTML = `
-
-                <td>
-                    <strong>
-                        ${escaparHTML(
-                            p.numero
-                        )}
-                    </strong>
-                </td>
-
-                <td>
-                    ${escaparHTML(
-                        p.clienteNombre ||
-                        'Sin cliente'
-                    )}
-                </td>
-
-                <td>
-                    ${escaparHTML(
-                        productos ||
-                        'Sin productos'
-                    )}
-                </td>
-
-                <td>
-                    <strong>
-                        ${dinero(p.total)}
-                    </strong>
-                </td>
-
-                <td>
-                    ${formatearFechaHora(
-                        p.fecha
-                    )}
-                </td>
-
-                <td>
-                    <span
-                        class="estado-pedido estado-${escaparHTML(
-                            p.estado
-                        )}">
-                        ${estadoTexto(
-                            p.estado
-                        )}
-                    </span>
-                </td>
-
-                <td>
-
-                    <div class="acciones-pedido">
-
-                        <button
-                            type="button"
-                            class="btn-accion btn-ver-pedido"
-                            data-id="${p.id}">
-                            👁
-                        </button>
-
-                        <button
-                            type="button"
-                            class="btn-accion btn-editar-pedido"
-                            data-id="${p.id}">
-                            ✏
-                        </button>
-
-                        <button
-                            type="button"
-                            class="btn-accion btn-eliminar-pedido"
-                            data-id="${p.id}">
-                            🗑
-                        </button>
-
-                    </div>
-
-                </td>
-            `;
-
-            tbody.appendChild(tr);
-        });
-
-        if ($('resultadoPedidos')) {
-
-            $('resultadoPedidos')
-                .textContent =
-                `${lista.length} ${
-                    lista.length === 1
-                        ? 'pedido'
-                        : 'pedidos'
-                }`;
-        }
-
-        if ($('footerPedidos')) {
-
-            $('footerPedidos')
-                .textContent =
-                `${lista.length} de ${pedidos.length} pedidos`;
-        }
-    }
-
-    // ============================================================
-    // ESTADÍSTICAS PEDIDOS
-    // ============================================================
-
-    function actualizarEstadisticasPedidos() {
-
-        const total =
-            pedidos.length;
-
-        const pendientes =
-            pedidos.filter(
-                p => p.estado === 'pendiente'
-            ).length;
-
-        const preparando =
-            pedidos.filter(
-                p => p.estado === 'preparando'
-            ).length;
-
-        const entregados =
-            pedidos.filter(
-                p => p.estado === 'entregado'
-            ).length;
-
-        const ventas =
-            pedidos
-                .filter(
-                    p => p.estado !== 'cancelado'
-                )
-                .reduce(
-                    (s, p) =>
-                        s +
-                        Number(p.total || 0),
-                    0
-                );
-
-        if ($('statPedidos')) {
-            $('statPedidos').textContent =
-                total;
-        }
-
-        if ($('statPedidosPendientes')) {
-            $('statPedidosPendientes')
-                .textContent =
-                pendientes;
-        }
-
-        if ($('statPedidosEntregados')) {
-            $('statPedidosEntregados')
-                .textContent =
-                entregados;
-        }
-
-        if ($('statVentas')) {
-            $('statVentas').textContent =
-                dinero(ventas);
-        }
-
-        if ($('countPedidosTodos')) {
-            $('countPedidosTodos')
-                .textContent =
-                total;
-        }
-
-        if ($('countPedidosPendientes')) {
-            $('countPedidosPendientes')
-                .textContent =
-                pendientes;
-        }
-
-        if ($('countPedidosPreparando')) {
-            $('countPedidosPreparando')
-                .textContent =
-                preparando;
-        }
-
-        if ($('countPedidosEntregados')) {
-            $('countPedidosEntregados')
-                .textContent =
-                entregados;
-        }
-    }
-
-    // ============================================================
-    // DETALLE PEDIDO
-    // ============================================================
-
-    function mostrarDetallePedido(pedido) {
-
-        pedidoDetalleActual =
-            pedido;
-
-        if ($('detallePedidoNumero')) {
-            $('detallePedidoNumero')
-                .textContent =
-                pedido.numero;
-        }
-
-        if ($('detallePedidoEstado')) {
-
-            $('detallePedidoEstado')
-                .textContent =
-                estadoTexto(
-                    pedido.estado
-                );
-
-            $('detallePedidoEstado')
-                .className =
-                `detail-badge estado-${pedido.estado}`;
-        }
-
-        if ($('detallePedidoCliente')) {
-            $('detallePedidoCliente')
-                .textContent =
-                pedido.clienteNombre ||
-                '—';
-        }
-
-        if ($('detallePedidoTelefono')) {
-            $('detallePedidoTelefono')
-                .textContent =
-                pedido.clienteTelefono ||
-                '—';
-        }
-
-        if ($('detallePedidoFecha')) {
-            $('detallePedidoFecha')
-                .textContent =
-                formatearFechaHora(
-                    pedido.fecha
-                );
-        }
-
-        if ($('detallePedidoOrigen')) {
-            $('detallePedidoOrigen')
-                .textContent =
-                pedido.origen || '—';
-        }
-
-        if ($('detallePedidoDireccion')) {
-            $('detallePedidoDireccion')
-                .textContent =
-                pedido.direccion ||
-                'No especificada';
-        }
-
-        if ($('detallePedidoTotal')) {
-            $('detallePedidoTotal')
-                .textContent =
-                dinero(pedido.total);
-        }
-
-        if ($('detallePedidoNotas')) {
-            $('detallePedidoNotas')
-                .textContent =
-                pedido.notas ||
-                'Sin notas registradas.';
-        }
-
-        const cont =
-            $('detallePedidoProductos');
-
-        if (cont) {
-
-            cont.innerHTML = '';
-
-            (pedido.productos || [])
-                .forEach(p => {
-
-                    const item =
-                        document.createElement('div');
-
-                    item.className =
-                        'detalle-producto';
-
-                    item.innerHTML = `
-
-                        <div>
-
-                            <strong>
-                                ${escaparHTML(
-                                    p.nombre
-                                )}
-                            </strong>
-
-                            <small>
-                                ${p.cantidad}
-                                ×
-                                ${dinero(p.precio)}
-                            </small>
-
-                        </div>
-
-                        <strong>
-                            ${dinero(
-                                p.subtotal
-                            )}
-                        </strong>
-                    `;
-
-                    cont.appendChild(item);
-                });
-        }
-
-        $('dialogPedidoDetalle')
-            ?.showModal();
-    }
-
-    // ============================================================
-    // ELIMINAR PEDIDO
-    // ============================================================
-
-    function eliminarPedido(pedido) {
-
-        if (!pedido) {
-            return;
-        }
-
-        if (
-            !confirm(
-                `¿Deseas eliminar el pedido ${pedido.numero}?`
-            )
-        ) {
-            return;
-        }
-
-        pedidos =
-            pedidos.filter(
-                p => p.id !== pedido.id
-            );
-
-        guardarPedidos();
-
-        mostrarPedidos();
-
-        actualizarEstadisticasPedidos();
-
-        toast(
-            'Pedido eliminado correctamente.'
-        );
-    }
-
-    // ============================================================
-    // NAVEGACIÓN
-    // ============================================================
-
-    function cambiarVista(vista) {
-
-        const clientesToolbar =
-            $('clientesToolbar');
-
-        const clientesTable =
-            $('clientesTableSection');
-
-        const pedidosView =
-            $('pedidosView');
-
-        const pedidosStats =
-            $('pedidosStats');
-
-        const titulo =
-            $('tituloPrincipal');
-
-        const descripcion =
-            $('descripcionPrincipal');
-
-        const textoNuevo =
-            $('textoBtnNuevo');
-
-        const esPedidos =
-            vista === 'pedidos';
-
-        if (clientesToolbar) {
-            clientesToolbar.hidden =
-                esPedidos;
-        }
-
-        if (clientesTable) {
-            clientesTable.hidden =
-                esPedidos;
-        }
-
-        if (pedidosView) {
-            pedidosView.hidden =
-                !esPedidos;
-        }
-
-        if (pedidosStats) {
-            pedidosStats.hidden =
-                !esPedidos;
-        }
-
-        if (titulo) {
-            titulo.textContent =
-                esPedidos
-                    ? 'Gestión de pedidos'
-                    : 'Gestión de clientes';
-        }
-
-        if (descripcion) {
-            descripcion.textContent =
-                esPedidos
-                    ? 'Centraliza y administra los pedidos recibidos por teléfono y WhatsApp.'
-                    : 'Administra clientes y centraliza los pedidos recibidos por teléfono y WhatsApp.';
-        }
-
-        if (textoNuevo) {
-            textoNuevo.textContent =
-                esPedidos
-                    ? 'Nuevo pedido'
-                    : 'Nuevo cliente';
-        }
-
-        $('btnNavClientes')
-            ?.classList.toggle(
-                'active',
-                !esPedidos
-            );
-
-        $('btnNavPedidos')
-            ?.classList.toggle(
-                'active',
-                esPedidos
-            );
-
-        if (esPedidos) {
-
-            cargarClientesEnSelect();
-
-            mostrarPedidos();
-
-            actualizarEstadisticasPedidos();
-
-        } else {
-
-            mostrarClientes();
-        }
-    }
-
-    // ============================================================
-    // CONTADOR DE NOTAS
-    // ============================================================
-
-    function actualizarContadorNotas() {
-
-        if (
-            $('notasCounter') &&
-            $('notas')
-        ) {
-
-            $('notasCounter')
-                .textContent =
-                $('notas').value.length;
-        }
-    }
-
-    // ============================================================
-    // EVENTOS DE CLIENTES
-    // ============================================================
-
-    on(
-        'clienteForm',
-        'submit',
-        guardarClienteDesdeFormulario
     );
 
-    on(
-        'tipoMinorista',
-        'change',
-        actualizarCamposTipo
-    );
-
-    on(
-        'tipoMayorista',
-        'change',
-        actualizarCamposTipo
-    );
-
-    on(
-        'notas',
-        'input',
-        actualizarContadorNotas
-    );
+    // ============================================================
+    // BOTONES
+    // ============================================================
 
     on(
         'btnNuevo',
         'click',
-        () => {
-
-            if (
-                $('pedidosView') &&
-                !$('pedidosView').hidden
-            ) {
-
-                abrirPanelPedido();
-
-            } else {
-
-                abrirPanelCliente();
-            }
-        }
+        () => abrirPanelCliente()
     );
 
     on(
         'btnNuevoVacio',
         'click',
         () => abrirPanelCliente()
-    );
-
-    on(
-        'btnFloating',
-        'click',
-        () => {
-
-            if (
-                $('pedidosView') &&
-                !$('pedidosView').hidden
-            ) {
-
-                abrirPanelPedido();
-
-            } else {
-
-                abrirPanelCliente();
-            }
-        }
     );
 
     on(
@@ -2219,103 +912,42 @@ document.addEventListener('DOMContentLoaded', () => {
         cerrarPanelCliente
     );
 
-    // ============================================================
-    // ACCIONES DE TABLA CLIENTES
-    // ============================================================
+    on(
+        'overlay',
+        'click',
+        cerrarPanelCliente
+    );
 
     on(
-        'tablaBody',
-        'click',
-        e => {
-
-            const btn =
-                e.target.closest(
-                    'button[data-id]'
-                );
-
-            if (!btn) {
-                return;
-            }
-
-            const cliente =
-                clientes.find(
-                    c =>
-                        String(c.id) ===
-                        String(btn.dataset.id)
-                );
-
-            if (!cliente) {
-                return;
-            }
-
-            if (
-                btn.classList.contains(
-                    'btn-ver'
-                )
-            ) {
-
-                mostrarDetalleCliente(
-                    cliente
-                );
-            }
-
-            if (
-                btn.classList.contains(
-                    'btn-editar'
-                )
-            ) {
-
-                abrirPanelCliente(
-                    cliente
-                );
-            }
-
-            if (
-                btn.classList.contains(
-                    'btn-eliminar'
-                )
-            ) {
-
-                eliminarCliente(
-                    cliente
-                );
-            }
-        }
+        'clienteForm',
+        'submit',
+        guardarCliente
     );
 
     // ============================================================
-    // BUSCADOR CLIENTES
+    // TIPO
+    // ============================================================
+
+    on(
+        'tipoMinorista',
+        'change',
+        actualizarCamposTipo
+    );
+
+    on(
+        'tipoMayorista',
+        'change',
+        actualizarCamposTipo
+    );
+
+    // ============================================================
+    // BUSCADOR
     // ============================================================
 
     on(
         'searchInput',
         'input',
-        e => {
-
-            const q =
-                e.target.value
-                    .toLowerCase()
-                    .trim();
-
-            const filtrados =
-                clientes.filter(c =>
-                    `${c.nombre} ${
-                        c.telefono
-                    } ${
-                        c.email || ''
-                    } ${
-                        c.nit || ''
-                    } ${
-                        c.dpi || ''
-                    }`
-                        .toLowerCase()
-                        .includes(q)
-                );
-
-            mostrarClientes(
-                filtrados
-            );
-        }
+        mostrarClientes
     );
 
     on(
@@ -2324,257 +956,32 @@ document.addEventListener('DOMContentLoaded', () => {
         () => {
 
             if ($('searchInput')) {
-                $('searchInput').value =
-                    '';
+                $('searchInput').value = '';
             }
 
             mostrarClientes();
+
+            $('searchInput')?.focus();
         }
     );
 
     // ============================================================
-    // DETALLE CLIENTE
-    // ============================================================
-
-    on(
-        'btnCerrarDetalle',
-        'click',
-        () =>
-            $('dialogDetalle')
-                ?.close()
-    );
-
-    on(
-        'btnEditarDetalle',
-        'click',
-        () => {
-
-            if (!clienteDetalle) {
-                return;
-            }
-
-            $('dialogDetalle')
-                ?.close();
-
-            abrirPanelCliente(
-                clienteDetalle
-            );
-        }
-    );
-
-    on(
-        'btnLlamar',
-        'click',
-        () => {
-
-            if (
-                clienteDetalle?.telefono
-            ) {
-
-                window.location.href =
-                    `tel:${clienteDetalle.telefono}`;
-            }
-        }
-    );
-
-    on(
-        'btnWhatsApp',
-        'click',
-        () => {
-
-            if (
-                !clienteDetalle?.telefono
-            ) {
-                return;
-            }
-
-            const numero =
-                clienteDetalle.telefono
-                    .replace(/\D/g, '');
-
-            window.open(
-                `https://wa.me/502${numero}`,
-                '_blank'
-            );
-        }
-    );
-
-    // ============================================================
-    // EVENTOS PEDIDOS
-    // ============================================================
-
-    on(
-        'pedidoForm',
-        'submit',
-        guardarPedidoDesdeFormulario
-    );
-
-    on(
-        'pedidoCliente',
-        'change',
-        calcularTotalesPedido
-    );
-
-    on(
-        'btnAgregarProducto',
-        'click',
-        () => agregarFilaProducto()
-    );
-
-    on(
-        'btnNuevoPedido',
-        'click',
-        () => abrirPanelPedido()
-    );
-
-    on(
-        'btnNuevoPedidoVacio',
-        'click',
-        () => abrirPanelPedido()
-    );
-
-    on(
-        'btnCerrarPedidoPanel',
-        'click',
-        cerrarPanelPedido
-    );
-
-    on(
-        'btnCancelarPedido',
-        'click',
-        cerrarPanelPedido
-    );
-
-    // ============================================================
-    // ACCIONES TABLA PEDIDOS
-    // ============================================================
-
-    on(
-        'pedidosBody',
-        'click',
-        e => {
-
-            const btn =
-                e.target.closest(
-                    'button[data-id]'
-                );
-
-            if (!btn) {
-                return;
-            }
-
-            const pedido =
-                pedidos.find(
-                    p =>
-                        String(p.id) ===
-                        String(btn.dataset.id)
-                );
-
-            if (!pedido) {
-                return;
-            }
-
-            if (
-                btn.classList.contains(
-                    'btn-ver-pedido'
-                )
-            ) {
-
-                mostrarDetallePedido(
-                    pedido
-                );
-            }
-
-            if (
-                btn.classList.contains(
-                    'btn-editar-pedido'
-                )
-            ) {
-
-                abrirPanelPedido(
-                    pedido
-                );
-            }
-
-            if (
-                btn.classList.contains(
-                    'btn-eliminar-pedido'
-                )
-            ) {
-
-                eliminarPedido(
-                    pedido
-                );
-            }
-        }
-    );
-
-    // ============================================================
-    // BUSCADOR PEDIDOS
-    // ============================================================
-
-    on(
-        'searchPedidos',
-        'input',
-        mostrarPedidos
-    );
-
-    on(
-        'btnLimpiarPedidos',
-        'click',
-        () => {
-
-            if ($('searchPedidos')) {
-                $('searchPedidos').value =
-                    '';
-            }
-
-            filtroPedido = 'todos';
-
-            document
-                .querySelectorAll(
-                    '.filtro-pedido'
-                )
-                .forEach(
-                    b =>
-                        b.classList.remove(
-                            'active'
-                        )
-                );
-
-            document
-                .querySelector(
-                    '.filtro-pedido[data-filtro="todos"]'
-                )
-                ?.classList.add(
-                    'active'
-                );
-
-            mostrarPedidos();
-        }
-    );
-
-    // ============================================================
-    // FILTROS PEDIDOS
+    // FILTROS
     // ============================================================
 
     document
         .querySelectorAll(
-            '.filtro-pedido'
+            '.filter-button[data-filter]'
         )
-        .forEach(btn => {
+        .forEach(button => {
 
-            btn.addEventListener(
+            button.addEventListener(
                 'click',
                 () => {
 
-                    filtroPedido =
-                        btn.dataset.filtro ||
-                        'todos';
-
                     document
                         .querySelectorAll(
-                            '.filtro-pedido'
+                            '.filter-button[data-filter]'
                         )
                         .forEach(
                             b =>
@@ -2583,81 +990,93 @@ document.addEventListener('DOMContentLoaded', () => {
                                 )
                         );
 
-                    btn.classList.add(
+                    button.classList.add(
                         'active'
                     );
 
-                    mostrarPedidos();
+                    mostrarClientes();
                 }
             );
         });
 
     // ============================================================
-    // DETALLE PEDIDO
+    // DETALLE
     // ============================================================
 
     on(
-        'btnCerrarPedidoDetalle',
+        'btnCerrarDetalle',
         'click',
         () =>
-            $('dialogPedidoDetalle')
-                ?.close()
+            $('dialogDetalle')?.close()
     );
 
     on(
-        'btnEditarPedidoDetalle',
+        'btnEditarDetalle',
         'click',
         () => {
 
-            if (
-                !pedidoDetalleActual
-            ) {
-                return;
-            }
+            if (!clienteDetalle) return;
 
-            $('dialogPedidoDetalle')
-                ?.close();
+            $('dialogDetalle')?.close();
 
-            abrirPanelPedido(
-                pedidoDetalleActual
+            abrirPanelCliente(
+                clienteDetalle
             );
         }
     );
 
     on(
-        'btnEliminarPedidoDetalle',
+        'btnEliminarDetalle',
         'click',
         () => {
 
-            if (
-                !pedidoDetalleActual
-            ) {
-                return;
-            }
+            if (!clienteDetalle) return;
 
-            $('dialogPedidoDetalle')
-                ?.close();
+            $('dialogDetalle')?.close();
 
-            eliminarPedido(
-                pedidoDetalleActual
+            eliminarCliente(
+                clienteDetalle
             );
         }
     );
 
     // ============================================================
-    // WHATSAPP PEDIDO
+    // ELIMINAR
     // ============================================================
 
     on(
-        'btnWhatsAppPedido',
+        'btnCerrarEliminar',
+        'click',
+        () =>
+            $('dialogEliminar')?.close()
+    );
+
+    on(
+        'btnCancelarEliminar',
+        'click',
+        () =>
+            $('dialogEliminar')?.close()
+    );
+
+    on(
+        'btnConfirmarEliminar',
+        'click',
+        confirmarEliminarCliente
+    );
+
+    // ============================================================
+    // WHATSAPP
+    // ============================================================
+
+    on(
+        'btnWhatsApp',
         'click',
         () => {
 
             if (
-                !pedidoDetalleActual
-                    ?.clienteTelefono
+                !clienteDetalle ||
+                !clienteDetalle.telefono
             ) {
-
                 toast(
                     'El cliente no tiene teléfono registrado.',
                     'error'
@@ -2666,117 +1085,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const p =
-                pedidoDetalleActual;
-
             const telefono =
-                p.clienteTelefono
+                clienteDetalle.telefono
                     .replace(/\D/g, '');
 
-            let mensaje =
-                `Hola ${
-                    p.clienteNombre || ''
-                },%0A%0A`;
-
-            mensaje +=
-                `Detalle del pedido ${
-                    p.numero
-                }:%0A%0A`;
-
-            (p.productos || [])
-                .forEach(x => {
-
-                    mensaje +=
-                        `• ${
-                            x.nombre
-                        } — ${
-                            x.cantidad
-                        } x ${
-                            dinero(x.precio)
-                        } = ${
-                            dinero(x.subtotal)
-                        }%0A`;
-                });
-
-            mensaje +=
-                `%0ATotal: ${
-                    dinero(p.total)
-                }`;
+            const mensaje =
+                `Hola ${clienteDetalle.nombre}, le contactamos de Variedades Chiquis.`;
 
             window.open(
-                `https://wa.me/502${telefono}?text=${mensaje}`,
+                `https://wa.me/502${telefono}?text=${encodeURIComponent(mensaje)}`,
                 '_blank'
             );
-        }
-    );
-
-    // ============================================================
-    // NAVEGACIÓN
-    // ============================================================
-
-    on(
-        'btnNavClientes',
-        'click',
-        () =>
-            cambiarVista('clientes')
-    );
-
-    on(
-        'btnNavPedidos',
-        'click',
-        () =>
-            cambiarVista('pedidos')
-    );
-
-    on(
-        'btnNavEstadisticas',
-        'click',
-        () => {
-
-            if (
-                $('pedidosView') &&
-                !$('pedidosView').hidden
-            ) {
-
-                $('pedidosStats')
-                    ?.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-
-            } else {
-
-                document
-                    .querySelector(
-                        '.stats-grid'
-                    )
-                    ?.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-            }
-        }
-    );
-
-    // ============================================================
-    // OVERLAY
-    // ============================================================
-
-    on(
-        'overlay',
-        'click',
-        () => {
-
-            if (
-                pedidoPanel?.classList.contains(
-                    'is-open'
-                )
-            ) {
-
-                cerrarPanelPedido();
-
-            } else {
-
-                cerrarPanelCliente();
-            }
         }
     );
 
@@ -2785,11 +1104,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
 
     function actualizarTema() {
-
         const oscuro =
-            document.body.classList.contains(
-                'dark'
-            );
+            document.body.classList.contains('dark');
 
         if ($('themeIcon')) {
             $('themeIcon').textContent =
@@ -2803,16 +1119,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function cambiarTema() {
-
-        document.body.classList.toggle(
-            'dark'
-        );
+        document.body.classList.toggle('dark');
 
         localStorage.setItem(
             'temaChiquis',
-            document.body.classList.contains(
-                'dark'
-            )
+            document.body.classList.contains('dark')
                 ? 'dark'
                 : 'light'
         );
@@ -2821,14 +1132,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (
-        localStorage.getItem(
-            'temaChiquis'
-        ) === 'dark'
+        localStorage.getItem('temaChiquis') ===
+        'dark'
     ) {
-
-        document.body.classList.add(
-            'dark'
-        );
+        document.body.classList.add('dark');
     }
 
     actualizarTema();
@@ -2845,18 +1152,45 @@ document.addEventListener('DOMContentLoaded', () => {
         cambiarTema
     );
 
+    // ============================================================
+    // MENÚ MÓVIL
+    // ============================================================
+
     on(
         'btnMenu',
         'click',
         () =>
-            $('sidebar')
-                ?.classList.toggle(
-                    'open'
-                )
+            $('sidebar')?.classList.toggle('open')
     );
 
     // ============================================================
-    // DESCARGAR ARCHIVO
+    // NAVEGACIÓN
+    // ============================================================
+
+    on(
+        'btnNavPedidos',
+        'click',
+        () => {
+            window.location.href =
+                'pedidos.html';
+        }
+    );
+
+    on(
+        'btnNavEstadisticas',
+        'click',
+        () => {
+
+            document
+                .querySelector('.stats-grid')
+                ?.scrollIntoView({
+                    behavior: 'smooth'
+                });
+        }
+    );
+
+    // ============================================================
+    // EXPORTAR
     // ============================================================
 
     function descargar(
@@ -2872,15 +1206,12 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
         const url =
-            URL.createObjectURL(
-                blob
-            );
+            URL.createObjectURL(blob);
 
         const a =
             document.createElement('a');
 
         a.href = url;
-
         a.download = nombre;
 
         document.body.appendChild(a);
@@ -2894,14 +1225,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    // ============================================================
-    // EXPORTAR CLIENTES
-    // ============================================================
-
     function exportarClientes() {
 
         if (!clientes.length) {
-
             toast(
                 'No hay clientes para exportar.',
                 'error'
@@ -2910,72 +1236,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const encabezados = [
-            'Nombre',
-            'Tipo',
-            'Telefono',
-            'Correo',
-            'DPI',
-            'NIT',
-            'Direccion',
-            'Descuento',
-            'LimiteCredito',
-            'Notas',
-            'Fecha'
-        ];
-
-        const filas =
-            clientes.map(c => [
-
-                c.nombre,
-
-                c.tipo,
-
-                c.telefono,
-
-                c.email || '',
-
-                c.dpi || '',
-
-                c.nit || '',
-
-                c.direccion || '',
-
-                c.descuento || 0,
-
-                c.limiteCredito || 0,
-
-                c.notas || '',
-
-                formatearFecha(
-                    c.fecha
-                )
-            ]);
-
-        const csv =
-            [
-                encabezados,
-                ...filas
-            ]
-                .map(
-                    f =>
-                        f
-                            .map(
-                                v =>
-                                    `"${String(v)
-                                        .replace(
-                                            /"/g,
-                                            '""'
-                                        )}"`
-                            )
-                            .join(',')
-                )
-                .join('\n');
-
         descargar(
-            'clientes-variedades-chiquis.csv',
-            '\ufeff' + csv,
-            'text/csv;charset=utf-8'
+            'clientes-variedades-chiquis.json',
+            JSON.stringify(
+                clientes,
+                null,
+                2
+            ),
+            'application/json'
         );
 
         toast(
@@ -2995,79 +1263,33 @@ document.addEventListener('DOMContentLoaded', () => {
         exportarClientes
     );
 
-    on(
-        'btnExportarOpciones',
-        'click',
-        exportarClientes
-    );
-
     // ============================================================
-    // EXPORTAR PEDIDOS
+    // IMPORTAR
     // ============================================================
-
-    on(
-        'btnExportarPedidos',
-        'click',
-        () => {
-
-            if (!pedidos.length) {
-
-                toast(
-                    'No hay pedidos para exportar.',
-                    'error'
-                );
-
-                return;
-            }
-
-            descargar(
-                'pedidos-variedades-chiquis.json',
-                JSON.stringify(
-                    pedidos,
-                    null,
-                    2
-                ),
-                'application/json'
-            );
-
-            toast(
-                'Pedidos exportados correctamente.'
-            );
-        }
-    );
-
-    // ============================================================
-    // IMPORTAR CLIENTES
-    // ============================================================
-
-    function importarClientes() {
-
-        $('inputImportar')?.click();
-    }
 
     on(
         'btnImportar',
         'click',
-        importarClientes
+        () =>
+            $('inputImportar')?.click()
     );
 
     on(
         'btnImportarNav',
         'click',
-        importarClientes
+        () =>
+            $('inputImportar')?.click()
     );
 
     on(
         'inputImportar',
         'change',
-        e => {
+        event => {
 
             const archivo =
-                e.target.files?.[0];
+                event.target.files?.[0];
 
-            if (!archivo) {
-                return;
-            }
+            if (!archivo) return;
 
             const lector =
                 new FileReader();
@@ -3082,12 +1304,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         );
 
                     if (
-                        !Array.isArray(
-                            datos
-                        )
+                        !Array.isArray(datos)
                     ) {
                         throw new Error(
-                            'Formato incorrecto'
+                            'Formato inválido'
                         );
                     }
 
@@ -3096,216 +1316,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     guardarClientes();
 
                     mostrarClientes();
-
-                    cargarClientesEnSelect();
+                    actualizarEstadisticas();
 
                     toast(
-                        `${clientes.length} clientes importados.`
+                        'Clientes importados correctamente.'
                     );
 
                 } catch (error) {
 
-                    console.error(
-                        error
-                    );
+                    console.error(error);
 
                     toast(
-                        'No se pudo importar el archivo.',
+                        'El archivo no tiene un formato válido.',
                         'error'
                     );
                 }
 
-                e.target.value = '';
+                event.target.value = '';
             };
 
             lector.readAsText(
-                archivo
+                archivo,
+                'UTF-8'
             );
         }
-    );
-
-    // ============================================================
-    // ELIMINACIÓN
-    // ============================================================
-
-    on(
-        'btnCancelarEliminar',
-        'click',
-        () =>
-            $('dialogEliminar')
-                ?.close()
-    );
-
-    on(
-        'btnConfirmarEliminar',
-        'click',
-        () => {
-
-            if (
-                clienteAEliminar
-            ) {
-
-                eliminarCliente(
-                    clienteAEliminar
-                );
-            }
-
-            $('dialogEliminar')
-                ?.close();
-
-            clienteAEliminar = null;
-        }
-    );
-
-    // ============================================================
-    // CARGAR CLIENTES DE EJEMPLO
-    // ============================================================
-
-    on(
-        'btnCargarEjemplos',
-        'click',
-        () => {
-
-            if (
-                clientes.length &&
-                !confirm(
-                    'Ya existen clientes. ¿Deseas agregar ejemplos?'
-                )
-            ) {
-                return;
-            }
-
-            const ejemplos = [
-
-                {
-                    nombre:
-                        'María López',
-
-                    telefono:
-                        '55551234',
-
-                    email:
-                        'maria@gmail.com',
-
-                    tipo:
-                        'minorista'
-                },
-
-                {
-                    nombre:
-                        'Distribuidora Chiquis',
-
-                    telefono:
-                        '55552345',
-
-                    email:
-                        'ventas@distribuidora.com',
-
-                    tipo:
-                        'mayorista'
-                }
-            ];
-
-            ejemplos.forEach(x => {
-
-                clientes.push({
-
-                    id:
-                        generarId(
-                            'cliente-'
-                        ),
-
-                    ...x,
-
-                    direccion:
-                        '',
-
-                    dpi:
-                        '',
-
-                    nit:
-                        '',
-
-                    descuento:
-                        x.tipo === 'mayorista'
-                            ? 10
-                            : 0,
-
-                    limiteCredito:
-                        0,
-
-                    notas:
-                        '',
-
-                    fecha:
-                        new Date()
-                            .toISOString()
-                });
-            });
-
-            guardarClientes();
-
-            mostrarClientes();
-
-            cargarClientesEnSelect();
-
-            toast(
-                'Ejemplos agregados.'
-            );
-        }
-    );
-
-    // ============================================================
-    // ELIMINAR TODOS LOS CLIENTES
-    // ============================================================
-
-    on(
-        'btnEliminarTodos',
-        'click',
-        () => {
-
-            if (!clientes.length) {
-
-                toast(
-                    'No hay clientes para eliminar.',
-                    'error'
-                );
-
-                return;
-            }
-
-            if (
-                !confirm(
-                    '¿Seguro que deseas eliminar TODOS los clientes?'
-                )
-            ) {
-                return;
-            }
-
-            clientes = [];
-
-            guardarClientes();
-
-            mostrarClientes();
-
-            cargarClientesEnSelect();
-
-            toast(
-                'Todos los clientes fueron eliminados.'
-            );
-        }
-    );
-
-    // ============================================================
-    // CERRAR OPCIONES
-    // ============================================================
-
-    on(
-        'btnCerrarOpciones',
-        'click',
-        () =>
-            $('dialogOpciones')
-                ?.close()
     );
 
     // ============================================================
@@ -3314,62 +1348,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener(
         'keydown',
-        e => {
+        event => {
 
-            // ESC
-            if (e.key === 'Escape') {
-
-                if (
-                    pedidoPanel?.classList.contains(
-                        'is-open'
-                    )
-                ) {
-
-                    cerrarPanelPedido();
-
-                } else if (
-                    panel?.classList.contains(
-                        'is-open'
-                    )
-                ) {
-
-                    cerrarPanelCliente();
-                }
+            if (
+                event.key === 'Escape' &&
+                panel?.classList.contains(
+                    'is-open'
+                )
+            ) {
+                cerrarPanelCliente();
             }
 
-            // CTRL + N
             if (
-                e.ctrlKey &&
-                e.key.toLowerCase() === 'n'
+                event.ctrlKey &&
+                event.key.toLowerCase() === 'n'
             ) {
 
-                e.preventDefault();
+                event.preventDefault();
 
-                if (
-                    $('pedidosView') &&
-                    !$('pedidosView').hidden
-                ) {
-
-                    abrirPanelPedido();
-
-                } else {
-
-                    abrirPanelCliente();
-                }
+                abrirPanelCliente();
             }
 
-            // CTRL + K
             if (
-                e.ctrlKey &&
-                e.key.toLowerCase() === 'k'
+                event.ctrlKey &&
+                event.key.toLowerCase() === 'k'
             ) {
 
-                e.preventDefault();
+                event.preventDefault();
 
-                (
-                    $('searchInput') ||
-                    $('searchPedidos')
-                )?.focus();
+                $('searchInput')?.focus();
             }
         }
     );
@@ -3379,13 +1386,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ============================================================
 
     actualizarCamposTipo();
-
-    actualizarContadorNotas();
-
     mostrarClientes();
-
-    actualizarEstadisticasPedidos();
-
-    cambiarVista('clientes');
-
+    actualizarEstadisticas();
 });
