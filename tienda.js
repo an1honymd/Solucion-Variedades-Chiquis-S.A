@@ -373,6 +373,30 @@ function configurarEventos() {
 
     });
 
+
+    /* NAVEGACIÓN */
+
+    document
+        .getElementById("btnNavClientes")
+        ?.addEventListener("click", () => {
+
+            window.location.assign(
+                new URL("./cliente.html", window.location.href).href
+            );
+
+        });
+
+
+    document
+        .getElementById("btnNavPedidos")
+        ?.addEventListener("click", () => {
+
+            window.location.assign(
+                new URL("./pedidos.html", window.location.href).href
+            );
+
+        });
+
 }
 
 
