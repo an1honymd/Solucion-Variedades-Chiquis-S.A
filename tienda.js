@@ -17,9 +17,9 @@ const productos = [
 
     {
         id: 1,
-        nombre: 'Laptop',
+        nombre: 'Blusa Deportiva',
         precio: 5500,
-        categoria: 'tecnologia',
+        categoria: 'deportivo',
         descripcion: 'Ideal para trabajo y estudio.'
     },
 
