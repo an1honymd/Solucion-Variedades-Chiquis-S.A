@@ -18,14 +18,14 @@ const productos = [
     {
         id: 1,
         nombre: 'Blusa Deportiva',
-        precio: 5500,
+        precio: 500,
         categoria: 'deportivo',
         descripcion: 'Ideal para trabajo y estudio.'
     },
 
     {
         id: 2,
-        nombre: 'Monitor',
+        nombre: 'Tenis',
         precio: 1800,
         categoria: 'tecnologia',
         descripcion: 'Pantalla nítida y cómoda.'
@@ -86,6 +86,70 @@ const productos = [
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
     }
+
+    {
+        id: 10,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    }
+
+    {
+        id: 11,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    },
+
+    {
+        id: 12,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    }
+
+    {
+        id: 13,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    },
+
+    {
+        id: 14,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    }
+
+    {
+        id: 15,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    },
+
+    {
+        id: 16,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    },
+
+    {
+        id: 17,
+        nombre: 'SSD',
+        precio: 750,
+        categoria: 'tecnologia',
+        descripcion: 'Más velocidad para tu equipo.'
+    },
 
 ];
 
