@@ -85,7 +85,7 @@ const productos = [
         precio: 750,
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
-    }
+    },
 
     {
         id: 10,
@@ -93,7 +93,7 @@ const productos = [
         precio: 750,
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
-    }
+    },
 
     {
         id: 11,
@@ -109,7 +109,7 @@ const productos = [
         precio: 750,
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
-    }
+    },
 
     {
         id: 13,
@@ -125,7 +125,7 @@ const productos = [
         precio: 750,
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
-    }
+    },
 
     {
         id: 15,
