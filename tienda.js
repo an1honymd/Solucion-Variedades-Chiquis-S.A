@@ -1,2144 +1,1406 @@
 /* =========================================================
    TIENDA - VARIEDADES CHIQUIS
+   Seguimiento completo de pedidos
    ========================================================= */
 
 'use strict';
-
-
-/* =========================================================
-   STORAGE
-========================================================= */
 
 const STORAGE_CLIENTES = 'clientesChiquis';
 const STORAGE_PEDIDOS = 'pedidosChiquis';
 const STORAGE_TEMA = 'temaChiquis';
 
-
-
 /* =========================================================
-   IMÁGENES DE LOS PRODUCTOS
-   =========================================================
-
-   AQUÍ PODÉS CAMBIAR MANUALMENTE LAS IMÁGENES.
-
-   Ejemplo:
-
-   1: 'tieenda/otra-imagen.jfif'
-
-   Solo cambiá el nombre de la imagen.
-
-   IMPORTANTE:
-   La carpeta debe llamarse exactamente "tieenda"
-   si así la tenés en tu proyecto.
+   ESTADOS DEL CICLO DEL PEDIDO
 ========================================================= */
 
-const imagenesProductos = {
+const ESTADOS_PEDIDO = [
+    {
+        id: 'pedido_recibido',
+        nombre: 'Pedido recibido',
+        icono: '📥'
+    },
+    {
+        id: 'en_preparacion',
+        nombre: 'En preparación',
+        icono: '🧑‍🍳'
+    },
+    {
+        id: 'preparado',
+        nombre: 'Preparado',
+        icono: '📦'
+    },
+    {
+        id: 'despachado',
+        nombre: 'Despachado',
+        icono: '🚚'
+    },
+    {
+        id: 'en_proceso_entrega',
+        nombre: 'En proceso de entrega',
+        icono: '🛵'
+    },
+    {
+        id: 'entregado',
+        nombre: 'Entregado',
+        icono: '✅'
+    }
+];
 
-    1: 'tieenda/blusa deportiva.jfif',
-
-    2: 'tieenda/acomodador de sartenes.jfif',
-
-    3: 'tieenda/audifonos.jfif',
-
-    4: 'tieenda/raton.jfif',
-
-    5: 'tieenda/calzado deportivo f.jfif',
-
-    6: 'tieenda/camisola del cr7.jfif',
-
-    7: 'tieenda/bocinas.jfif',
-
-    8: 'tieenda/calsado casual f.jfif',
-
-    9: 'tieenda/calzado m.jfif',
-
-    10: 'tieenda/deportivo mujer 2.jfif',
-
-    11: 'tieenda/Pc gamer.jfif',
-
-    12: '',
-
-    13: 'tieenda/repisas.jfif',
-
-    14: 'tieenda/ropa de basket.jfif',
-
-    15: 'tieenda/sala familiar.jfif',
-
-    16: 'tieenda/telefono.jfif'
-
+const MAPA_ESTADOS_ANTIGUOS = {
+    pendiente: 'pedido_recibido',
+    preparando: 'en_preparacion',
+    enviado: 'despachado',
+    entregado: 'entregado',
+    cancelado: 'cancelado'
 };
-
-
 
 /* =========================================================
    PRODUCTOS
 ========================================================= */
 
 const productos = [
-
     {
         id: 1,
-        nombre: 'Blusa Deportiva',
-        precio: 500,
-        categoria: 'deportivo',
-        descripcion: 'Ideal para trabajo y estudio.'
+        nombre: 'Laptop',
+        categoria: 'Tecnología',
+        precio: 5500,
+        imagen: 'img/laptop.jpg',
+        descripcion: 'Laptop para trabajo, estudio y entretenimiento.'
     },
-
-
     {
         id: 2,
-        nombre: 'Acomodador de Sartenes',
-        precio: 300,
-        categoria: 'hogar',
-        descripcion: 'Acomodador que le ayuda a tener mas espacio en la cocina.'
+        nombre: 'Monitor',
+        categoria: 'Tecnología',
+        precio: 1800,
+        imagen: 'img/monitor.jpg',
+        descripcion: 'Monitor ideal para oficina, estudio y gaming.'
     },
-
-
     {
         id: 3,
-        nombre: 'audifonos',
-        precio: 250,
-        categoria: 'accesorios',
-        descripcion: 'Audio Envolvente.'
+        nombre: 'Teclado',
+        categoria: 'Tecnología',
+        precio: 450,
+        imagen: 'img/teclado.jpg',
+        descripcion: 'Teclado cómodo para trabajo y estudio.'
     },
-
-
     {
         id: 4,
         nombre: 'Mouse',
-        precio: 150,
-        categoria: 'accesorios',
-        descripcion: 'Ergonómico y ligero.'
+        categoria: 'Tecnología',
+        precio: 250,
+        imagen: 'img/raton.jpg',
+        descripcion: 'Mouse ergonómico para uso diario.'
     },
-
-
     {
         id: 5,
-        nombre: 'Tenis',
-        precio: 200,
-        categoria: 'deportivo',
-        descripcion: 'Impresión rápida en casa u oficina.'
+        nombre: 'Impresora',
+        categoria: 'Tecnología',
+        precio: 1200,
+        imagen: 'img/impresora.jpg',
+        descripcion: 'Impresora para documentos y trabajos.'
     },
-
-
     {
         id: 6,
-        nombre: 'Camisola',
-        precio: 100,
-        categoria: 'accesorios',
-        descripcion: 'Camisola de portugal.'
+        nombre: 'Audífonos',
+        categoria: 'Audio',
+        precio: 1000,
+        imagen: 'img/audifonos.jpg',
+        descripcion: 'Audífonos de excelente calidad de sonido.'
     },
-
-
     {
         id: 7,
         nombre: 'Bocinas',
+        categoria: 'Audio',
         precio: 2000,
-        categoria: 'accesorios',
-        descripcion: 'Audio potente para tu espacio.'
+        imagen: 'img/bocinas.jpg',
+        descripcion: 'Bocinas para disfrutar música y entretenimiento.'
     },
-
-
     {
         id: 8,
-        nombre: 'calsado deportivo',
-        precio: 100,
-        categoria: 'deportivo',
-        descripcion: 'Comodidad para largas jornadas.'
+        nombre: 'Silla Gamer',
+        categoria: 'Muebles',
+        precio: 1000,
+        imagen: 'img/silla.jpg',
+        descripcion: 'Silla cómoda para largas jornadas.'
     },
-
-
     {
         id: 9,
-        nombre: 'calsado casual',
-        precio: 750,
-        categoria: 'deportivo',
-        descripcion: 'Más velocidad y comodidad.'
-    },
-
-
-    {
-        id: 10,
-        nombre: 'Traje deportivo de mujer',
-        precio: 350,
-        categoria: 'deportivo',
-        descripcion: 'Más comodidad.'
-    },
-
-
-    {
-        id: 11,
-        nombre: 'Pc Gamer',
-        precio: 11750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
-    },
-
-
-    {
-        id: 12,
         nombre: 'SSD',
+        categoria: 'Tecnología',
         precio: 750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
-    },
-
-
-    {
-        id: 13,
-        nombre: 'repisas',
-        precio: 350,
-        categoria: 'hogar',
-        descripcion: 'Más espacio.'
-    },
-
-
-    {
-        id: 14,
-        nombre: 'ropa de basquet',
-        precio: 450,
-        categoria: 'deportivo',
-        descripcion: 'Más velocidad.'
-    },
-
-
-    {
-        id: 15,
-        nombre: 'sala familiar',
-        precio: 1750,
-        categoria: 'hogar',
-        descripcion: 'Más comodidad.'
-    },
-
-
-    {
-        id: 16,
-        nombre: 'telefono',
-        precio: 2750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
+        imagen: 'img/disco.jpg',
+        descripcion: 'Unidad SSD para mejorar el rendimiento del equipo.'
     }
-
 ];
 
-
-
 /* =========================================================
-   UTILIDADES
-========================================================= */
-
-const $ = id => document.getElementById(id);
-
-
-
-function escaparHTML(texto) {
-
-    return String(texto ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-
-}
-
-
-
-function formatearMoneda(valor) {
-
-    return 'Q' + Number(valor || 0).toLocaleString(
-        'es-GT',
-        {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }
-    );
-
-}
-
-
-
-function generarId() {
-
-    return Date.now().toString(36) +
-        Math.random().toString(36).substring(2, 8);
-
-}
-
-
-
-function generarNumeroPedido(pedidos) {
-
-    let mayor = 0;
-
-    pedidos.forEach(pedido => {
-
-        const coincidencia =
-            String(pedido.numero || '')
-                .match(/PED-(\d+)/i);
-
-        if (coincidencia) {
-
-            const valor =
-                Number(coincidencia[1]);
-
-            if (valor > mayor) {
-                mayor = valor;
-            }
-
-        }
-
-    });
-
-    return 'PED-' +
-        String(mayor + 1).padStart(4, '0');
-
-}
-
-
-
-/* =========================================================
-   VARIABLES DE ESTADO
+   VARIABLES
 ========================================================= */
 
 let carrito = [];
+let categoriaActual = 'Todos';
 
-let categoriaActual = 'todos';
+/* =========================================================
+   FUNCIONES GENERALES
+========================================================= */
 
-let toastTimer = null;
+function $(id) {
+    return document.getElementById(id);
+}
 
+function dinero(valor) {
+    return Number(valor || 0).toLocaleString('es-GT', {
+        style: 'currency',
+        currency: 'GTQ'
+    });
+}
 
+function mostrarToast(mensaje, tipo = 'success') {
+    const toast = $('toast');
+
+    if (!toast) return;
+
+    toast.textContent = mensaje;
+    toast.className = 'toast mostrar ' + tipo;
+
+    setTimeout(() => {
+        toast.classList.remove('mostrar');
+    }, 3000);
+}
+
+/* =========================================================
+   LOCAL STORAGE
+========================================================= */
+
+function cargarClientes() {
+    try {
+        return JSON.parse(
+            localStorage.getItem(STORAGE_CLIENTES)
+        ) || [];
+    } catch (error) {
+        console.error('Error cargando clientes:', error);
+        return [];
+    }
+}
+
+function cargarPedidos() {
+    try {
+        return JSON.parse(
+            localStorage.getItem(STORAGE_PEDIDOS)
+        ) || [];
+    } catch (error) {
+        console.error('Error cargando pedidos:', error);
+        return [];
+    }
+}
+
+function guardarPedidos(pedidos) {
+    localStorage.setItem(
+        STORAGE_PEDIDOS,
+        JSON.stringify(pedidos)
+    );
+}
+
+/* =========================================================
+   ESTADOS
+========================================================= */
+
+function obtenerEstadoPedido(idEstado) {
+    return ESTADOS_PEDIDO.find(
+        estado => estado.id === idEstado
+    );
+}
+
+function normalizarEstadoPedido(estado) {
+    if (!estado) {
+        return 'pedido_recibido';
+    }
+
+    return MAPA_ESTADOS_ANTIGUOS[estado] || estado;
+}
+
+function nombreEstadoPedido(estado) {
+    estado = normalizarEstadoPedido(estado);
+
+    const encontrado = obtenerEstadoPedido(estado);
+
+    if (encontrado) {
+        return encontrado.nombre;
+    }
+
+    if (estado === 'cancelado') {
+        return 'Cancelado';
+    }
+
+    return 'Pedido recibido';
+}
+
+function indiceEstadoPedido(estado) {
+    estado = normalizarEstadoPedido(estado);
+
+    return ESTADOS_PEDIDO.findIndex(
+        item => item.id === estado
+    );
+}
+
+function prepararHistorialPedido(pedido) {
+    if (!Array.isArray(pedido.historialEstados)) {
+        pedido.historialEstados = [];
+    }
+
+    if (pedido.historialEstados.length === 0) {
+        const estadoActual = normalizarEstadoPedido(
+            pedido.estado
+        );
+
+        pedido.historialEstados.push({
+            estado: estadoActual,
+            fecha: pedido.actualizado || pedido.fecha || new Date().toISOString()
+        });
+    }
+
+    pedido.historialEstados = pedido.historialEstados.map(item => ({
+        estado: normalizarEstadoPedido(item.estado),
+        fecha: item.fecha || new Date().toISOString()
+    }));
+
+    pedido.estado = normalizarEstadoPedido(pedido.estado);
+
+    return pedido;
+}
+
+function migrarPedidosSeguimiento() {
+    const pedidos = cargarPedidos();
+
+    if (!pedidos.length) {
+        return;
+    }
+
+    let cambios = false;
+
+    pedidos.forEach(pedido => {
+        const estadoAnterior = pedido.estado;
+
+        prepararHistorialPedido(pedido);
+
+        if (estadoAnterior !== pedido.estado) {
+            cambios = true;
+        }
+    });
+
+    if (cambios) {
+        guardarPedidos(pedidos);
+    }
+}
+
+/* =========================================================
+   FECHAS
+========================================================= */
+
+function formatearFechaSeguimiento(fecha) {
+    if (!fecha) {
+        return '';
+    }
+
+    const fechaObj = new Date(fecha);
+
+    if (Number.isNaN(fechaObj.getTime())) {
+        return fecha;
+    }
+
+    return fechaObj.toLocaleString('es-GT', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
 
 /* =========================================================
    CLIENTES
 ========================================================= */
 
-function obtenerClientes() {
+function cargarClientesTienda() {
+    const select = $('clienteTienda');
 
-    try {
-
-        const datos =
-            localStorage.getItem(
-                STORAGE_CLIENTES
-            );
-
-        if (!datos) return [];
-
-        const clientes =
-            JSON.parse(datos);
-
-        return Array.isArray(clientes)
-            ? clientes
-            : [];
-
-    } catch (error) {
-
-        console.error(
-            'Error cargando clientes:',
-            error
-        );
-
-        return [];
-
+    if (!select) {
+        return;
     }
 
-}
+    const clientes = cargarClientes();
 
-
-
-function clienteSeleccionado() {
-
-    const id =
-        $('clienteTienda')?.value;
-
-    if (!id) return null;
-
-    return obtenerClientes().find(
-        c => String(c.id) === String(id)
-    ) || null;
-
-}
-
-
-
-function cargarClientesSelect() {
-
-    const select =
-        $('clienteTienda');
-
-    if (!select) return;
-
-    const valorAnterior =
-        select.value;
+    const valorAnterior = select.value;
 
     select.innerHTML =
-        '<option value="">Selecciona un cliente</option>';
+        '<option value="">Seleccione un cliente</option>';
 
-    obtenerClientes().forEach(cliente => {
+    clientes.forEach(cliente => {
+        const option = document.createElement('option');
 
-        const option =
-            document.createElement('option');
-
-        option.value =
-            cliente.id;
-
+        option.value = cliente.id;
         option.textContent =
-            cliente.nombre +
-            (
-                cliente.telefono
-                    ? ' - ' + cliente.telefono
-                    : ''
-            );
+            cliente.nombre || 'Cliente sin nombre';
 
         select.appendChild(option);
-
     });
 
-
-    if (valorAnterior) {
+    if (
+        valorAnterior &&
+        clientes.some(cliente => String(cliente.id) === String(valorAnterior))
+    ) {
         select.value = valorAnterior;
     }
 
-
     mostrarInfoCliente();
-
 }
 
-
-
 function mostrarInfoCliente() {
+    const select = $('clienteTienda');
+    const info = $('clienteInfo');
 
-    const contenedor =
-        $('clienteInfo');
-
-    if (!contenedor) return;
-
-    const cliente =
-        clienteSeleccionado();
-
-
-    if (!cliente) {
-
-        contenedor.innerHTML =
-            '<span>👤 Selecciona un cliente</span>';
-
-        actualizarTotales();
-
+    if (!select || !info) {
         return;
-
     }
 
+    const clienteId = select.value;
 
-    const tipo =
-        cliente.tipo === 'mayorista'
-            ? 'Mayorista'
-            : 'Minorista';
+    if (!clienteId) {
+        info.innerHTML = '';
+        renderizarSeguimientoPedidos('');
+        return;
+    }
 
+    const clientes = cargarClientes();
 
-    const descuento =
-        Number(cliente.descuento) || 0;
+    const cliente = clientes.find(
+        item => String(item.id) === String(clienteId)
+    );
 
+    if (!cliente) {
+        info.innerHTML = '';
+        renderizarSeguimientoPedidos(clienteId);
+        return;
+    }
 
-    contenedor.innerHTML = `
-
-        <span>
-
-            <strong>
-                ${escaparHTML(cliente.nombre)}
-            </strong>
-
-        </span>
-
-
-        <span>
-
-            ${escaparHTML(
-                cliente.telefono ||
-                'Sin teléfono'
-            )}
-
-        </span>
-
-
-        <span>
-
-            ${tipo}
+    info.innerHTML = `
+        <div class="cliente-info-card">
+            <div>
+                <strong>${escapeHTML(cliente.nombre || 'Cliente')}</strong>
+            </div>
 
             ${
-                descuento > 0
-                    ? ' · ' + descuento + '% descuento'
+                cliente.telefono
+                    ? `<span>📱 ${escapeHTML(cliente.telefono)}</span>`
                     : ''
             }
 
-        </span>
+            ${
+                cliente.email
+                    ? `<span>✉️ ${escapeHTML(cliente.email)}</span>`
+                    : ''
+            }
 
+            ${
+                cliente.direccion
+                    ? `<span>📍 ${escapeHTML(cliente.direccion)}</span>`
+                    : ''
+            }
+        </div>
     `;
 
-
-    actualizarTotales();
-
+    renderizarSeguimientoPedidos(clienteId);
 }
-
-
 
 /* =========================================================
-   CATÁLOGO
+   SEGUIMIENTO DE PEDIDOS DEL CLIENTE
 ========================================================= */
 
+function crearSeccionSeguimiento() {
+    let seccion = document.getElementById(
+        'seguimientoPedidos'
+    );
 
-
-function obtenerCantidadEnCarrito(id) {
-
-    const item =
-        carrito.find(
-            p => p.id === id
-        );
-
-    return item
-        ? item.cantidad
-        : 0;
-
-}
-
-
-
-/*
-   Devuelve el HTML de la imagen del producto.
-
-   Si no existe una imagen configurada,
-   se muestra un espacio vacío.
-*/
-
-function obtenerImagenProducto(id, nombre) {
-
-    const ruta =
-        imagenesProductos[id];
-
-    if (!ruta) {
-
-        return `
-            <div
-                class="imagen-producto"
-                data-producto-id="${id}"
-                aria-label="Sin imagen"
-            >
-                📦
-            </div>
-        `;
-
+    if (seccion) {
+        return seccion;
     }
 
+    const clienteSection =
+        document.querySelector('.cliente-section');
 
-    return `
+    if (!clienteSection) {
+        return null;
+    }
 
-        <img
-            class="imagen-producto"
-            data-producto-id="${id}"
-            src="${escaparHTML(ruta)}"
-            alt="${escaparHTML(nombre)}"
-            loading="lazy"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-        >
+    seccion = document.createElement('section');
 
-        <div
-            class="imagen-fallback"
-            style="display:none;"
-        >
-            📦
+    seccion.id = 'seguimientoPedidos';
+    seccion.className = 'seguimiento-section';
+
+    seccion.innerHTML = `
+        <div class="seguimiento-header">
+            <div>
+                <h2>📦 Seguimiento de pedidos</h2>
+                <p>
+                    Consulta el avance de tus pedidos durante todo
+                    su ciclo de atención.
+                </p>
+            </div>
         </div>
 
+        <div
+            id="seguimientoLista"
+            class="seguimiento-lista">
+        </div>
     `;
 
+    clienteSection.insertAdjacentElement(
+        'afterend',
+        seccion
+    );
+
+    return seccion;
 }
 
+function renderizarSeguimientoPedidos(clienteId) {
+    const seccion = crearSeccionSeguimiento();
 
+    if (!seccion) {
+        return;
+    }
 
-function mostrarProductos() {
+    const lista = document.getElementById(
+        'seguimientoLista'
+    );
 
-    const contenedor =
-        $('catalogo');
+    if (!lista) {
+        return;
+    }
 
-    if (!contenedor) return;
-
-
-    const texto =
-        (
-            $('buscarProductos')?.value ||
-            ''
-        )
-        .toLowerCase()
-        .trim();
-
-
-    const filtrados =
-        productos.filter(producto => {
-
-
-            const coincideCategoria =
-                categoriaActual === 'todos' ||
-                producto.categoria ===
-                    categoriaActual;
-
-
-            const coincideBusqueda =
-                !texto ||
-                producto.nombre
-                    .toLowerCase()
-                    .includes(texto) ||
-                producto.descripcion
-                    .toLowerCase()
-                    .includes(texto);
-
-
-            return coincideCategoria &&
-                coincideBusqueda;
-
-        });
-
-
-
-    contenedor.innerHTML = '';
-
-
-
-    if (!filtrados.length) {
-
-        contenedor.innerHTML = `
-
-            <div class="vacio">
-
-                <div>
-                    🔎
-                </div>
-
+    if (!clienteId) {
+        lista.innerHTML = `
+            <div class="seguimiento-vacio">
+                <span>📋</span>
                 <p>
-                    No encontramos productos con ese criterio.
+                    Selecciona un cliente para consultar
+                    sus pedidos.
                 </p>
-
             </div>
-
         `;
 
         return;
-
     }
 
-
-
-    filtrados.forEach(producto => {
-
-
-        const cantidad =
-            obtenerCantidadEnCarrito(
-                producto.id
-            );
-
-
-        const tarjeta =
-            document.createElement('div');
-
-
-        tarjeta.className =
-            'producto';
-
-
-        tarjeta.dataset.id =
-            producto.id;
-
-
-        tarjeta.dataset.categoria =
-            producto.categoria;
-
-
-        tarjeta.dataset.nombre =
-            producto.nombre;
-
-
-        tarjeta.innerHTML = `
-
-
-            <div class="producto-imagen">
-
-                ${obtenerImagenProducto(
-                    producto.id,
-                    producto.nombre
-                )}
-
-            </div>
-
-
-            <h3>
-
-                ${escaparHTML(
-                    producto.nombre
-                )}
-
-            </h3>
-
-
-            <p>
-
-                ${escaparHTML(
-                    producto.descripcion ||
-                    ''
-                )}
-
-            </p>
-
-
-            <div class="precio">
-
-                ${formatearMoneda(
-                    producto.precio
-                )}
-
-            </div>
-
-
-            <button
-                type="button"
-                class="btn-agregar-producto"
-                data-id="${producto.id}"
-            >
-
-                ${
-                    cantidad > 0
-                        ? `🛒 En tu pedido (${cantidad})`
-                        : '+ Agregar al carrito'
-                }
-
-            </button>
-
-        `;
-
-
-        contenedor.appendChild(
-            tarjeta
-        );
-
-    });
-
-
-
-    contenedor
-        .querySelectorAll(
-            '.btn-agregar-producto'
+    const pedidos = cargarPedidos()
+        .filter(pedido =>
+            String(pedido.clienteId) === String(clienteId)
         )
-        .forEach(boton => {
+        .map(pedido => prepararHistorialPedido(pedido))
+        .sort((a, b) => {
+            const fechaA =
+                new Date(a.fecha || 0).getTime();
 
-            boton.addEventListener(
-                'click',
-                () => {
+            const fechaB =
+                new Date(b.fecha || 0).getTime();
 
-                    agregarAlCarrito(
-                        Number(
-                            boton.dataset.id
-                        )
-                    );
-
-                }
-            );
-
+            return fechaB - fechaA;
         });
 
+    if (!pedidos.length) {
+        lista.innerHTML = `
+            <div class="seguimiento-vacio">
+                <span>📦</span>
+                <p>
+                    Este cliente todavía no tiene pedidos
+                    registrados.
+                </p>
+            </div>
+        `;
+
+        return;
+    }
+
+    lista.innerHTML = pedidos.map(
+        pedido => crearTarjetaSeguimiento(pedido)
+    ).join('');
 }
 
+function crearTarjetaSeguimiento(pedido) {
+    const estadoActual =
+        normalizarEstadoPedido(pedido.estado);
 
+    const indiceActual =
+        indiceEstadoPedido(estadoActual);
+
+    const historial =
+        Array.isArray(pedido.historialEstados)
+            ? pedido.historialEstados
+            : [];
+
+    const historialMapa = {};
+
+    historial.forEach(item => {
+        historialMapa[
+            normalizarEstadoPedido(item.estado)
+        ] = item.fecha;
+    });
+
+    const pasos = ESTADOS_PEDIDO.map(
+        (estado, indice) => {
+
+            let clase = 'pendiente';
+
+            if (indice < indiceActual) {
+                clase = 'completado';
+            }
+
+            if (indice === indiceActual) {
+                clase = 'actual';
+            }
+
+            const fecha =
+                historialMapa[estado.id] || '';
+
+            return `
+                <div class="seguimiento-paso ${clase}">
+                    <div class="seguimiento-icono">
+                        ${estado.icono}
+                    </div>
+
+                    <div class="seguimiento-paso-info">
+                        <strong>
+                            ${estado.nombre}
+                        </strong>
+
+                        ${
+                            fecha
+                                ? `<small>
+                                    ${formatearFechaSeguimiento(fecha)}
+                                   </small>`
+                                : '<small>Pendiente</small>'
+                        }
+                    </div>
+                </div>
+            `;
+        }
+    ).join('');
+
+    return `
+        <article class="seguimiento-card">
+
+            <div class="seguimiento-card-header">
+
+                <div>
+                    <span class="seguimiento-numero">
+                        Pedido #${escapeHTML(
+                            String(pedido.numero || pedido.id || '')
+                        )}
+                    </span>
+
+                    <small>
+                        Registrado:
+                        ${formatearFechaSeguimiento(
+                            pedido.fecha
+                        )}
+                    </small>
+                </div>
+
+                <span class="seguimiento-estado">
+                    ${nombreEstadoPedido(estadoActual)}
+                </span>
+
+            </div>
+
+            <div class="seguimiento-timeline">
+                ${pasos}
+            </div>
+
+            ${
+                pedido.direccion
+                    ? `
+                    <div class="seguimiento-dato">
+                        📍
+                        <strong>Dirección:</strong>
+                        ${escapeHTML(pedido.direccion)}
+                    </div>
+                    `
+                    : ''
+            }
+
+        </article>
+    `;
+}
+
+/* =========================================================
+   PRODUCTOS
+========================================================= */
+
+function renderizarProductos() {
+    const catalogo = $('catalogo');
+
+    if (!catalogo) {
+        return;
+    }
+
+    const busqueda =
+        ($('buscarProductos')?.value || '')
+            .trim()
+            .toLowerCase();
+
+    let productosMostrar = productos.filter(producto => {
+
+        const coincideCategoria =
+            categoriaActual === 'Todos' ||
+            producto.categoria === categoriaActual;
+
+        const coincideBusqueda =
+            producto.nombre.toLowerCase().includes(busqueda) ||
+            producto.descripcion.toLowerCase().includes(busqueda);
+
+        return coincideCategoria && coincideBusqueda;
+    });
+
+    if (!productosMostrar.length) {
+        catalogo.innerHTML = `
+            <div class="sin-productos">
+                <p>No se encontraron productos.</p>
+            </div>
+        `;
+
+        return;
+    }
+
+    catalogo.innerHTML = productosMostrar.map(
+        producto => `
+            <article class="producto-card">
+
+                <div class="producto-imagen">
+                    <img
+                        src="${producto.imagen}"
+                        alt="${escapeHTML(producto.nombre)}"
+                        onerror="this.style.display='none';"
+                    >
+                </div>
+
+                <div class="producto-info">
+
+                    <span class="producto-categoria">
+                        ${escapeHTML(producto.categoria)}
+                    </span>
+
+                    <h3>
+                        ${escapeHTML(producto.nombre)}
+                    </h3>
+
+                    <p>
+                        ${escapeHTML(producto.descripcion)}
+                    </p>
+
+                    <div class="producto-footer">
+
+                        <strong class="producto-precio">
+                            ${dinero(producto.precio)}
+                        </strong>
+
+                        <button
+                            type="button"
+                            class="btn-agregar"
+                            onclick="agregarAlCarrito(${producto.id})">
+                            Agregar
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </article>
+        `
+    ).join('');
+}
 
 /* =========================================================
    CARRITO
 ========================================================= */
 
-function agregarAlCarrito(id) {
+function agregarAlCarrito(productoId) {
+    const producto = productos.find(
+        item => item.id === productoId
+    );
 
-    const producto =
-        productos.find(
-            p => p.id === id
-        );
+    if (!producto) {
+        return;
+    }
 
-
-    if (!producto) return;
-
-
-    const existente =
-        carrito.find(
-            item => item.id === id
-        );
-
+    const existente = carrito.find(
+        item => item.id === productoId
+    );
 
     if (existente) {
-
         existente.cantidad++;
-
     } else {
-
         carrito.push({
-
-            id: producto.id,
-
-            nombre: producto.nombre,
-
-            precio: producto.precio,
-
+            ...producto,
             cantidad: 1
-
         });
-
     }
 
-
-    actualizarCarrito();
-
-    mostrarProductos();
-
+    renderizarCarrito();
 
     mostrarToast(
-        'Producto agregado al carrito.'
+        `${producto.nombre} agregado al carrito`
     );
-
 }
 
+function cambiarCantidad(productoId, cantidad) {
+    const producto = carrito.find(
+        item => item.id === productoId
+    );
 
-
-function cambiarCantidadCarrito(
-    id,
-    delta
-) {
-
-    const item =
-        carrito.find(
-            p => p.id === id
-        );
-
-
-    if (!item) return;
-
-
-    item.cantidad += delta;
-
-
-    if (item.cantidad <= 0) {
-
-        carrito =
-            carrito.filter(
-                p => p.id !== id
-            );
-
+    if (!producto) {
+        return;
     }
 
+    producto.cantidad += cantidad;
 
-    actualizarCarrito();
-
-    mostrarProductos();
-
-}
-
-
-
-function eliminarDelCarrito(id) {
-
-    carrito =
-        carrito.filter(
-            item => item.id !== id
+    if (producto.cantidad <= 0) {
+        carrito = carrito.filter(
+            item => item.id !== productoId
         );
+    }
 
-
-    actualizarCarrito();
-
-    mostrarProductos();
-
+    renderizarCarrito();
 }
 
-
-
-function calcularSubtotal() {
-
-    return carrito.reduce(
-        (total, item) =>
-            total +
-            item.precio *
-            item.cantidad,
-        0
+function eliminarDelCarrito(productoId) {
+    carrito = carrito.filter(
+        item => item.id !== productoId
     );
 
+    renderizarCarrito();
 }
 
+function calcularSubtotal() {
+    return carrito.reduce(
+        (total, producto) =>
+            total +
+            Number(producto.precio) *
+            Number(producto.cantidad),
+        0
+    );
+}
 
+function obtenerClienteSeleccionado() {
+    const clienteId =
+        $('clienteTienda')?.value;
+
+    if (!clienteId) {
+        return null;
+    }
+
+    return cargarClientes().find(
+        cliente =>
+            String(cliente.id) === String(clienteId)
+    ) || null;
+}
 
 function calcularDescuento() {
-
     const cliente =
-        clienteSeleccionado();
+        obtenerClienteSeleccionado();
 
-
-    if (!cliente) return 0;
-
-
-    const porcentaje =
-        Number(
-            cliente.descuento
-        ) || 0;
-
-
-    return calcularSubtotal() *
-        (porcentaje / 100);
-
-}
-
-
-
-function actualizarTotales() {
+    if (!cliente) {
+        return 0;
+    }
 
     const subtotal =
         calcularSubtotal();
 
+    const porcentaje =
+        Number(cliente.descuento || 0);
+
+    return subtotal * (porcentaje / 100);
+}
+
+function renderizarCarrito() {
+    const contenido =
+        $('carritoContenido');
+
+    if (!contenido) {
+        return;
+    }
+
+    if (!carrito.length) {
+        contenido.innerHTML = `
+            <div class="carrito-vacio">
+                <span>🛒</span>
+                <p>Tu carrito está vacío.</p>
+            </div>
+        `;
+    } else {
+        contenido.innerHTML =
+            carrito.map(producto => `
+                <div class="carrito-item">
+
+                    <div class="carrito-item-imagen">
+                        <img
+                            src="${producto.imagen}"
+                            alt="${escapeHTML(producto.nombre)}"
+                            onerror="this.style.display='none';"
+                        >
+                    </div>
+
+                    <div class="carrito-item-info">
+
+                        <h4>
+                            ${escapeHTML(producto.nombre)}
+                        </h4>
+
+                        <strong>
+                            ${dinero(producto.precio)}
+                        </strong>
+
+                        <div class="cantidad-control">
+
+                            <button
+                                type="button"
+                                onclick="cambiarCantidad(${producto.id}, -1)">
+                                −
+                            </button>
+
+                            <span>
+                                ${producto.cantidad}
+                            </span>
+
+                            <button
+                                type="button"
+                                onclick="cambiarCantidad(${producto.id}, 1)">
+                                +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-eliminar-carrito"
+                        onclick="eliminarDelCarrito(${producto.id})">
+                        ×
+                    </button>
+
+                </div>
+            `).join('');
+    }
+
+    const subtotal =
+        calcularSubtotal();
 
     const descuento =
         calcularDescuento();
 
-
     const total =
-        subtotal -
-        descuento;
-
+        Math.max(0, subtotal - descuento);
 
     if ($('subtotalCarrito')) {
-
-        $('subtotalCarrito')
-            .textContent =
-                formatearMoneda(
-                    subtotal
-                );
-
+        $('subtotalCarrito').textContent =
+            dinero(subtotal);
     }
-
 
     if ($('descuentoCarrito')) {
-
-        $('descuentoCarrito')
-            .textContent =
-                formatearMoneda(
-                    descuento
-                );
-
+        $('descuentoCarrito').textContent =
+            dinero(descuento);
     }
-
 
     if ($('totalCarrito')) {
-
-        $('totalCarrito')
-            .textContent =
-                formatearMoneda(
-                    total
-                );
-
+        $('totalCarrito').textContent =
+            dinero(total);
     }
-
-}
-
-
-
-function actualizarBadgeCarrito() {
-
-    const cantidadTotal =
-        carrito.reduce(
-            (total, item) =>
-                total +
-                item.cantidad,
-            0
-        );
-
 
     if ($('contadorCarrito')) {
+        const cantidad =
+            carrito.reduce(
+                (total, item) =>
+                    total + item.cantidad,
+                0
+            );
 
-        $('contadorCarrito')
-            .textContent =
-                cantidadTotal;
-
+        $('contadorCarrito').textContent =
+            cantidad;
     }
-
-
-    if ($('cantidadCarrito')) {
-
-        $('cantidadCarrito')
-            .textContent =
-                cantidadTotal === 1
-                    ? '1 producto'
-                    : `${cantidadTotal} productos`;
-
-    }
-
 }
-
-
-
-function renderizarCarrito() {
-
-    const contenedor =
-        $('carritoContenido');
-
-
-    if (!contenedor) return;
-
-
-    contenedor.innerHTML = '';
-
-
-
-    if (!carrito.length) {
-
-        contenedor.innerHTML = `
-
-            <div class="vacio">
-
-                <div>
-                    🛒
-                </div>
-
-                <p>
-                    Tu carrito está vacío.
-                </p>
-
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-
-    carrito.forEach(item => {
-
-
-        const fila =
-            document.createElement(
-                'div'
-            );
-
-
-        fila.className =
-            'carrito-item';
-
-
-        fila.innerHTML = `
-
-
-            <div>
-
-                <h4>
-
-                    ${escaparHTML(
-                        item.nombre
-                    )}
-
-                </h4>
-
-
-                <small>
-
-                    ${formatearMoneda(
-                        item.precio
-                    )}
-                    c/u
-
-                </small>
-
-
-                <div class="cantidad">
-
-
-                    <button
-                        type="button"
-                        class="btn-restar"
-                        data-id="${item.id}"
-                    >
-
-                        −
-
-                    </button>
-
-
-                    <span>
-
-                        ${item.cantidad}
-
-                    </span>
-
-
-                    <button
-                        type="button"
-                        class="btn-sumar"
-                        data-id="${item.id}"
-                    >
-
-                        +
-
-                    </button>
-
-
-                </div>
-
-            </div>
-
-
-
-            <div>
-
-                <strong>
-
-                    ${formatearMoneda(
-                        item.precio *
-                        item.cantidad
-                    )}
-
-                </strong>
-
-
-                <br>
-
-
-                <button
-                    type="button"
-                    class="eliminar"
-                    data-id="${item.id}"
-                >
-
-                    Quitar
-
-                </button>
-
-            </div>
-
-        `;
-
-
-        contenedor.appendChild(
-            fila
-        );
-
-    });
-
-
-
-    contenedor
-        .querySelectorAll(
-            '.btn-restar'
-        )
-        .forEach(boton => {
-
-            boton.addEventListener(
-                'click',
-                () => {
-
-                    cambiarCantidadCarrito(
-                        Number(
-                            boton.dataset.id
-                        ),
-                        -1
-                    );
-
-                }
-            );
-
-        });
-
-
-
-    contenedor
-        .querySelectorAll(
-            '.btn-sumar'
-        )
-        .forEach(boton => {
-
-            boton.addEventListener(
-                'click',
-                () => {
-
-                    cambiarCantidadCarrito(
-                        Number(
-                            boton.dataset.id
-                        ),
-                        1
-                    );
-
-                }
-            );
-
-        });
-
-
-
-    contenedor
-        .querySelectorAll(
-            '.eliminar'
-        )
-        .forEach(boton => {
-
-            boton.addEventListener(
-                'click',
-                () => {
-
-                    eliminarDelCarrito(
-                        Number(
-                            boton.dataset.id
-                        )
-                    );
-
-                }
-            );
-
-        });
-
-}
-
-
-
-function actualizarCarrito() {
-
-    actualizarBadgeCarrito();
-
-    renderizarCarrito();
-
-    actualizarTotales();
-
-}
-
-
-
-function abrirCarritoPanel() {
-
-    renderizarCarrito();
-
-
-    $('carritoPanel')
-        ?.classList
-        .add('show');
-
-}
-
-
-
-function cerrarCarritoPanel() {
-
-    $('carritoPanel')
-        ?.classList
-        .remove('show');
-
-}
-
-
 
 /* =========================================================
-   MODAL DE CONFIRMACIÓN DE PEDIDO
+   MODAL DE PEDIDO
 ========================================================= */
 
 function abrirModalPedido() {
-
-
     if (!carrito.length) {
-
         mostrarToast(
-            'Agrega al menos un producto.',
-            'warning'
+            'Agrega productos al carrito primero',
+            'error'
         );
 
-
-        abrirCarritoPanel();
-
         return;
-
     }
-
-
 
     const cliente =
-        clienteSeleccionado();
-
+        obtenerClienteSeleccionado();
 
     if (!cliente) {
-
         mostrarToast(
-            'Selecciona un cliente para continuar.',
-            'warning'
+            'Selecciona un cliente antes de finalizar',
+            'error'
         );
 
-
-        $('clienteTienda')
-            ?.focus();
-
-
         return;
-
     }
-
-
-
-    const subtotal =
-        calcularSubtotal();
-
-
-    const descuento =
-        calcularDescuento();
-
-
-    const total =
-        subtotal -
-        descuento;
-
 
     const resumen =
         $('resumenPedido');
 
-
-
     if (resumen) {
+        resumen.innerHTML =
+            carrito.map(producto => `
+                <div class="resumen-linea">
+                    <span>
+                        ${producto.cantidad} ×
+                        ${escapeHTML(producto.nombre)}
+                    </span>
 
-        resumen.innerHTML = `
-
-
-            <div class="resumen-linea">
-
-                <span>
-                    Cliente
-                </span>
-
-                <strong>
-
-                    ${escaparHTML(
-                        cliente.nombre
-                    )}
-
-                </strong>
-
-            </div>
-
-
-
-            <div class="resumen-linea">
-
-                <span>
-                    Teléfono
-                </span>
-
-                <strong>
-
-                    ${
-                        escaparHTML(
-                            cliente.telefono ||
-                            'Sin teléfono'
-                        )
-                    }
-
-                </strong>
-
-            </div>
-
-
-
-            <div class="resumen-linea">
-
-                <span>
-                    Productos
-                </span>
-
-                <strong>
-
-                    ${
-                        carrito.reduce(
-                            (t, i) =>
-                                t +
-                                i.cantidad,
-                            0
-                        )
-                    }
-
-                </strong>
-
-            </div>
-
-
-
-            <div class="resumen-linea">
-
-                <span>
-                    Subtotal
-                </span>
-
-                <strong>
-
-                    ${formatearMoneda(
-                        subtotal
-                    )}
-
-                </strong>
-
-            </div>
-
-
-
-            <div class="resumen-linea">
-
-                <span>
-                    Descuento
-                </span>
-
-                <strong>
-
-                    ${formatearMoneda(
-                        descuento
-                    )}
-
-                </strong>
-
-            </div>
-
-
-
-            <div class="resumen-linea">
-
-                <span>
-                    Total
-                </span>
-
-                <strong>
-
-                    ${formatearMoneda(
-                        total
-                    )}
-
-                </strong>
-
-            </div>
-
-        `;
-
+                    <strong>
+                        ${dinero(
+                            producto.precio *
+                            producto.cantidad
+                        )}
+                    </strong>
+                </div>
+            `).join('');
     }
 
-
-
-    if (
-        $('direccionPedido') &&
-        !$('direccionPedido').value
-    ) {
-
-        $('direccionPedido')
-            .value =
-                cliente.direccion ||
-                '';
-
+    if ($('direccionPedido')) {
+        $('direccionPedido').value =
+            cliente.direccion || '';
     }
 
+    if ($('notasPedido')) {
+        $('notasPedido').value = '';
+    }
 
+    const modal = $('modalPedido');
 
-    $('modalPedido')
-        ?.classList
-        .add('show');
-
+    if (modal) {
+        modal.classList.add('mostrar');
+    }
 }
-
-
 
 function cerrarModalPedido() {
+    const modal = $('modalPedido');
 
-    $('modalPedido')
-        ?.classList
-        .remove('show');
-
+    if (modal) {
+        modal.classList.remove('mostrar');
+    }
 }
 
+/* =========================================================
+   GENERAR PEDIDO
+========================================================= */
 
+function generarIdPedido() {
+    return Date.now().toString() +
+        Math.floor(
+            Math.random() * 1000
+        ).toString();
+}
+
+function generarNumeroPedido(pedidos) {
+    const numeros = pedidos
+        .map(pedido => {
+            const numero =
+                String(pedido.numero || '');
+
+            const coincidencia =
+                numero.match(/\d+/);
+
+            return coincidencia
+                ? Number(coincidencia[0])
+                : 0;
+        });
+
+    const mayor =
+        numeros.length
+            ? Math.max(...numeros)
+            : 0;
+
+    return `CHQ-${String(
+        mayor + 1
+    ).padStart(4, '0')}`;
+}
 
 function confirmarPedido() {
-
     const cliente =
-        clienteSeleccionado();
+        obtenerClienteSeleccionado();
 
-
-    if (
-        !cliente ||
-        !carrito.length
-    ) {
-
-        cerrarModalPedido();
-
-        return;
-
-    }
-
-
-
-    const pedidos =
-        obtenerPedidos();
-
-
-    const numero =
-        generarNumeroPedido(
-            pedidos
+    if (!cliente) {
+        mostrarToast(
+            'Selecciona un cliente',
+            'error'
         );
 
+        return;
+    }
+
+    if (!carrito.length) {
+        mostrarToast(
+            'El carrito está vacío',
+            'error'
+        );
+
+        return;
+    }
+
+    const pedidos =
+        cargarPedidos();
 
     const ahora =
         new Date().toISOString();
 
-
-
-    const productosPedido =
-        carrito.map(item => ({
-
-            nombre:
-                item.nombre,
-
-            cantidad:
-                item.cantidad,
-
-            precio:
-                item.precio,
-
-            subtotal:
-                item.precio *
-                item.cantidad
-
-        }));
-
-
-
     const subtotal =
         calcularSubtotal();
-
 
     const descuento =
         calcularDescuento();
 
-
     const total =
-        subtotal -
-        descuento;
-
-
+        Math.max(
+            0,
+            subtotal - descuento
+        );
 
     const pedido = {
-
-        id:
-            generarId(),
+        id: generarIdPedido(),
 
         numero:
+            generarNumeroPedido(pedidos),
 
-            numero,
-
-        fecha:
-
-            ahora,
+        fecha: ahora,
 
         clienteId:
-
             cliente.id,
 
         clienteNombre:
-
-            cliente.nombre,
+            cliente.nombre || 'Cliente',
 
         clienteTelefono:
+            cliente.telefono || '',
 
-            cliente.telefono ||
-            '',
+        origen: 'Tienda',
 
-        origen:
+        estado: 'pedido_recibido',
 
-            'Tienda / Autoservicio',
-
-        estado:
-
-            'pendiente',
+        historialEstados: [
+            {
+                estado: 'pedido_recibido',
+                fecha: ahora
+            }
+        ],
 
         productos:
+            carrito.map(producto => ({
+                id: producto.id,
+                nombre: producto.nombre,
+                precio: producto.precio,
+                cantidad: producto.cantidad,
+                subtotal:
+                    producto.precio *
+                    producto.cantidad
+            })),
 
-            productosPedido,
+        subtotal,
 
-        subtotal:
+        descuento,
 
-            subtotal,
-
-        descuento:
-
-            descuento,
-
-        total:
-
-            total,
+        total,
 
         direccion:
-
-            $('direccionPedido')
-                ?.value
-                .trim() ||
-
-            cliente.direccion ||
-
-            '',
+            $('direccionPedido')?.value.trim() || '',
 
         notas:
+            $('notasPedido')?.value.trim() || '',
 
-            $('notasPedido')
-                ?.value
-                .trim() ||
-
-            '',
-
-        actualizado:
-
-            ahora
-
+        actualizado: ahora
     };
 
+    pedidos.push(pedido);
 
-
-    pedidos.push(
-        pedido
-    );
-
-
-
-    localStorage.setItem(
-        STORAGE_PEDIDOS,
-        JSON.stringify(
-            pedidos
-        )
-    );
-
-
+    guardarPedidos(pedidos);
 
     carrito = [];
 
-
-
-    if ($('direccionPedido')) {
-
-        $('direccionPedido')
-            .value = '';
-
-    }
-
-
-
-    if ($('notasPedido')) {
-
-        $('notasPedido')
-            .value = '';
-
-    }
-
-
+    renderizarCarrito();
 
     cerrarModalPedido();
 
-    cerrarCarritoPanel();
-
-    actualizarCarrito();
-
-    mostrarProductos();
-
-
-
-    mostrarToast(
-        '¡Pedido enviado correctamente!'
+    renderizarSeguimientoPedidos(
+        cliente.id
     );
 
+    mostrarToast(
+        `Pedido ${pedido.numero} registrado correctamente`
+    );
 }
-
-
-
-/* =========================================================
-   PEDIDOS
-========================================================= */
-
-function obtenerPedidos() {
-
-    try {
-
-        const datos =
-            localStorage.getItem(
-                STORAGE_PEDIDOS
-            );
-
-
-        if (!datos) return [];
-
-
-        const pedidos =
-            JSON.parse(datos);
-
-
-        return Array.isArray(pedidos)
-            ? pedidos
-            : [];
-
-    } catch (error) {
-
-        console.error(
-            'Error cargando pedidos:',
-            error
-        );
-
-
-        return [];
-
-    }
-
-}
-
-
 
 /* =========================================================
    TEMA
 ========================================================= */
 
-function cargarTema() {
-
-    let tema =
+function inicializarTema() {
+    const tema =
         localStorage.getItem(
             STORAGE_TEMA
         );
 
-
-    if (tema === 'oscuro')
-        tema = 'dark';
-
-
-    if (tema === 'claro')
-        tema = 'light';
-
-
-
-    if (tema === 'dark') {
-
+    if (tema === 'oscuro') {
         document.body.classList.add(
             'dark'
         );
-
-    } else {
-
-        document.body.classList.remove(
-            'dark'
-        );
-
     }
-
-
-    actualizarIconoTema();
-
 }
 
-
-
 function cambiarTema() {
-
     const oscuro =
         document.body.classList.toggle(
             'dark'
         );
 
-
     localStorage.setItem(
         STORAGE_TEMA,
-        oscuro
-            ? 'dark'
-            : 'light'
+        oscuro ? 'oscuro' : 'claro'
     );
-
-
-    actualizarIconoTema();
-
 }
-
-
-
-function actualizarIconoTema() {
-
-    const boton =
-        $('btnTema');
-
-
-    if (!boton) return;
-
-
-    boton.textContent =
-        document.body.classList.contains(
-            'dark'
-        )
-            ? '☀️'
-            : '🌙';
-
-}
-
-
 
 /* =========================================================
-   TOAST
+   CATEGORÍAS
 ========================================================= */
 
-function mostrarToast(
-    mensaje
-) {
-
-    const toast =
-        $('toast');
-
-
-    if (!toast) return;
-
-
-    const span =
-        toast.querySelector(
-            'span'
+function configurarCategorias() {
+    const botones =
+        document.querySelectorAll(
+            '[data-categoria]'
         );
 
+    botones.forEach(boton => {
 
-    if (span) {
-
-        span.textContent =
-            mensaje;
-
-    } else {
-
-        toast.textContent =
-            mensaje;
-
-    }
-
-
-    toast.classList.add(
-        'show'
-    );
-
-
-    clearTimeout(
-        toastTimer
-    );
-
-
-    toastTimer =
-        setTimeout(
+        boton.addEventListener(
+            'click',
             () => {
 
-                toast.classList.remove(
-                    'show'
+                botones.forEach(
+                    item =>
+                        item.classList.remove(
+                            'activo'
+                        )
                 );
 
-            },
-            3000
-        );
+                boton.classList.add(
+                    'activo'
+                );
 
+                categoriaActual =
+                    boton.dataset.categoria ||
+                    'Todos';
+
+                renderizarProductos();
+            }
+        );
+    });
 }
 
+/* =========================================================
+   UTILIDAD SEGURA
+========================================================= */
 
+function escapeHTML(valor) {
+    return String(valor ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 /* =========================================================
-   EVENTOS
+   INICIALIZACIÓN
 ========================================================= */
 
 document.addEventListener(
     'DOMContentLoaded',
     () => {
 
+        inicializarTema();
 
-        /* -----------------------------------------------
-           TEMA
-        ------------------------------------------------ */
+        migrarPedidosSeguimiento();
 
-        cargarTema();
+        cargarClientesTienda();
 
+        renderizarProductos();
 
+        renderizarCarrito();
 
-        /* -----------------------------------------------
-           CLIENTES
-        ------------------------------------------------ */
+        renderizarSeguimientoPedidos(
+            $('clienteTienda')?.value || ''
+        );
 
-        cargarClientesSelect();
+        configurarCategorias();
 
+        const clienteTienda =
+            $('clienteTienda');
 
-
-        /* -----------------------------------------------
-           PRODUCTOS
-        ------------------------------------------------ */
-
-        mostrarProductos();
-
-
-
-        /* -----------------------------------------------
-           CARRITO
-        ------------------------------------------------ */
-
-        actualizarCarrito();
-
-
-
-        /* -----------------------------------------------
-           BUSCADOR
-        ------------------------------------------------ */
-
-        $('buscarProductos')
-            ?.addEventListener(
-                'input',
-                mostrarProductos
-            );
-
-
-
-        /* -----------------------------------------------
-           CATEGORÍAS
-        ------------------------------------------------ */
-
-        document
-            .querySelectorAll(
-                '.categoria'
-            )
-            .forEach(
-                boton => {
-
-                    boton.addEventListener(
-                        'click',
-                        () => {
-
-
-                            document
-                                .querySelectorAll(
-                                    '.categoria'
-                                )
-                                .forEach(
-                                    b => {
-
-                                        b.classList.remove(
-                                            'activo'
-                                        );
-
-                                    }
-                                );
-
-
-
-                            boton.classList.add(
-                                'activo'
-                            );
-
-
-
-                            categoriaActual =
-                                boton.dataset.categoria;
-
-
-
-                            mostrarProductos();
-
-                        }
-                    );
-
-                }
-            );
-
-
-
-        /* -----------------------------------------------
-           CLIENTE
-        ------------------------------------------------ */
-
-        $('clienteTienda')
-            ?.addEventListener(
+        if (clienteTienda) {
+            clienteTienda.addEventListener(
                 'change',
                 mostrarInfoCliente
             );
+        }
 
+        const buscarProductos =
+            $('buscarProductos');
 
-
-        /* -----------------------------------------------
-           ABRIR CARRITO
-        ------------------------------------------------ */
-
-        $('abrirCarrito')
-            ?.addEventListener(
-                'click',
-                abrirCarritoPanel
+        if (buscarProductos) {
+            buscarProductos.addEventListener(
+                'input',
+                renderizarProductos
             );
+        }
 
+        const abrirCarrito =
+            $('abrirCarrito');
 
-
-        /* -----------------------------------------------
-           CERRAR CARRITO
-        ------------------------------------------------ */
-
-        $('cerrarCarrito')
-            ?.addEventListener(
+        if (abrirCarrito) {
+            abrirCarrito.addEventListener(
                 'click',
-                cerrarCarritoPanel
+                () => {
+                    $('carritoPanel')
+                        ?.classList.add(
+                            'mostrar'
+                        );
+                }
             );
+        }
 
+        const cerrarCarrito =
+            $('cerrarCarrito');
 
+        if (cerrarCarrito) {
+            cerrarCarrito.addEventListener(
+                'click',
+                () => {
+                    $('carritoPanel')
+                        ?.classList.remove(
+                            'mostrar'
+                        );
+                }
+            );
+        }
 
-        /* -----------------------------------------------
-           FINALIZAR PEDIDO
-        ------------------------------------------------ */
+        const btnFinalizar =
+            $('btnFinalizar');
 
-        $('btnFinalizar')
-            ?.addEventListener(
+        if (btnFinalizar) {
+            btnFinalizar.addEventListener(
                 'click',
                 abrirModalPedido
             );
+        }
 
+        const cancelarPedido =
+            $('cancelarPedido');
 
-
-        /* -----------------------------------------------
-           CERRAR MODAL
-        ------------------------------------------------ */
-
-        $('cerrarModal')
-            ?.addEventListener(
+        if (cancelarPedido) {
+            cancelarPedido.addEventListener(
                 'click',
                 cerrarModalPedido
             );
+        }
 
+        const confirmar =
+            $('confirmarPedido');
 
-
-        /* -----------------------------------------------
-           CANCELAR PEDIDO
-        ------------------------------------------------ */
-
-        $('cancelarPedido')
-            ?.addEventListener(
-                'click',
-                cerrarModalPedido
-            );
-
-
-
-        /* -----------------------------------------------
-           CONFIRMAR PEDIDO
-        ------------------------------------------------ */
-
-        $('confirmarPedido')
-            ?.addEventListener(
+        if (confirmar) {
+            confirmar.addEventListener(
                 'click',
                 confirmarPedido
             );
+        }
 
+        const btnTema =
+            $('btnTema');
 
-
-        /* -----------------------------------------------
-           CERRAR MODAL AL HACER CLICK AFUERA
-        ------------------------------------------------ */
-
-        $('modalPedido')
-            ?.addEventListener(
-                'click',
-                evento => {
-
-
-                    if (
-                        evento.target ===
-                        $('modalPedido')
-                    ) {
-
-                        cerrarModalPedido();
-
-                    }
-
-                }
-            );
-
-
-
-        /* -----------------------------------------------
-           CAMBIAR TEMA
-        ------------------------------------------------ */
-
-        $('btnTema')
-            ?.addEventListener(
+        if (btnTema) {
+            btnTema.addEventListener(
                 'click',
                 cambiarTema
             );
-
-
-
-        /* -----------------------------------------------
-           ESCAPE
-        ------------------------------------------------ */
+        }
 
         document.addEventListener(
             'keydown',
             evento => {
 
-
                 if (
-                    evento.key !==
-                    'Escape'
+                    evento.key === 'Escape'
                 ) {
-                    return;
-                }
-
-
-
-                if (
-                    $('modalPedido')
-                        ?.classList
-                        .contains('show')
-                ) {
-
                     cerrarModalPedido();
 
-                    return;
-
-                }
-
-
-
-                if (
                     $('carritoPanel')
-                        ?.classList
-                        .contains('show')
-                ) {
-
-                    cerrarCarritoPanel();
-
+                        ?.classList.remove(
+                            'mostrar'
+                        );
                 }
-
             }
         );
-
-
-
-        /* -----------------------------------------------
-           STORAGE
-        ------------------------------------------------ */
 
         window.addEventListener(
             'storage',
             evento => {
 
+                if (
+                    evento.key ===
+                    STORAGE_PEDIDOS
+                ) {
+                    migrarPedidosSeguimiento();
+
+                    renderizarSeguimientoPedidos(
+                        $('clienteTienda')
+                            ?.value || ''
+                    );
+                }
 
                 if (
                     evento.key ===
                     STORAGE_CLIENTES
                 ) {
-
-                    cargarClientesSelect();
-
+                    cargarClientesTienda();
                 }
-
-
 
                 if (
                     evento.key ===
                     STORAGE_TEMA
                 ) {
-
-                    cargarTema();
-
+                    inicializarTema();
                 }
-
             }
         );
-
-
     }
 );
+
+/* =========================================================
+   FUNCIONES GLOBALES
+========================================================= */
+
+window.agregarAlCarrito =
+    agregarAlCarrito;
+
+window.cambiarCantidad =
+    cambiarCantidad;
+
+window.eliminarDelCarrito =
+    eliminarDelCarrito;

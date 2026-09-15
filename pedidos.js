@@ -1,39 +1,135 @@
+/* =========================================================
+   VARIEDADES CHIQUIS
+   GESTIÓN Y SEGUIMIENTO DE PEDIDOS
+   ========================================================= */
+
 'use strict';
 
-
 /* =========================================================
-   CONFIGURACIÓN
+   STORAGE
 ========================================================= */
 
 const STORAGE_PEDIDOS = 'pedidosChiquis';
 const STORAGE_CLIENTES = 'clientesChiquis';
 const STORAGE_TEMA = 'temaChiquis';
 
+/* =========================================================
+   ESTADOS DEL PEDIDO
+========================================================= */
+
+const ESTADOS_PEDIDO = [
+    {
+        id: 'pedido_recibido',
+        nombre: 'Pedido recibido',
+        icono: '📥'
+    },
+    {
+        id: 'en_preparacion',
+        nombre: 'En preparación',
+        icono: '🧑‍🍳'
+    },
+    {
+        id: 'preparado',
+        nombre: 'Preparado',
+        icono: '📦'
+    },
+    {
+        id: 'despachado',
+        nombre: 'Despachado',
+        icono: '🚚'
+    },
+    {
+        id: 'en_proceso_entrega',
+        nombre: 'En proceso de entrega',
+        icono: '🛵'
+    },
+    {
+        id: 'entregado',
+        nombre: 'Entregado',
+        icono: '✅'
+    }
+];
+
+const MAPA_ESTADOS_ANTIGUOS = {
+    pendiente: 'pedido_recibido',
+    preparando: 'en_preparacion',
+    enviado: 'despachado',
+    entregado: 'entregado',
+    cancelado: 'cancelado'
+};
+
+/* =========================================================
+   PRODUCTOS
+========================================================= */
+
+const productos = [
+    {
+        id: 1,
+        nombre: 'Laptop',
+        precio: 5500
+    },
+    {
+        id: 2,
+        nombre: 'Monitor',
+        precio: 1800
+    },
+    {
+        id: 3,
+        nombre: 'Teclado',
+        precio: 450
+    },
+    {
+        id: 4,
+        nombre: 'Mouse',
+        precio: 250
+    },
+    {
+        id: 5,
+        nombre: 'Impresora',
+        precio: 1200
+    },
+    {
+        id: 6,
+        nombre: 'Audífonos',
+        precio: 1000
+    },
+    {
+        id: 7,
+        nombre: 'Bocinas',
+        precio: 2000
+    },
+    {
+        id: 8,
+        nombre: 'Silla Gamer',
+        precio: 1000
+    },
+    {
+        id: 9,
+        nombre: 'SSD',
+        precio: 750
+    }
+];
 
 /* =========================================================
    UTILIDADES
 ========================================================= */
 
-const $ = id => document.getElementById(id);
-
-
-function on(id, evento, funcion) {
-
-    const elemento = $(id);
-
-    if (elemento) {
-        elemento.addEventListener(evento, funcion);
-    }
+function $(id) {
+    return document.getElementById(id);
 }
 
+function dinero(valor) {
+    return Number(valor || 0).toLocaleString(
+        'es-GT',
+        {
+            style: 'currency',
+            currency: 'GTQ'
+        }
+    );
+}
 
-function escaparHTML(valor) {
-
-    if (valor === null || valor === undefined) {
-        return '';
-    }
-
-    return String(valor)
+function escapeHTML(valor) {
+    return String(valor ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -41,33 +137,75 @@ function escaparHTML(valor) {
         .replace(/'/g, '&#039;');
 }
 
+function formatearFechaHora(fecha) {
 
-let pedidos = [];
-let clientes = [];
+    if (!fecha) {
+        return '';
+    }
 
-let pedidoDetalleActual = null;
+    const fechaObj = new Date(fecha);
 
-let filtroPedido = 'todos';
+    if (Number.isNaN(fechaObj.getTime())) {
+        return fecha;
+    }
 
-let toastTimer = null;
+    return fechaObj.toLocaleString(
+        'es-GT',
+        {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }
+    );
+}
 
+function fechaActualInput() {
+
+    const ahora = new Date();
+
+    const year =
+        ahora.getFullYear();
+
+    const month =
+        String(
+            ahora.getMonth() + 1
+        ).padStart(2, '0');
+
+    const day =
+        String(
+            ahora.getDate()
+        ).padStart(2, '0');
+
+    const hours =
+        String(
+            ahora.getHours()
+        ).padStart(2, '0');
+
+    const minutes =
+        String(
+            ahora.getMinutes()
+        ).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+/* =========================================================
+   STORAGE
+========================================================= */
 
 function cargarPedidos() {
 
     try {
 
         const datos =
-            localStorage.getItem(STORAGE_PEDIDOS);
+            localStorage.getItem(
+                STORAGE_PEDIDOS
+            );
 
-        if (!datos) {
-            return [];
-        }
-
-        const resultado =
-            JSON.parse(datos);
-
-        return Array.isArray(resultado)
-            ? resultado
+        return datos
+            ? JSON.parse(datos)
             : [];
 
     } catch (error) {
@@ -81,48 +219,25 @@ function cargarPedidos() {
     }
 }
 
+function guardarPedidos(pedidos) {
 
-function guardarPedidos() {
-
-    try {
-
-        localStorage.setItem(
-            STORAGE_PEDIDOS,
-            JSON.stringify(pedidos)
-        );
-
-        return true;
-
-    } catch (error) {
-
-        console.error(error);
-
-        mostrarToast(
-            'No se pudieron guardar los pedidos.',
-            'error'
-        );
-
-        return false;
-    }
+    localStorage.setItem(
+        STORAGE_PEDIDOS,
+        JSON.stringify(pedidos)
+    );
 }
-
 
 function cargarClientes() {
 
     try {
 
         const datos =
-            localStorage.getItem(STORAGE_CLIENTES);
+            localStorage.getItem(
+                STORAGE_CLIENTES
+            );
 
-        if (!datos) {
-            return [];
-        }
-
-        const resultado =
-            JSON.parse(datos);
-
-        return Array.isArray(resultado)
-            ? resultado
+        return datos
+            ? JSON.parse(datos)
             : [];
 
     } catch (error) {
@@ -136,121 +251,222 @@ function cargarClientes() {
     }
 }
 
+/* =========================================================
+   ESTADOS
+========================================================= */
 
-function generarId(prefijo = 'ID-') {
+function normalizarEstado(estado) {
 
-    return (
-        prefijo +
-        Date.now().toString(36).toUpperCase() +
-        Math.random()
-            .toString(36)
-            .substring(2, 7)
-            .toUpperCase()
+    if (!estado) {
+        return 'pedido_recibido';
+    }
+
+    return MAPA_ESTADOS_ANTIGUOS[estado] ||
+        estado;
+}
+
+function obtenerEstado(estado) {
+
+    const normalizado =
+        normalizarEstado(estado);
+
+    return ESTADOS_PEDIDO.find(
+        item =>
+            item.id === normalizado
     );
 }
 
+function textoEstado(estado) {
 
-function generarNumeroPedido() {
+    const normalizado =
+        normalizarEstado(estado);
+
+    if (normalizado === 'cancelado') {
+        return 'Cancelado';
+    }
+
+    const encontrado =
+        obtenerEstado(normalizado);
+
+    return encontrado
+        ? encontrado.nombre
+        : 'Pedido recibido';
+}
+
+function iconoEstado(estado) {
+
+    const encontrado =
+        obtenerEstado(estado);
+
+    return encontrado
+        ? encontrado.icono
+        : '📦';
+}
+
+function prepararHistorial(pedido) {
+
+    if (!Array.isArray(
+        pedido.historialEstados
+    )) {
+        pedido.historialEstados = [];
+    }
+
+    pedido.estado =
+        normalizarEstado(
+            pedido.estado
+        );
+
+    if (
+        pedido.historialEstados.length === 0
+    ) {
+
+        pedido.historialEstados.push({
+            estado: pedido.estado,
+            fecha:
+                pedido.actualizado ||
+                pedido.fecha ||
+                new Date().toISOString()
+        });
+    }
+
+    pedido.historialEstados =
+        pedido.historialEstados.map(
+            item => ({
+                estado:
+                    normalizarEstado(
+                        item.estado
+                    ),
+                fecha:
+                    item.fecha ||
+                    new Date().toISOString()
+            })
+        );
+
+    return pedido;
+}
+
+function migrarPedidos() {
+
+    const pedidos =
+        cargarPedidos();
+
+    if (!pedidos.length) {
+        return;
+    }
+
+    let cambios = false;
+
+    pedidos.forEach(pedido => {
+
+        const estadoAntes =
+            pedido.estado;
+
+        const teniaHistorial =
+            Array.isArray(
+                pedido.historialEstados
+            );
+
+        prepararHistorial(pedido);
+
+        if (
+            estadoAntes !==
+            pedido.estado ||
+            !teniaHistorial
+        ) {
+            cambios = true;
+        }
+    });
+
+    if (cambios) {
+        guardarPedidos(pedidos);
+    }
+}
+
+/* =========================================================
+   CLIENTES
+========================================================= */
+
+function cargarClientesEnSelect() {
+
+    const select =
+        $('pedidoCliente');
+
+    if (!select) {
+        return;
+    }
+
+    const clientes =
+        cargarClientes();
+
+    select.innerHTML =
+        '<option value="">Seleccione un cliente</option>';
+
+    clientes.forEach(cliente => {
+
+        const option =
+            document.createElement(
+                'option'
+            );
+
+        option.value =
+            cliente.id;
+
+        option.textContent =
+            cliente.nombre ||
+            'Cliente';
+
+        select.appendChild(option);
+    });
+}
+
+/* =========================================================
+   IDS
+========================================================= */
+
+function generarId() {
+
+    return Date.now().toString() +
+        Math.floor(
+            Math.random() * 10000
+        ).toString();
+}
+
+function generarNumeroPedido(
+    pedidos
+) {
 
     let mayor = 0;
 
     pedidos.forEach(pedido => {
 
         const numero =
-            String(pedido.numero || '')
-                .replace(/\D/g, '');
+            String(
+                pedido.numero || ''
+            );
 
-        const valor =
-            parseInt(numero, 10);
+        const coincidencia =
+            numero.match(/\d+/);
 
-        if (!isNaN(valor) && valor > mayor) {
-            mayor = valor;
+        if (coincidencia) {
+
+            mayor =
+                Math.max(
+                    mayor,
+                    Number(
+                        coincidencia[0]
+                    )
+                );
         }
-
     });
 
-    return (
-        'PED-' +
-        String(mayor + 1).padStart(4, '0')
-    );
+    return `CHQ-${String(
+        mayor + 1
+    ).padStart(4, '0')}`;
 }
 
-
-function fechaActualInput() {
-
-    const fecha = new Date();
-
-    const año =
-        fecha.getFullYear();
-
-    const mes =
-        String(fecha.getMonth() + 1)
-            .padStart(2, '0');
-
-    const dia =
-        String(fecha.getDate())
-            .padStart(2, '0');
-
-    const horas =
-        String(fecha.getHours())
-            .padStart(2, '0');
-
-    const minutos =
-        String(fecha.getMinutes())
-            .padStart(2, '0');
-
-    return (
-        año +
-        '-' +
-        mes +
-        '-' +
-        dia +
-        'T' +
-        horas +
-        ':' +
-        minutos
-    );
-}
-
-
-function formatearFechaHora(fecha) {
-
-    if (!fecha) {
-        return 'Sin fecha';
-    }
-
-    const fechaObj =
-        new Date(fecha);
-
-    if (isNaN(fechaObj.getTime())) {
-        return String(fecha);
-    }
-
-    return fechaObj.toLocaleString(
-        'es-GT',
-        {
-            dateStyle: 'short',
-            timeStyle: 'short'
-        }
-    );
-}
-
-
-function dinero(valor) {
-
-    const numero =
-        Number(valor) || 0;
-
-    return numero.toLocaleString(
-        'es-GT',
-        {
-            style: 'currency',
-            currency: 'GTQ',
-            minimumFractionDigits: 2
-        }
-    );
-}
-
+/* =========================================================
+   TOAST
+========================================================= */
 
 function mostrarToast(
     mensaje,
@@ -264,117 +480,194 @@ function mostrarToast(
         return;
     }
 
-    const icono =
-        tipo === 'error'
-            ? '✕'
-            : tipo === 'warning'
-                ? '⚠️'
-                : '✓';
-
     toast.textContent =
-        `${icono} ${mensaje}`;
+        mensaje;
 
-    toast.classList.add('show');
+    toast.className =
+        `toast mostrar ${tipo}`;
 
-    clearTimeout(toastTimer);
+    setTimeout(() => {
 
-    toastTimer =
-        setTimeout(() => {
+        toast.classList.remove(
+            'mostrar'
+        );
 
-            toast.classList.remove('show');
-
-        }, 3000);
+    }, 3000);
 }
 
+/* =========================================================
+   PANEL PEDIDO
+========================================================= */
 
-function abrirOverlay() {
-
-    const overlay =
-        $('overlay');
-
-    if (!overlay) {
-        return;
-    }
-
-    overlay.classList.add('show');
-}
-
-
-function cerrarOverlay() {
-
-    const overlay =
-        $('overlay');
-
-    if (!overlay) {
-        return;
-    }
-
-    overlay.classList.remove('show');
-}
-
-
-function cerrarTodoAlIniciar() {
-
-    const overlay =
-        $('overlay');
+function abrirPanelPedido(
+    pedido = null
+) {
 
     const panel =
         $('pedidoPanel');
 
-    const detalle =
-        $('dialogPedidoDetalle');
-
-
-    overlay?.classList.remove('show');
-
-    panel?.classList.remove('show');
-
-    detalle?.classList.remove('show');
-
-    document.body.classList.remove('modal-open');
-}
-
-
-function cargarClientesEnSelect() {
-
-    const select =
-        $('pedidoCliente');
-
-    if (!select) {
+    if (!panel) {
         return;
     }
 
-    const valorAnterior =
-        select.value;
+    const form =
+        $('pedidoForm');
 
-    select.innerHTML =
-        '<option value="">Selecciona un cliente</option>';
-
-
-    clientes.forEach(cliente => {
-
-        const option =
-            document.createElement('option');
-
-        option.value =
-            cliente.id;
-
-        option.textContent =
-            cliente.nombre ||
-            'Cliente sin nombre';
-
-        select.appendChild(option);
-
-    });
-
-
-    if (valorAnterior) {
-        select.value = valorAnterior;
+    if (form) {
+        form.reset();
     }
+
+    $('pedidoId').value =
+        '';
+
+    $('productosPedido').innerHTML =
+        '';
+
+    if (!pedido) {
+
+        $('panelTitulo').textContent =
+            'Nuevo pedido';
+
+        $('pedidoNumero').value =
+            generarNumeroPedido(
+                cargarPedidos()
+            );
+
+        $('pedidoFecha').value =
+            fechaActualInput();
+
+        $('pedidoOrigen').value =
+            'Tienda';
+
+        $('pedidoEstado').value =
+            'pedido_recibido';
+
+        agregarFilaProducto();
+
+    } else {
+
+        pedido =
+            prepararHistorial(
+                pedido
+            );
+
+        $('panelTitulo').textContent =
+            'Editar pedido';
+
+        $('pedidoId').value =
+            pedido.id || '';
+
+        $('pedidoNumero').value =
+            pedido.numero || '';
+
+        $('pedidoFecha').value =
+            convertirFechaInput(
+                pedido.fecha
+            );
+
+        $('pedidoCliente').value =
+            pedido.clienteId || '';
+
+        $('pedidoOrigen').value =
+            pedido.origen || 'Tienda';
+
+        $('pedidoEstado').value =
+            pedido.estado ||
+            'pedido_recibido';
+
+        $('pedidoDireccion').value =
+            pedido.direccion || '';
+
+        $('pedidoNotas').value =
+            pedido.notas || '';
+
+        if (
+            Array.isArray(
+                pedido.productos
+            ) &&
+            pedido.productos.length
+        ) {
+
+            pedido.productos.forEach(
+                producto =>
+                    agregarFilaProducto(
+                        producto
+                    )
+            );
+
+        } else {
+
+            agregarFilaProducto();
+        }
+    }
+
+    actualizarTotalesFormulario();
+
+    panel.classList.add(
+        'mostrar'
+    );
 }
 
+function cerrarPanelPedido() {
 
-function agregarFilaProducto(producto = {}) {
+    $('pedidoPanel')
+        ?.classList.remove(
+            'mostrar'
+        );
+}
+
+function convertirFechaInput(
+    fecha
+) {
+
+    if (!fecha) {
+        return fechaActualInput();
+    }
+
+    const obj =
+        new Date(fecha);
+
+    if (
+        Number.isNaN(
+            obj.getTime()
+        )
+    ) {
+        return fechaActualInput();
+    }
+
+    const year =
+        obj.getFullYear();
+
+    const month =
+        String(
+            obj.getMonth() + 1
+        ).padStart(2, '0');
+
+    const day =
+        String(
+            obj.getDate()
+        ).padStart(2, '0');
+
+    const hours =
+        String(
+            obj.getHours()
+        ).padStart(2, '0');
+
+    const minutes =
+        String(
+            obj.getMinutes()
+        ).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+/* =========================================================
+   PRODUCTOS DEL FORMULARIO
+========================================================= */
+
+function agregarFilaProducto(
+    producto = null
+) {
 
     const contenedor =
         $('productosPedido');
@@ -383,550 +676,375 @@ function agregarFilaProducto(producto = {}) {
         return;
     }
 
-
     const fila =
-        document.createElement('div');
-
-    fila.className =
-        'producto-row';
-
-
-    fila.innerHTML = `
-
-        <div class="field">
-
-            <label>
-                Producto
-            </label>
-
-            <input
-                type="text"
-                class="producto-nombre"
-                placeholder="Nombre del producto"
-                value="${escaparHTML(
-                    producto.nombre || ''
-                )}"
-            >
-
-        </div>
-
-
-        <div class="field">
-
-            <label>
-                Cantidad
-            </label>
-
-            <input
-                type="number"
-                class="producto-cantidad"
-                min="1"
-                step="1"
-                value="${producto.cantidad || 1}"
-            >
-
-        </div>
-
-
-        <div class="field">
-
-            <label>
-                Precio
-            </label>
-
-            <input
-                type="number"
-                class="producto-precio"
-                min="0"
-                step="0.01"
-                value="${producto.precio || 0}"
-            >
-
-        </div>
-
-
-        <button
-            type="button"
-            class="btn-eliminar-producto"
-            title="Eliminar producto">
-
-            🗑️
-
-        </button>
-
-    `;
-
-
-    const btnEliminar =
-        fila.querySelector(
-            '.btn-eliminar-producto'
+        document.createElement(
+            'div'
         );
 
+    fila.className =
+        'producto-pedido-row';
 
-    btnEliminar.addEventListener(
+    const select =
+        document.createElement(
+            'select'
+        );
+
+    select.className =
+        'producto-select';
+
+    select.innerHTML =
+        '<option value="">Producto</option>';
+
+    productos.forEach(item => {
+
+        const option =
+            document.createElement(
+                'option'
+            );
+
+        option.value =
+            item.id;
+
+        option.textContent =
+            item.nombre;
+
+        if (
+            producto &&
+            String(item.id) ===
+            String(producto.id)
+        ) {
+            option.selected = true;
+        }
+
+        select.appendChild(
+            option
+        );
+    });
+
+    const cantidad =
+        document.createElement(
+            'input'
+        );
+
+    cantidad.type =
+        'number';
+
+    cantidad.min =
+        '1';
+
+    cantidad.value =
+        producto?.cantidad || 1;
+
+    cantidad.className =
+        'producto-cantidad';
+
+    const precio =
+        document.createElement(
+            'input'
+        );
+
+    precio.type =
+        'number';
+
+    precio.min =
+        '0';
+
+    precio.step =
+        '0.01';
+
+    precio.value =
+        producto?.precio || 0;
+
+    precio.className =
+        'producto-precio';
+
+    const quitar =
+        document.createElement(
+            'button'
+        );
+
+    quitar.type =
+        'button';
+
+    quitar.className =
+        'btn-quitar-producto';
+
+    quitar.textContent =
+        '×';
+
+    quitar.addEventListener(
         'click',
         () => {
 
             fila.remove();
 
-            calcularTotales();
+            actualizarTotalesFormulario();
         }
     );
 
+    select.addEventListener(
+        'change',
+        () => {
 
-    fila.querySelector(
-        '.producto-cantidad'
-    ).addEventListener(
-        'input',
-        calcularTotales
+            const productoSeleccionado =
+                productos.find(
+                    item =>
+                        String(item.id) ===
+                        String(select.value)
+                );
+
+            if (
+                productoSeleccionado
+            ) {
+
+                precio.value =
+                    productoSeleccionado.precio;
+            }
+
+            actualizarTotalesFormulario();
+        }
     );
 
-
-    fila.querySelector(
-        '.producto-precio'
-    ).addEventListener(
+    cantidad.addEventListener(
         'input',
-        calcularTotales
+        actualizarTotalesFormulario
     );
 
+    precio.addEventListener(
+        'input',
+        actualizarTotalesFormulario
+    );
 
-    contenedor.appendChild(fila);
+    fila.appendChild(select);
+    fila.appendChild(cantidad);
+    fila.appendChild(precio);
+    fila.appendChild(quitar);
+
+    contenedor.appendChild(
+        fila
+    );
+
+    actualizarTotalesFormulario();
 }
 
+/* =========================================================
+   TOTALES
+========================================================= */
 
-function obtenerProductos() {
-
-    const contenedor =
-        $('productosPedido');
-
-    if (!contenedor) {
-        return [];
-    }
-
+function obtenerProductosFormulario() {
 
     const filas =
-        contenedor.querySelectorAll(
-            '.producto-row'
+        document.querySelectorAll(
+            '#productosPedido .producto-pedido-row'
         );
 
-
-    const productos = [];
-
+    const resultado = [];
 
     filas.forEach(fila => {
 
-        const nombre =
+        const select =
             fila.querySelector(
-                '.producto-nombre'
-            )?.value.trim() || '';
-
+                '.producto-select'
+            );
 
         const cantidad =
-            Number(
-                fila.querySelector(
-                    '.producto-cantidad'
-                )?.value
-            ) || 0;
-
+            fila.querySelector(
+                '.producto-cantidad'
+            );
 
         const precio =
-            Number(
-                fila.querySelector(
-                    '.producto-precio'
-                )?.value
-            ) || 0;
+            fila.querySelector(
+                '.producto-precio'
+            );
 
+        const productoId =
+            select?.value;
 
-        if (
-            nombre ||
-            cantidad ||
-            precio
-        ) {
-
-            productos.push({
-
-                nombre,
-
-                cantidad,
-
-                precio,
-
-                subtotal:
-                    cantidad * precio
-
-            });
+        if (!productoId) {
+            return;
         }
 
+        const productoBase =
+            productos.find(
+                item =>
+                    String(item.id) ===
+                    String(productoId)
+            );
+
+        const cantidadNumero =
+            Math.max(
+                1,
+                Number(
+                    cantidad?.value || 1
+                )
+            );
+
+        const precioNumero =
+            Math.max(
+                0,
+                Number(
+                    precio?.value ||
+                    productoBase?.precio ||
+                    0
+                )
+            );
+
+        resultado.push({
+            id: productoId,
+            nombre:
+                productoBase?.nombre ||
+                'Producto',
+            precio:
+                precioNumero,
+            cantidad:
+                cantidadNumero,
+            subtotal:
+                precioNumero *
+                cantidadNumero
+        });
     });
 
-
-    return productos;
+    return resultado;
 }
 
-
-function calcularTotales() {
-
-    const productos =
-        obtenerProductos();
-
-
-    let subtotal = 0;
-
-
-    productos.forEach(producto => {
-
-        subtotal +=
-            Number(producto.cantidad || 0) *
-            Number(producto.precio || 0);
-
-    });
-
-
-    const clienteId =
-        $('pedidoCliente')?.value;
-
+function obtenerDescuentoCliente(
+    clienteId
+) {
 
     const cliente =
-        clientes.find(
-            c =>
-                String(c.id) ===
+        cargarClientes().find(
+            item =>
+                String(item.id) ===
                 String(clienteId)
         );
 
+    if (!cliente) {
+        return 0;
+    }
+
+    return Number(
+        cliente.descuento || 0
+    );
+}
+
+function actualizarTotalesFormulario() {
+
+    const productosFormulario =
+        obtenerProductosFormulario();
+
+    const subtotal =
+        productosFormulario.reduce(
+            (total, producto) =>
+                total +
+                producto.subtotal,
+            0
+        );
 
     const porcentaje =
-        Number(cliente?.descuento || 0);
-
+        obtenerDescuentoCliente(
+            $('pedidoCliente')?.value
+        );
 
     const descuento =
         subtotal *
-        (porcentaje / 100);
-
+        porcentaje /
+        100;
 
     const total =
-        subtotal - descuento;
-
+        Math.max(
+            0,
+            subtotal - descuento
+        );
 
     if ($('pedidoSubtotal')) {
-
         $('pedidoSubtotal').textContent =
             dinero(subtotal);
     }
 
-
     if ($('pedidoDescuento')) {
-
         $('pedidoDescuento').textContent =
             dinero(descuento);
     }
 
-
     if ($('pedidoTotal')) {
-
         $('pedidoTotal').textContent =
             dinero(total);
     }
-
-
-    return {
-        subtotal,
-        descuento,
-        total
-    };
 }
 
-
-function abrirPanelPedido(pedido = null) {
-
-    cargarClientesEnSelect();
-
-
-    const panel =
-        $('pedidoPanel');
-
-
-    const form =
-        $('pedidoForm');
-
-
-    if (!panel || !form) {
-        return;
-    }
-
-
-    if (!pedido) {
-
-        form.reset();
-
-
-        $('pedidoId').value =
-            '';
-
-
-        $('pedidoNumero').value =
-            generarNumeroPedido();
-
-
-        $('pedidoFecha').value =
-            fechaActualInput();
-
-
-        $('pedidoEstado').value =
-            'pendiente';
-
-
-        $('pedidoOrigen').value =
-            'Tienda';
-
-
-        $('pedidoDireccion').value =
-            '';
-
-
-        $('pedidoNotas').value =
-            '';
-
-
-        $('productosPedido').innerHTML =
-            '';
-
-
-        agregarFilaProducto();
-
-
-        if ($('tituloPanelPedido')) {
-
-            $('tituloPanelPedido').textContent =
-                'Nuevo pedido';
-        }
-
-
-        if ($('textoGuardarPedido')) {
-
-            $('textoGuardarPedido').textContent =
-                'Guardar pedido';
-        }
-
-    } else {
-
-        $('pedidoId').value =
-            pedido.id || '';
-
-
-        $('pedidoNumero').value =
-            pedido.numero || '';
-
-
-        $('pedidoFecha').value =
-            pedido.fecha ||
-            fechaActualInput();
-
-
-        $('pedidoCliente').value =
-            pedido.clienteId || '';
-
-
-        $('pedidoOrigen').value =
-            pedido.origen ||
-            'Tienda';
-
-
-        $('pedidoEstado').value =
-            pedido.estado ||
-            'pendiente';
-
-
-        $('pedidoDireccion').value =
-            pedido.direccion ||
-            '';
-
-
-        $('pedidoNotas').value =
-            pedido.notas ||
-            '';
-
-
-        $('productosPedido').innerHTML =
-            '';
-
-
-        const productos =
-            Array.isArray(pedido.productos)
-                ? pedido.productos
-                : [];
-
-
-        if (!productos.length) {
-
-            agregarFilaProducto();
-
-        } else {
-
-            productos.forEach(producto => {
-
-                agregarFilaProducto(producto);
-
-            });
-        }
-
-
-        if ($('tituloPanelPedido')) {
-
-            $('tituloPanelPedido').textContent =
-                'Editar pedido';
-        }
-
-
-        if ($('textoGuardarPedido')) {
-
-            $('textoGuardarPedido').textContent =
-                'Actualizar pedido';
-        }
-    }
-
-
-    calcularTotales();
-
-
-    abrirOverlay();
-
-
-    panel.classList.add('show');
-
-
-    document.body.classList.add(
-        'modal-open'
-    );
-
-
-    setTimeout(() => {
-
-        $('pedidoCliente')?.focus();
-
-    }, 150);
-}
-
-
-function cerrarPanelPedido() {
-
-    const panel =
-        $('pedidoPanel');
-
-    panel?.classList.remove('show');
-
-    cerrarOverlay();
-
-    document.body.classList.remove(
-        'modal-open'
-    );
-}
-
-
-function validarPedido() {
-
-    const cliente =
-        $('pedidoCliente')?.value;
-
-
-    const fecha =
-        $('pedidoFecha')?.value;
-
-
-    const productos =
-        obtenerProductos();
-
-
-    if (!cliente) {
-
-        mostrarToast(
-            'Selecciona un cliente.',
-            'warning'
-        );
-
-        $('pedidoCliente')?.focus();
-
-        return false;
-    }
-
-
-    if (!fecha) {
-
-        mostrarToast(
-            'Selecciona la fecha del pedido.',
-            'warning'
-        );
-
-        $('pedidoFecha')?.focus();
-
-        return false;
-    }
-
-
-    if (!productos.length) {
-
-        mostrarToast(
-            'Agrega al menos un producto.',
-            'warning'
-        );
-
-        return false;
-    }
-
-
-    for (const producto of productos) {
-
-        if (!producto.nombre) {
-
-            mostrarToast(
-                'Todos los productos deben tener nombre.',
-                'warning'
-            );
-
-            return false;
-        }
-
-
-        if (producto.cantidad <= 0) {
-
-            mostrarToast(
-                'La cantidad debe ser mayor que cero.',
-                'warning'
-            );
-
-            return false;
-        }
-
-
-        if (producto.precio < 0) {
-
-            mostrarToast(
-                'El precio no puede ser negativo.',
-                'warning'
-            );
-
-            return false;
-        }
-    }
-
-
-    return true;
-}
-
-
-function guardarPedido(evento) {
+/* =========================================================
+   GUARDAR PEDIDO
+========================================================= */
+
+function guardarPedido(
+    evento
+) {
 
     evento.preventDefault();
 
+    const pedidos =
+        cargarPedidos();
 
-    if (!validarPedido()) {
+    const id =
+        $('pedidoId').value ||
+        generarId();
+
+    const clienteId =
+        $('pedidoCliente').value;
+
+    if (!clienteId) {
+
+        mostrarToast(
+            'Seleccione un cliente.',
+            'error'
+        );
+
         return;
     }
 
+    const cliente =
+        cargarClientes().find(
+            item =>
+                String(item.id) ===
+                String(clienteId)
+        );
 
-    const id =
-        $('pedidoId')?.value ||
-        generarId('PED-');
+    const productosPedido =
+        obtenerProductosFormulario();
 
+    if (!productosPedido.length) {
+
+        mostrarToast(
+            'Agregue al menos un producto.',
+            'error'
+        );
+
+        return;
+    }
+
+    const subtotal =
+        productosPedido.reduce(
+            (total, producto) =>
+                total +
+                producto.subtotal,
+            0
+        );
+
+    const porcentaje =
+        Number(
+            cliente?.descuento || 0
+        );
+
+    const descuento =
+        subtotal *
+        porcentaje /
+        100;
+
+    const total =
+        Math.max(
+            0,
+            subtotal - descuento
+        );
 
     const pedidoExistente =
         pedidos.find(
@@ -935,38 +1053,65 @@ function guardarPedido(evento) {
                 String(id)
         );
 
-
-    const productos =
-        obtenerProductos();
-
-
-    const totales =
-        calcularTotales();
-
-
-    const clienteId =
-        $('pedidoCliente').value;
-
-
-    const cliente =
-        clientes.find(
-            c =>
-                String(c.id) ===
-                String(clienteId)
+    const estadoNuevo =
+        normalizarEstado(
+            $('pedidoEstado').value ||
+            'pedido_recibido'
         );
 
+    const ahora =
+        new Date().toISOString();
+
+    let historialEstados = [];
+
+    if (pedidoExistente) {
+
+        prepararHistorial(
+            pedidoExistente
+        );
+
+        historialEstados = [
+            ...pedidoExistente.historialEstados
+        ];
+
+        const estadoAnterior =
+            normalizarEstado(
+                pedidoExistente.estado
+            );
+
+        if (
+            estadoAnterior !==
+            estadoNuevo
+        ) {
+
+            historialEstados.push({
+                estado: estadoNuevo,
+                fecha: ahora
+            });
+        }
+
+    } else {
+
+        historialEstados = [
+            {
+                estado: estadoNuevo,
+                fecha: ahora
+            }
+        ];
+    }
 
     const datos = {
 
         id,
 
         numero:
-            $('pedidoNumero').value ||
-            generarNumeroPedido(),
+            $('pedidoNumero').value.trim() ||
+            generarNumeroPedido(
+                pedidos
+            ),
 
         fecha:
-            $('pedidoFecha').value ||
-            fechaActualInput(),
+            $('pedidoFecha').value,
 
         clienteId,
 
@@ -983,19 +1128,18 @@ function guardarPedido(evento) {
             'Tienda',
 
         estado:
-            $('pedidoEstado').value ||
-            'pendiente',
+            estadoNuevo,
 
-        productos,
+        historialEstados,
 
-        subtotal:
-            totales.subtotal,
+        productos:
+            productosPedido,
 
-        descuento:
-            totales.descuento,
+        subtotal,
 
-        total:
-            totales.total,
+        descuento,
+
+        total,
 
         direccion:
             $('pedidoDireccion').value.trim(),
@@ -1004,834 +1148,797 @@ function guardarPedido(evento) {
             $('pedidoNotas').value.trim(),
 
         actualizado:
-            new Date().toISOString()
+            ahora
     };
 
-
-    if (pedidoExistente) {
-
-        Object.assign(
-            pedidoExistente,
-            datos
+    const indice =
+        pedidos.findIndex(
+            pedido =>
+                String(pedido.id) ===
+                String(id)
         );
 
+    if (indice >= 0) {
 
-        mostrarToast(
-            'Pedido actualizado correctamente.'
-        );
+        pedidos[indice] =
+            datos;
 
     } else {
 
-        pedidos.push(datos);
-
-
-        mostrarToast(
-            'Pedido creado correctamente.'
+        pedidos.push(
+            datos
         );
     }
 
-
-    if (!guardarPedidos()) {
-        return;
-    }
-
+    guardarPedidos(
+        pedidos
+    );
 
     cerrarPanelPedido();
 
-
     mostrarPedidos();
 
-
     actualizarEstadisticasPedidos();
+
+    mostrarToast(
+        pedidoExistente
+            ? 'Pedido actualizado correctamente.'
+            : 'Pedido registrado correctamente.'
+    );
 }
 
+/* =========================================================
+   FILTROS
+========================================================= */
 
 function obtenerPedidosFiltrados() {
 
-    const texto =
-        $('searchPedidos')?.value
-            .trim()
-            .toLowerCase() ||
+    const pedidos =
+        cargarPedidos();
+
+    const busqueda =
+        (
+            $('searchPedidos')?.value ||
+            ''
+        )
+        .trim()
+        .toLowerCase();
+
+    const estado =
+        $('filtroEstado')?.value ||
         '';
 
+    return pedidos
+        .map(pedido =>
+            prepararHistorial(pedido)
+        )
+        .filter(pedido => {
 
-    return pedidos.filter(pedido => {
+            const coincideBusqueda =
+                !busqueda ||
+                String(
+                    pedido.numero || ''
+                )
+                .toLowerCase()
+                .includes(busqueda) ||
+                String(
+                    pedido.clienteNombre || ''
+                )
+                .toLowerCase()
+                .includes(busqueda) ||
+                String(
+                    pedido.clienteTelefono || ''
+                )
+                .toLowerCase()
+                .includes(busqueda);
 
-        const coincideEstado =
-            filtroPedido === 'todos' ||
-            String(pedido.estado || '')
-                .toLowerCase() ===
-            filtroPedido;
+            const coincideEstado =
+                !estado ||
+                normalizarEstado(
+                    pedido.estado
+                ) === estado;
 
-
-        const contenido = [
-
-            pedido.numero,
-
-            pedido.clienteNombre,
-
-            pedido.clienteTelefono,
-
-            pedido.origen,
-
-            pedido.estado
-
-        ]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase();
-
-
-        const coincideBusqueda =
-            !texto ||
-            contenido.includes(texto);
-
-
-        return (
-            coincideEstado &&
-            coincideBusqueda
+            return (
+                coincideBusqueda &&
+                coincideEstado
+            );
+        })
+        .sort(
+            (a, b) =>
+                new Date(
+                    b.fecha || 0
+                ) -
+                new Date(
+                    a.fecha || 0
+                )
         );
-    });
 }
 
+/* =========================================================
+   MOSTRAR PEDIDOS
+========================================================= */
 
 function mostrarPedidos() {
 
     const tbody =
-        $('pedidosBody');
+        $('tablaPedidos');
 
-
-    const empty =
-        $('emptyPedidos');
-
+    const vacio =
+        $('estadoVacio');
 
     if (!tbody) {
         return;
     }
 
-
-    const lista =
+    const pedidos =
         obtenerPedidosFiltrados();
-
 
     tbody.innerHTML =
         '';
 
+    if (!pedidos.length) {
 
-    if (!lista.length) {
-
-        empty?.classList.add('show');
+        if (vacio) {
+            vacio.style.display =
+                'block';
+        }
 
         return;
     }
 
+    if (vacio) {
+        vacio.style.display =
+            'none';
+    }
 
-    empty?.classList.remove('show');
+    pedidos.forEach(pedido => {
 
-
-    lista.forEach(pedido => {
-
-        const fila =
-            document.createElement('tr');
-
-
-        const estado =
-            String(
-                pedido.estado ||
-                'pendiente'
-            ).toLowerCase();
-
-
-        const nombre =
-            pedido.clienteNombre ||
-            obtenerNombreCliente(
-                pedido.clienteId
+        const tr =
+            document.createElement(
+                'tr'
             );
 
+        const estado =
+            normalizarEstado(
+                pedido.estado
+            );
 
-        fila.innerHTML = `
-
-            <td>
-
-                <div class="pedido-numero">
-
-                    <strong>
-                        ${escaparHTML(
-                            pedido.numero ||
-                            'Sin número'
-                        )}
-                    </strong>
-
-                    <small>
-                        ${escaparHTML(
-                            pedido.id || ''
-                        )}
-                    </small>
-
-                </div>
-
-            </td>
-
+        tr.innerHTML = `
 
             <td>
-
-                <div class="cliente-cell">
-
-                    <div class="avatar">
-
-                        ${escaparHTML(
-                            obtenerIniciales(nombre)
-                        )}
-
-                    </div>
-
-                    <div>
-
-                        <strong>
-                            ${escaparHTML(nombre)}
-                        </strong>
-
-                        <small>
-                            ${escaparHTML(
-                                pedido.clienteTelefono ||
-                                ''
-                            )}
-                        </small>
-
-                    </div>
-
-                </div>
-
-            </td>
-
-
-            <td>
-
-                ${escaparHTML(
-                    formatearFechaHora(
-                        pedido.fecha
-                    )
-                )}
-
-            </td>
-
-
-            <td>
-
-                <span class="status-badge ${estado}">
-
-                    ${textoEstado(estado)}
-
+                <span class="pedido-numero">
+                    ${escapeHTML(
+                        pedido.numero ||
+                        pedido.id
+                    )}
                 </span>
-
             </td>
 
+            <td>
+                <span class="cliente-nombre">
+                    ${escapeHTML(
+                        pedido.clienteNombre ||
+                        'Cliente'
+                    )}
+                </span>
+            </td>
 
             <td>
+                <span class="fecha-pedido">
+                    ${formatearFechaHora(
+                        pedido.fecha
+                    )}
+                </span>
+            </td>
 
-                ${escaparHTML(
+            <td>
+                ${escapeHTML(
                     pedido.origen ||
                     'Tienda'
                 )}
-
             </td>
 
+            <td>
+                <span class="status-badge ${escapeHTML(estado)}">
+                    ${iconoEstado(estado)}
+                    &nbsp;
+                    ${escapeHTML(
+                        textoEstado(estado)
+                    )}
+                </span>
+            </td>
+
+            <td>
+                <span class="total-pedido">
+                    ${dinero(
+                        pedido.total
+                    )}
+                </span>
+            </td>
 
             <td>
 
-                <strong>
-                    ${dinero(pedido.total)}
-                </strong>
-
-            </td>
-
-
-            <td>
-
-                <div class="actions">
+                <div class="acciones">
 
                     <button
-                        class="action-btn"
                         type="button"
-                        data-action="ver"
-                        data-id="${escaparHTML(
-                            pedido.id
-                        )}"
-                        title="Ver pedido">
-
+                        class="btn-accion"
+                        title="Ver detalle"
+                        onclick="mostrarDetallePedido('${escapeHTML(String(pedido.id))}')">
                         👁️
-
                     </button>
 
-
                     <button
-                        class="action-btn"
                         type="button"
-                        data-action="editar"
-                        data-id="${escaparHTML(
-                            pedido.id
-                        )}"
-                        title="Editar pedido">
-
+                        class="btn-accion"
+                        title="Editar"
+                        onclick="editarPedido('${escapeHTML(String(pedido.id))}')">
                         ✏️
-
                     </button>
 
+                    <button
+                        type="button"
+                        class="btn-accion whatsapp"
+                        title="WhatsApp"
+                        onclick="abrirWhatsAppPedido('${escapeHTML(String(pedido.id))}')">
+                        💬
+                    </button>
 
                     <button
-                        class="action-btn danger"
                         type="button"
-                        data-action="eliminar"
-                        data-id="${escaparHTML(
-                            pedido.id
-                        )}"
-                        title="Eliminar pedido">
-
+                        class="btn-accion eliminar"
+                        title="Eliminar"
+                        onclick="eliminarPedido('${escapeHTML(String(pedido.id))}')">
                         🗑️
-
                     </button>
 
                 </div>
 
             </td>
-
         `;
 
-
-        tbody.appendChild(fila);
-
+        tbody.appendChild(tr);
     });
 }
 
-
-function obtenerNombreCliente(clienteId) {
-
-    const cliente =
-        clientes.find(
-            c =>
-                String(c.id) ===
-                String(clienteId)
-        );
-
-
-    return cliente?.nombre ||
-        'Cliente eliminado';
-}
-
-
-function obtenerIniciales(nombre) {
-
-    if (!nombre) {
-        return '?';
-    }
-
-
-    const partes =
-        String(nombre)
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean)
-            .slice(0, 2);
-
-
-    return partes
-        .map(parte =>
-            parte.charAt(0)
-        )
-        .join('')
-        .toUpperCase();
-}
-
-
-function textoEstado(estado) {
-
-    const estados = {
-
-        pendiente:
-            'Pendiente',
-
-        preparando:
-            'Preparando',
-
-        entregado:
-            'Entregado'
-
-    };
-
-
-    return estados[estado] ||
-        estado;
-}
-
+/* =========================================================
+   ESTADÍSTICAS
+========================================================= */
 
 function actualizarEstadisticasPedidos() {
+
+    const pedidos =
+        cargarPedidos()
+            .map(pedido =>
+                prepararHistorial(pedido)
+            );
 
     const total =
         pedidos.length;
 
-
     const pendientes =
         pedidos.filter(
             pedido =>
-                String(
-                    pedido.estado
-                ).toLowerCase() ===
-                'pendiente'
+                pedido.estado !==
+                'entregado' &&
+                pedido.estado !==
+                'cancelado'
         ).length;
-
 
     const entregados =
         pedidos.filter(
             pedido =>
-                String(
-                    pedido.estado
-                ).toLowerCase() ===
+                pedido.estado ===
                 'entregado'
         ).length;
 
-
     const ventas =
-        pedidos.reduce(
-            (suma, pedido) =>
-                suma +
-                (
+        pedidos
+            .filter(
+                pedido =>
+                    pedido.estado !==
+                    'cancelado'
+            )
+            .reduce(
+                (total, pedido) =>
+                    total +
                     Number(
-                        pedido.total
-                    ) || 0
-                ),
-            0
-        );
-
+                        pedido.total || 0
+                    ),
+                0
+            );
 
     if ($('totalPedidos')) {
-
         $('totalPedidos').textContent =
             total;
     }
 
-
     if ($('pedidosPendientes')) {
-
         $('pedidosPendientes').textContent =
             pendientes;
     }
 
-
     if ($('pedidosEntregados')) {
-
         $('pedidosEntregados').textContent =
             entregados;
     }
 
-
     if ($('ventasPedidos')) {
-
         $('ventasPedidos').textContent =
             dinero(ventas);
     }
 }
 
-
-function mostrarDetallePedido(id) {
-
-    const pedido =
-        pedidos.find(
-            p =>
-                String(p.id) ===
-                String(id)
-        );
-
-
-    if (!pedido) {
-        return;
-    }
-
-
-    pedidoDetalleActual =
-        pedido;
-
-
-    const nombre =
-        pedido.clienteNombre ||
-        obtenerNombreCliente(
-            pedido.clienteId
-        );
-
-
-    $('detallePedidoNumero').textContent =
-        pedido.numero || '';
-
-
-    $('detallePedidoCliente').textContent =
-        nombre;
-
-
-    $('detallePedidoTelefono').textContent =
-        pedido.clienteTelefono ||
-        'Sin teléfono';
-
-
-    $('detallePedidoFecha').textContent =
-        formatearFechaHora(
-            pedido.fecha
-        );
-
-
-    $('detallePedidoOrigen').textContent =
-        pedido.origen ||
-        'Tienda';
-
-
-    $('detallePedidoDireccion').textContent =
-        pedido.direccion ||
-        'Sin dirección';
-
-
-    $('detallePedidoEstado').textContent =
-        textoEstado(
-            String(
-                pedido.estado ||
-                'pendiente'
-            ).toLowerCase()
-        );
-
-
-    $('detallePedidoTotal').textContent =
-        dinero(pedido.total);
-
-
-    $('detallePedidoNotas').textContent =
-        pedido.notas ||
-        'Sin notas.';
-
-
-    const productos =
-        $('detallePedidoProductos');
-
-
-    if (productos) {
-
-        productos.innerHTML =
-            '';
-
-
-        (
-            pedido.productos ||
-            []
-        ).forEach(producto => {
-
-            const fila =
-                document.createElement('div');
-
-
-            fila.className =
-                'detalle-producto';
-
-
-            fila.innerHTML = `
-
-                <span>
-                    ${escaparHTML(
-                        producto.nombre
-                    )}
-                </span>
-
-
-                <span>
-
-                    ${producto.cantidad}
-                    ×
-                    ${dinero(producto.precio)}
-
-                </span>
-
-
-                <strong>
-
-                    ${dinero(
-                        producto.subtotal ||
-                        (
-                            producto.cantidad *
-                            producto.precio
-                        )
-                    )}
-
-                </strong>
-
-            `;
-
-
-            productos.appendChild(fila);
-
-        });
-    }
-
-
-    const dialog =
-        $('dialogPedidoDetalle');
-
-
-    if (dialog) {
-
-        dialog.classList.add('show');
-    }
-}
-
-
-function cerrarDetallePedido() {
-
-    const dialog =
-        $('dialogPedidoDetalle');
-
-
-    dialog?.classList.remove('show');
-
-
-    pedidoDetalleActual =
-        null;
-}
-
+/* =========================================================
+   EDITAR
+========================================================= */
 
 function editarPedido(id) {
 
     const pedido =
-        pedidos.find(
-            p =>
-                String(p.id) ===
+        cargarPedidos().find(
+            item =>
+                String(item.id) ===
                 String(id)
         );
 
-
     if (!pedido) {
+
+        mostrarToast(
+            'No se encontró el pedido.',
+            'error'
+        );
+
         return;
     }
 
-
-    cerrarDetallePedido();
-
-
-    abrirPanelPedido(pedido);
+    abrirPanelPedido(
+        pedido
+    );
 }
 
+/* =========================================================
+   ELIMINAR
+========================================================= */
 
 function eliminarPedido(id) {
 
     const pedido =
-        pedidos.find(
-            p =>
-                String(p.id) ===
+        cargarPedidos().find(
+            item =>
+                String(item.id) ===
                 String(id)
         );
-
 
     if (!pedido) {
         return;
     }
 
-
     const confirmar =
-        window.confirm(
-            `¿Deseas eliminar el pedido ${pedido.numero}?`
+        confirm(
+            `¿Desea eliminar el pedido ${pedido.numero || ''}?`
         );
-
 
     if (!confirmar) {
         return;
     }
 
-
-    pedidos =
-        pedidos.filter(
-            p =>
-                String(p.id) !==
+    const pedidos =
+        cargarPedidos().filter(
+            item =>
+                String(item.id) !==
                 String(id)
         );
 
-
-    if (!guardarPedidos()) {
-        return;
-    }
-
-
-    cerrarDetallePedido();
-
+    guardarPedidos(
+        pedidos
+    );
 
     mostrarPedidos();
 
-
     actualizarEstadisticasPedidos();
-
 
     mostrarToast(
         'Pedido eliminado correctamente.'
     );
 }
 
+/* =========================================================
+   WHATSAPP
+========================================================= */
 
-function abrirWhatsAppPedido() {
+function abrirWhatsAppPedido(id) {
 
-    if (!pedidoDetalleActual) {
+    const pedido =
+        cargarPedidos().find(
+            item =>
+                String(item.id) ===
+                String(id)
+        );
+
+    if (!pedido) {
         return;
     }
 
-
-    let telefono =
-        String(
-            pedidoDetalleActual.clienteTelefono ||
-            ''
-        ).replace(/\D/g, '');
-
-
-    if (telefono.length === 8) {
-
-        telefono =
-            '502' +
-            telefono;
-    }
-
-
-    if (!telefono) {
+    if (!pedido.clienteTelefono) {
 
         mostrarToast(
             'El cliente no tiene teléfono registrado.',
-            'warning'
+            'error'
         );
 
         return;
     }
 
+    const telefono =
+        String(
+            pedido.clienteTelefono
+        )
+        .replace(/\D/g, '');
 
     const mensaje =
-        'Hola, le escribimos de Variedades Chiquis. ' +
-        'Respecto a su pedido ' +
-        (
-            pedidoDetalleActual.numero ||
-            ''
-        ) +
-        '.';
-
+        `Hola ${pedido.clienteNombre || ''}. ` +
+        `Su pedido ${pedido.numero || ''} ` +
+        `se encuentra en estado: ` +
+        `${textoEstado(pedido.estado)}. ` +
+        `Total: ${dinero(pedido.total)}.`;
 
     const url =
-        'https://wa.me/' +
-        telefono +
-        '?text=' +
+        `https://wa.me/${telefono}?text=` +
         encodeURIComponent(mensaje);
-
 
     window.open(
         url,
-        '_blank',
-        'noopener,noreferrer'
+        '_blank'
     );
 }
 
+/* =========================================================
+   DETALLE DEL PEDIDO
+========================================================= */
 
-function exportarPedidos() {
+function mostrarDetallePedido(id) {
 
-    const datos =
-        JSON.stringify(
-            pedidos,
-            null,
-            2
+    const pedido =
+        cargarPedidos().find(
+            item =>
+                String(item.id) ===
+                String(id)
         );
 
+    const dialog =
+        $('dialogPedidoDetalle');
 
-    const blob =
-        new Blob(
-            [datos],
-            {
-                type:
-                    'application/json'
-            }
-        );
+    const contenido =
+        $('detallePedidoContenido');
 
+    if (!pedido || !dialog || !contenido) {
+        return;
+    }
 
-    const url =
-        URL.createObjectURL(blob);
-
-
-    const enlace =
-        document.createElement('a');
-
-
-    enlace.href =
-        url;
-
-
-    enlace.download =
-        'pedidos-variedades-chiquis.json';
-
-
-    document.body.appendChild(enlace);
-
-
-    enlace.click();
-
-
-    enlace.remove();
-
-
-    URL.revokeObjectURL(url);
-
-
-    mostrarToast(
-        'Pedidos exportados correctamente.'
+    prepararHistorial(
+        pedido
     );
+
+    const historial =
+        [...pedido.historialEstados]
+            .sort(
+                (a, b) =>
+                    new Date(a.fecha) -
+                    new Date(b.fecha)
+            );
+
+    const productosHTML =
+        (pedido.productos || [])
+            .map(
+                producto => `
+                    <div class="detalle-producto">
+
+                        <span>
+                            ${escapeHTML(
+                                producto.cantidad
+                            )}
+                            ×
+                            ${escapeHTML(
+                                producto.nombre
+                            )}
+                        </span>
+
+                        <strong>
+                            ${dinero(
+                                producto.subtotal ||
+                                (
+                                    Number(
+                                        producto.precio || 0
+                                    ) *
+                                    Number(
+                                        producto.cantidad || 0
+                                    )
+                                )
+                            )}
+                        </strong>
+
+                    </div>
+                `
+            )
+            .join('');
+
+    const historialHTML =
+        historial.length
+            ? historial.map(
+                item => `
+                    <div class="detalle-timeline-item">
+
+                        <div class="detalle-timeline-icono">
+                            ${iconoEstado(
+                                item.estado
+                            )}
+                        </div>
+
+                        <div class="detalle-timeline-info">
+
+                            <strong>
+                                ${escapeHTML(
+                                    textoEstado(
+                                        item.estado
+                                    )
+                                )}
+                            </strong>
+
+                            <small>
+                                ${formatearFechaHora(
+                                    item.fecha
+                                )}
+                            </small>
+
+                        </div>
+
+                    </div>
+                `
+            ).join('')
+            : `
+                <p class="detalle-nota">
+                    No hay historial de estados.
+                </p>
+            `;
+
+    contenido.innerHTML = `
+
+        <div class="detalle-grid">
+
+            <div class="detalle-item">
+                <span>Pedido</span>
+                <strong>
+                    ${escapeHTML(
+                        pedido.numero ||
+                        pedido.id
+                    )}
+                </strong>
+            </div>
+
+            <div class="detalle-item">
+                <span>Cliente</span>
+                <strong>
+                    ${escapeHTML(
+                        pedido.clienteNombre ||
+                        'Cliente'
+                    )}
+                </strong>
+            </div>
+
+            <div class="detalle-item">
+                <span>Teléfono</span>
+                <strong>
+                    ${escapeHTML(
+                        pedido.clienteTelefono ||
+                        'No registrado'
+                    )}
+                </strong>
+            </div>
+
+            <div class="detalle-item">
+                <span>Fecha</span>
+                <strong>
+                    ${formatearFechaHora(
+                        pedido.fecha
+                    )}
+                </strong>
+            </div>
+
+            <div class="detalle-item">
+                <span>Origen</span>
+                <strong>
+                    ${escapeHTML(
+                        pedido.origen ||
+                        'Tienda'
+                    )}
+                </strong>
+            </div>
+
+            <div class="detalle-item">
+                <span>Estado actual</span>
+                <strong>
+                    ${iconoEstado(
+                        pedido.estado
+                    )}
+                    ${escapeHTML(
+                        textoEstado(
+                            pedido.estado
+                        )
+                    )}
+                </strong>
+            </div>
+
+        </div>
+
+        <div class="detalle-seccion">
+
+            <h3>
+                Seguimiento del pedido
+            </h3>
+
+            <div class="detalle-timeline">
+                ${historialHTML}
+            </div>
+
+        </div>
+
+        <div class="detalle-seccion">
+
+            <h3>
+                Productos
+            </h3>
+
+            <div class="detalle-productos">
+                ${
+                    productosHTML ||
+                    '<p class="detalle-nota">No hay productos registrados.</p>'
+                }
+            </div>
+
+        </div>
+
+        <div class="detalle-seccion">
+
+            <h3>
+                Resumen
+            </h3>
+
+            <div class="totales">
+
+                <div>
+                    <span>Subtotal</span>
+                    <strong>
+                        ${dinero(
+                            pedido.subtotal
+                        )}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Descuento</span>
+                    <strong>
+                        ${dinero(
+                            pedido.descuento
+                        )}
+                    </strong>
+                </div>
+
+                <div class="total-final">
+                    <span>Total</span>
+                    <strong>
+                        ${dinero(
+                            pedido.total
+                        )}
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="detalle-seccion">
+
+            <h3>
+                Dirección de entrega
+            </h3>
+
+            <div class="detalle-nota">
+                ${
+                    escapeHTML(
+                        pedido.direccion ||
+                        'No registrada'
+                    )
+                }
+            </div>
+
+        </div>
+
+        <div class="detalle-seccion">
+
+            <h3>
+                Notas
+            </h3>
+
+            <div class="detalle-nota">
+                ${
+                    escapeHTML(
+                        pedido.notas ||
+                        'Sin notas'
+                    )
+                }
+            </div>
+
+        </div>
+
+    `;
+
+    if (
+        typeof dialog.showModal ===
+        'function'
+    ) {
+        dialog.showModal();
+    } else {
+        dialog.setAttribute(
+            'open',
+            ''
+        );
+    }
 }
 
+/* =========================================================
+   CERRAR DETALLE
+========================================================= */
 
-function aplicarTema() {
+function cerrarDetallePedido() {
+
+    const dialog =
+        $('dialogPedidoDetalle');
+
+    if (!dialog) {
+        return;
+    }
+
+    if (
+        typeof dialog.close ===
+        'function'
+    ) {
+        dialog.close();
+    } else {
+        dialog.removeAttribute(
+            'open'
+        );
+    }
+}
+
+/* =========================================================
+   TEMA
+========================================================= */
+
+function inicializarTema() {
 
     const tema =
         localStorage.getItem(
             STORAGE_TEMA
         );
 
-
     if (tema === 'oscuro') {
-
-        document.body.classList.add('dark');
-
+        document.body.classList.add(
+            'dark'
+        );
     } else {
-
-        document.body.classList.remove('dark');
-    }
-
-
-    actualizarBotonTema();
-}
-
-
-function actualizarBotonTema() {
-
-    const oscuro =
-        document.body.classList.contains('dark');
-
-
-    if ($('themeIcon')) {
-
-        $('themeIcon').textContent =
-            oscuro
-                ? '☀️'
-                : '🌙';
-    }
-
-
-    if ($('themeText')) {
-
-        $('themeText').textContent =
-            oscuro
-                ? 'Tema claro'
-                : 'Cambiar tema';
+        document.body.classList.remove(
+            'dark'
+        );
     }
 }
-
 
 function cambiarTema() {
 
     const oscuro =
-        document.body.classList.toggle('dark');
-
+        document.body.classList.toggle(
+            'dark'
+        );
 
     localStorage.setItem(
         STORAGE_TEMA,
@@ -1839,291 +1946,237 @@ function cambiarTema() {
             ? 'oscuro'
             : 'claro'
     );
-
-
-    actualizarBotonTema();
 }
 
-
-on(
-    'btnNuevoPedido',
-    'click',
-    () => abrirPanelPedido()
-);
-
-
-on(
-    'btnNuevoPedidoVacio',
-    'click',
-    () => abrirPanelPedido()
-);
-
-
-on(
-    'btnAgregarProducto',
-    'click',
-    () => agregarFilaProducto()
-);
-
-
-on(
-    'btnCerrarPedido',
-    'click',
-    cerrarPanelPedido
-);
-
-
-on(
-    'btnCancelarPedido',
-    'click',
-    cerrarPanelPedido
-);
-
-
-on(
-    'overlay',
-    'click',
-    cerrarPanelPedido
-);
-
-
-on(
-    'pedidoCliente',
-    'change',
-    calcularTotales
-);
-
-
-on(
-    'pedidoForm',
-    'submit',
-    guardarPedido
-);
-
-
-on(
-    'searchPedidos',
-    'input',
-    mostrarPedidos
-);
-
-
-on(
-    'filtroEstado',
-    'change',
-    () => {
-
-        filtroPedido =
-            $('filtroEstado')?.value ||
-            'todos';
-
-
-        mostrarPedidos();
-    }
-);
-
-
-on(
-    'btnLimpiarPedidos',
-    'click',
-    () => {
-
-        if ($('searchPedidos')) {
-
-            $('searchPedidos').value =
-                '';
-        }
-
-
-        if ($('filtroEstado')) {
-
-            $('filtroEstado').value =
-                'todos';
-        }
-
-
-        filtroPedido =
-            'todos';
-
-
-        mostrarPedidos();
-    }
-);
-
-
-on(
-    'btnExportarPedidos',
-    'click',
-    exportarPedidos
-);
-
-
-on(
-    'btnTema',
-    'click',
-    cambiarTema
-);
-
-
-on(
-    'pedidosBody',
-    'click',
-    evento => {
-
-        const boton =
-            evento.target.closest(
-                '[data-action]'
-            );
-
-
-        if (!boton) {
-            return;
-        }
-
-
-        const accion =
-            boton.dataset.action;
-
-
-        const id =
-            boton.dataset.id;
-
-
-        if (accion === 'ver') {
-
-            mostrarDetallePedido(id);
-
-        } else if (accion === 'editar') {
-
-            editarPedido(id);
-
-        } else if (accion === 'eliminar') {
-
-            eliminarPedido(id);
-        }
-    }
-);
-
-
-on(
-    'btnCerrarDetalle',
-    'click',
-    cerrarDetallePedido
-);
-
-
-on(
-    'btnEditarPedidoDetalle',
-    'click',
-    () => {
-
-        if (pedidoDetalleActual) {
-
-            editarPedido(
-                pedidoDetalleActual.id
-            );
-        }
-    }
-);
-
-
-on(
-    'btnEliminarPedidoDetalle',
-    'click',
-    () => {
-
-        if (pedidoDetalleActual) {
-
-            eliminarPedido(
-                pedidoDetalleActual.id
-            );
-        }
-    }
-);
-
-
-on(
-    'btnWhatsAppPedido',
-    'click',
-    abrirWhatsAppPedido
-);
-
-
-on(
-    'dialogPedidoDetalle',
-    'click',
-    evento => {
-
-        if (
-            evento.target ===
-            $('dialogPedidoDetalle')
-        ) {
-
-            cerrarDetallePedido();
-        }
-    }
-);
-
-
-document.addEventListener(
-    'keydown',
-    evento => {
-
-        if (evento.key !== 'Escape') {
-            return;
-        }
-
-
-        const panel =
-            $('pedidoPanel');
-
-
-        const detalle =
-            $('dialogPedidoDetalle');
-
-
-        if (
-            panel?.classList.contains('show')
-        ) {
-
-            cerrarPanelPedido();
-
-            return;
-        }
-
-
-        if (
-            detalle?.classList.contains('show')
-        ) {
-
-            cerrarDetallePedido();
-        }
-    }
-);
-
+/* =========================================================
+   EVENTOS
+========================================================= */
 
 document.addEventListener(
     'DOMContentLoaded',
     () => {
 
-        pedidos =
-            cargarPedidos();
+        inicializarTema();
 
+        migrarPedidos();
 
-        clientes =
-            cargarClientes();
-
-
-        cerrarTodoAlIniciar();
-
-
-        aplicarTema();
-
+        cargarClientesEnSelect();
 
         mostrarPedidos();
 
-
         actualizarEstadisticasPedidos();
 
+        const btnNuevoPedido =
+            $('btnNuevoPedido');
+
+        if (btnNuevoPedido) {
+
+            btnNuevoPedido.addEventListener(
+                'click',
+                () =>
+                    abrirPanelPedido()
+            );
+        }
+
+        const cerrarPanel =
+            $('cerrarPedidoPanel');
+
+        if (cerrarPanel) {
+
+            cerrarPanel.addEventListener(
+                'click',
+                cerrarPanelPedido
+            );
+        }
+
+        const cancelarPedido =
+            $('cancelarPedido');
+
+        if (cancelarPedido) {
+
+            cancelarPedido.addEventListener(
+                'click',
+                cerrarPanelPedido
+            );
+        }
+
+        const formulario =
+            $('pedidoForm');
+
+        if (formulario) {
+
+            formulario.addEventListener(
+                'submit',
+                guardarPedido
+            );
+        }
+
+        const agregarProducto =
+            $('btnAgregarProducto');
+
+        if (agregarProducto) {
+
+            agregarProducto.addEventListener(
+                'click',
+                () =>
+                    agregarFilaProducto()
+            );
+        }
+
+        const cliente =
+            $('pedidoCliente');
+
+        if (cliente) {
+
+            cliente.addEventListener(
+                'change',
+                actualizarTotalesFormulario
+            );
+        }
+
+        const search =
+            $('searchPedidos');
+
+        if (search) {
+
+            search.addEventListener(
+                'input',
+                mostrarPedidos
+            );
+        }
+
+        const filtro =
+            $('filtroEstado');
+
+        if (filtro) {
+
+            filtro.addEventListener(
+                'change',
+                mostrarPedidos
+            );
+        }
+
+        const btnTema =
+            $('btnTema');
+
+        if (btnTema) {
+
+            btnTema.addEventListener(
+                'click',
+                cambiarTema
+            );
+        }
+
+        const cerrarDetalle =
+            $('cerrarDetallePedido');
+
+        if (cerrarDetalle) {
+
+            cerrarDetalle.addEventListener(
+                'click',
+                cerrarDetallePedido
+            );
+        }
+
+        const dialog =
+            $('dialogPedidoDetalle');
+
+        if (dialog) {
+
+            dialog.addEventListener(
+                'click',
+                evento => {
+
+                    const rect =
+                        dialog.getBoundingClientRect();
+
+                    const dentro =
+                        evento.clientX >=
+                        rect.left &&
+                        evento.clientX <=
+                        rect.right &&
+                        evento.clientY >=
+                        rect.top &&
+                        evento.clientY <=
+                        rect.bottom;
+
+                    if (!dentro) {
+                        cerrarDetallePedido();
+                    }
+                }
+            );
+        }
+
+        document.addEventListener(
+            'keydown',
+            evento => {
+
+                if (
+                    evento.key ===
+                    'Escape'
+                ) {
+
+                    cerrarPanelPedido();
+                }
+            }
+        );
+
+        window.addEventListener(
+            'storage',
+            evento => {
+
+                if (
+                    evento.key ===
+                    STORAGE_PEDIDOS
+                ) {
+
+                    migrarPedidos();
+
+                    mostrarPedidos();
+
+                    actualizarEstadisticasPedidos();
+                }
+
+                if (
+                    evento.key ===
+                    STORAGE_CLIENTES
+                ) {
+
+                    cargarClientesEnSelect();
+
+                    actualizarTotalesFormulario();
+                }
+
+                if (
+                    evento.key ===
+                    STORAGE_TEMA
+                ) {
+
+                    inicializarTema();
+                }
+            }
+        );
     }
 );
+
+/* =========================================================
+   FUNCIONES GLOBALES
+========================================================= */
+
+window.abrirPanelPedido =
+    abrirPanelPedido;
+
+window.editarPedido =
+    editarPedido;
+
+window.eliminarPedido =
+    eliminarPedido;
+
+window.mostrarDetallePedido =
+    mostrarDetallePedido;
+
+window.abrirWhatsAppPedido =
+    abrirWhatsAppPedido;
+
+window.cerrarDetallePedido =
+    cerrarDetallePedido;

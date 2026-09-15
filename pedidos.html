@@ -1,196 +1,321 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Variedades Chiquis - Pedidos</title>
-    <link rel="stylesheet" href="pedidos.css">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Variedades Chiquis - Gestión de Pedidos
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="./pedidos.css">
+
 </head>
 
 <body>
 
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
     <aside class="sidebar">
 
-        <div class="brand">
-            <div class="brand-icon">VC</div>
-
-            <div>
-                <h2>Variedades Chiquis</h2>
-                <span>Sistema de gestión</span>
-            </div>
+        <div class="sidebar-logo">
+            <h2>Variedades Chiquis</h2>
+            <span>Sistema de gestión</span>
         </div>
 
-        <nav class="menu">
+        <nav class="sidebar-nav">
 
-            <a href="cliente.html" class="menu-item" id="btnNavClientes">
-                <span class="menu-icon">👥</span>
+            <a
+                href="cliente.html"
+                id="btnNavClientes">
+                👥
                 <span>Clientes</span>
             </a>
 
-            <a href="pedidos.html" class="menu-item active" id="btnNavPedidos">
-                <span class="menu-icon">🛒</span>
+            <a
+                href="pedidos.html"
+                id="btnNavPedidos"
+                class="activo">
+                📦
                 <span>Pedidos</span>
             </a>
 
-            <a href="tienda.html" class="menu-item" id="btnNavTienda">
-                <span class="menu-icon">🛍️</span>
+            <a
+                href="tienda.html"
+                id="btnNavTienda">
+                🛒
                 <span>Tienda</span>
             </a>
 
         </nav>
 
-        <div class="sidebar-footer">
-            <span>Variedades Chiquis, S.A.</span>
-        </div>
-
     </aside>
 
+    <!-- =====================================================
+         CONTENIDO PRINCIPAL
+    ====================================================== -->
 
     <main class="main-content">
 
-        <header class="topbar">
+        <header class="page-header">
 
             <div>
-                <h1>Gestión de Pedidos</h1>
-                <p>Administra y controla los pedidos de tus clientes</p>
+
+                <h1>
+                    Gestión de Pedidos
+                </h1>
+
+                <p>
+                    Control y seguimiento de cada pedido
+                    durante todo su ciclo de atención.
+                </p>
+
             </div>
 
-            <div class="topbar-actions">
+            <div class="header-actions">
 
-                <button class="btn-secondary" id="btnExportarPedidos">
-                    ↥ Exportar
-                </button>
-
-                <button class="btn-primary" id="btnNuevoPedido">
-                    + Nuevo pedido
+                <button
+                    type="button"
+                    id="btnTema"
+                    class="btn-secondary">
+                    🌙
                 </button>
 
                 <button
-                    class="theme-toggle"
-                    id="btnTema"
-                    title="Cambiar tema"
-                >
-                    ☼
+                    type="button"
+                    id="btnNuevoPedido"
+                    class="btn-primary">
+                    + Nuevo pedido
                 </button>
 
             </div>
 
         </header>
 
+        <!-- =================================================
+             ESTADÍSTICAS
+        ================================================== -->
 
         <section class="stats-grid">
 
             <div class="stat-card">
-                <div class="stat-icon blue">🛒</div>
-                <div>
-                    <span>Total pedidos</span>
-                    <strong id="totalPedidos">0</strong>
+
+                <div class="stat-icon">
+                    📦
                 </div>
+
+                <div>
+
+                    <span>
+                        Total pedidos
+                    </span>
+
+                    <strong id="totalPedidos">
+                        0
+                    </strong>
+
+                </div>
+
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon orange">◷</div>
-                <div>
-                    <span>Pendientes</span>
-                    <strong id="pedidosPendientes">0</strong>
+
+                <div class="stat-icon">
+                    ⏳
                 </div>
+
+                <div>
+
+                    <span>
+                        Pendientes
+                    </span>
+
+                    <strong id="pedidosPendientes">
+                        0
+                    </strong>
+
+                </div>
+
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon green">✓</div>
-                <div>
-                    <span>Entregados</span>
-                    <strong id="pedidosEntregados">0</strong>
+
+                <div class="stat-icon">
+                    ✅
                 </div>
+
+                <div>
+
+                    <span>
+                        Entregados
+                    </span>
+
+                    <strong id="pedidosEntregados">
+                        0
+                    </strong>
+
+                </div>
+
             </div>
 
             <div class="stat-card">
-                <div class="stat-icon purple">Q</div>
-                <div>
-                    <span>Ventas</span>
-                    <strong id="ventasPedidos">Q0.00</strong>
+
+                <div class="stat-icon">
+                    💰
                 </div>
+
+                <div>
+
+                    <span>
+                        Ventas
+                    </span>
+
+                    <strong id="ventasPedidos">
+                        Q0.00
+                    </strong>
+
+                </div>
+
             </div>
 
         </section>
 
+        <!-- =================================================
+             FILTROS
+        ================================================== -->
 
-        <section class="content-card">
+        <section class="toolbar">
 
-            <div class="table-toolbar">
+            <div class="search-box">
 
-                <div class="search-box">
-                    <span>⌕</span>
+                <span>
+                    🔎
+                </span>
 
-                    <input
-                        type="text"
-                        id="searchPedidos"
-                        placeholder="Buscar pedido o cliente..."
-                    >
-                </div>
-
-                <select id="filtroEstado">
-
-                    <option value="">Todos los estados</option>
-                    <option value="pendiente">Pendiente</option>
-                    <option value="preparando">Preparando</option>
-                    <option value="enviado">Enviado</option>
-                    <option value="entregado">Entregado</option>
-                    <option value="cancelado">Cancelado</option>
-
-                </select>
-
-                <button
-                    class="btn-secondary"
-                    id="btnLimpiarPedidos"
-                >
-                    Limpiar
-                </button>
+                <input
+                    type="search"
+                    id="searchPedidos"
+                    placeholder="Buscar pedido o cliente...">
 
             </div>
 
+            <select id="filtroEstado">
 
-            <div class="table-container">
+                <option value="">
+                    Todos los estados
+                </option>
+
+                <option value="pedido_recibido">
+                    Pedido recibido
+                </option>
+
+                <option value="en_preparacion">
+                    En preparación
+                </option>
+
+                <option value="preparado">
+                    Preparado
+                </option>
+
+                <option value="despachado">
+                    Despachado
+                </option>
+
+                <option value="en_proceso_entrega">
+                    En proceso de entrega
+                </option>
+
+                <option value="entregado">
+                    Entregado
+                </option>
+
+                <option value="cancelado">
+                    Cancelado
+                </option>
+
+            </select>
+
+        </section>
+
+        <!-- =================================================
+             TABLA DE PEDIDOS
+        ================================================== -->
+
+        <section class="table-card">
+
+            <div class="table-responsive">
 
                 <table>
 
                     <thead>
 
                         <tr>
-                            <th>Pedido</th>
-                            <th>Cliente</th>
-                            <th>Fecha</th>
-                            <th>Origen</th>
-                            <th>Estado</th>
-                            <th>Total</th>
-                            <th>Acciones</th>
+
+                            <th>
+                                Pedido
+                            </th>
+
+                            <th>
+                                Cliente
+                            </th>
+
+                            <th>
+                                Fecha
+                            </th>
+
+                            <th>
+                                Origen
+                            </th>
+
+                            <th>
+                                Estado
+                            </th>
+
+                            <th>
+                                Total
+                            </th>
+
+                            <th>
+                                Acciones
+                            </th>
+
                         </tr>
 
                     </thead>
 
-                    <tbody id="pedidosBody"></tbody>
+                    <tbody id="tablaPedidos">
+                    </tbody>
 
                 </table>
 
+            </div>
 
-                <div class="empty-state" id="emptyPedidos">
+            <div
+                id="estadoVacio"
+                class="empty-state"
+                style="display:none;">
 
-                    <div class="empty-icon">🛒</div>
-
-                    <h3>No hay pedidos</h3>
-
-                    <p>
-                        Agrega tu primer pedido para comenzar.
-                    </p>
-
-                    <button
-                        class="btn-primary"
-                        id="btnNuevoPedidoVacio"
-                    >
-                        + Nuevo pedido
-                    </button>
-
+                <div>
+                    📦
                 </div>
+
+                <h3>
+                    No hay pedidos
+                </h3>
+
+                <p>
+                    No se encontraron pedidos con
+                    los criterios seleccionados.
+                </p>
 
             </div>
 
@@ -198,315 +323,249 @@
 
     </main>
 
+    <!-- =====================================================
+         PANEL NUEVO / EDITAR PEDIDO
+    ====================================================== -->
 
-    <div class="overlay" id="overlay"></div>
-
-
-    <!-- PANEL DE PEDIDO -->
-
-    <aside class="side-panel" id="pedidoPanel">
+    <div
+        id="pedidoPanel"
+        class="side-panel">
 
         <div class="panel-header">
 
             <div>
-                <h2 id="tituloPanelPedido">Nuevo pedido</h2>
-                <p>Completa la información del pedido</p>
+
+                <h2 id="panelTitulo">
+                    Nuevo pedido
+                </h2>
+
+                <p>
+                    Registra y controla el pedido.
+                </p>
+
             </div>
 
             <button
                 type="button"
-                class="btn-cerrar-panel"
-                id="btnCerrarPedido"
-            >
+                id="cerrarPedidoPanel">
                 ×
             </button>
 
         </div>
 
-
         <form id="pedidoForm">
 
-            <input type="hidden" id="pedidoId">
-
-            <div class="panel-body">
-
-
-                <section class="form-section">
-
-                    <div class="section-title">
-
-                        <h3>Información del pedido</h3>
-
-                        <p>
-                            Datos generales del pedido
-                        </p>
-
-                    </div>
-
-
-                    <div class="form-grid">
-
-                        <div class="form-group">
-
-                            <label for="pedidoNumero">
-                                Número de pedido
-                            </label>
-
-                            <input
-                                type="text"
-                                id="pedidoNumero"
-                                readonly
-                            >
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="pedidoFecha">
-                                Fecha
-                            </label>
-
-                            <input
-                                type="date"
-                                id="pedidoFecha"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="form-group full">
-
-                            <label for="pedidoCliente">
-                                Cliente
-                            </label>
-
-                            <select
-                                id="pedidoCliente"
-                                required
-                            >
-
-                                <option value="">
-                                    Selecciona un cliente
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="pedidoOrigen">
-                                Origen
-                            </label>
-
-                            <select id="pedidoOrigen">
-
-                                <option value="Tienda">
-                                    Tienda
-                                </option>
-
-                                <option value="WhatsApp">
-                                    WhatsApp
-                                </option>
-
-                                <option value="Facebook">
-                                    Facebook
-                                </option>
-
-                                <option value="Instagram">
-                                    Instagram
-                                </option>
-
-                                <option value="Teléfono">
-                                    Teléfono
-                                </option>
-
-                                <option value="Otro">
-                                    Otro
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div class="form-group">
-
-                            <label for="pedidoEstado">
-                                Estado
-                            </label>
-
-                            <select id="pedidoEstado">
-
-                                <option value="pendiente">
-                                    Pendiente
-                                </option>
-
-                                <option value="preparando">
-                                    Preparando
-                                </option>
-
-                                <option value="enviado">
-                                    Enviado
-                                </option>
-
-                                <option value="entregado">
-                                    Entregado
-                                </option>
-
-                                <option value="cancelado">
-                                    Cancelado
-                                </option>
-
-                            </select>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <section class="form-section">
-
-                    <div class="section-title section-title-productos">
-
-                        <div>
-                            <h3>Productos</h3>
-
-                            <p>
-                                Agrega los productos del pedido
-                            </p>
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn-secondary"
-                            id="btnAgregarProducto"
-                        >
-                            + Agregar producto
-                        </button>
-
-                    </div>
-
-
-                    <div
-                        id="productosPedido"
-                        class="productos-lista"
-                    ></div>
-
-                </section>
-
-
-                <section class="form-section">
-
-                    <div class="section-title">
-
-                        <h3>Totales</h3>
-
-                        <p>
-                            Resumen económico del pedido
-                        </p>
-
-                    </div>
-
-
-                    <div class="totales-box">
-
-                        <div class="total-linea">
-                            <span>Subtotal</span>
-                            <strong id="pedidoSubtotal">
-                                Q0.00
-                            </strong>
-                        </div>
-
-                        <div class="total-linea">
-                            <span>Descuento</span>
-                            <strong id="pedidoDescuento">
-                                Q0.00
-                            </strong>
-                        </div>
-
-                        <div class="total-linea total-final">
-                            <span>Total</span>
-                            <strong id="pedidoTotal">
-                                Q0.00
-                            </strong>
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-                <section class="form-section">
-
-                    <div class="section-title">
-
-                        <h3>Entrega</h3>
-
-                        <p>
-                            Información para entregar el pedido
-                        </p>
-
-                    </div>
-
-
-                    <div class="form-grid">
-
-                        <div class="form-group full">
-
-                            <label for="pedidoDireccion">
-                                Dirección de entrega
-                            </label>
-
-                            <textarea
-                                id="pedidoDireccion"
-                                rows="3"
-                                placeholder="Ingresa la dirección de entrega"
-                            ></textarea>
-
-                        </div>
-
-
-                        <div class="form-group full">
-
-                            <label for="pedidoNotas">
-                                Notas
-                            </label>
-
-                            <textarea
-                                id="pedidoNotas"
-                                rows="4"
-                                placeholder="Escribe alguna observación del pedido..."
-                            ></textarea>
-
-                        </div>
-
-                    </div>
-
-                </section>
+            <input
+                type="hidden"
+                id="pedidoId">
+
+            <div class="form-group">
+
+                <label for="pedidoNumero">
+                    Número de pedido
+                </label>
+
+                <input
+                    type="text"
+                    id="pedidoNumero"
+                    required>
 
             </div>
 
+            <div class="form-group">
+
+                <label for="pedidoFecha">
+                    Fecha
+                </label>
+
+                <input
+                    type="datetime-local"
+                    id="pedidoFecha"
+                    required>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="pedidoCliente">
+                    Cliente
+                </label>
+
+                <select
+                    id="pedidoCliente"
+                    required>
+
+                    <option value="">
+                        Seleccione un cliente
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="pedidoOrigen">
+                    Origen
+                </label>
+
+                <select id="pedidoOrigen">
+
+                    <option value="Tienda">
+                        Tienda
+                    </option>
+
+                    <option value="WhatsApp">
+                        WhatsApp
+                    </option>
+
+                    <option value="Teléfono">
+                        Teléfono
+                    </option>
+
+                    <option value="Presencial">
+                        Presencial
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="pedidoEstado">
+                    Estado del pedido
+                </label>
+
+                <select id="pedidoEstado">
+
+                    <option value="pedido_recibido">
+                        Pedido recibido
+                    </option>
+
+                    <option value="en_preparacion">
+                        En preparación
+                    </option>
+
+                    <option value="preparado">
+                        Preparado
+                    </option>
+
+                    <option value="despachado">
+                        Despachado
+                    </option>
+
+                    <option value="en_proceso_entrega">
+                        En proceso de entrega
+                    </option>
+
+                    <option value="entregado">
+                        Entregado
+                    </option>
+
+                    <option value="cancelado">
+                        Cancelado
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="form-section">
+
+                <div class="form-section-header">
+
+                    <h3>
+                        Productos
+                    </h3>
+
+                    <button
+                        type="button"
+                        id="btnAgregarProducto"
+                        class="btn-secondary">
+                        + Producto
+                    </button>
+
+                </div>
+
+                <div
+                    id="productosPedido">
+                </div>
+
+            </div>
+
+            <div class="totales">
+
+                <div>
+                    <span>
+                        Subtotal
+                    </span>
+
+                    <strong id="pedidoSubtotal">
+                        Q0.00
+                    </strong>
+                </div>
+
+                <div>
+                    <span>
+                        Descuento
+                    </span>
+
+                    <strong id="pedidoDescuento">
+                        Q0.00
+                    </strong>
+                </div>
+
+                <div class="total-final">
+
+                    <span>
+                        Total
+                    </span>
+
+                    <strong id="pedidoTotal">
+                        Q0.00
+                    </strong>
+
+                </div>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="pedidoDireccion">
+                    Dirección de entrega
+                </label>
+
+                <textarea
+                    id="pedidoDireccion"
+                    rows="3"></textarea>
+
+            </div>
+
+            <div class="form-group">
+
+                <label for="pedidoNotas">
+                    Notas
+                </label>
+
+                <textarea
+                    id="pedidoNotas"
+                    rows="3"></textarea>
+
+            </div>
 
             <div class="panel-footer">
 
                 <button
                     type="button"
-                    class="btn-cancelar"
-                    id="btnCancelarPedido"
-                >
+                    id="cancelarPedido"
+                    class="btn-secondary">
                     Cancelar
                 </button>
 
                 <button
                     type="submit"
-                    class="btn-guardar"
-                >
+                    class="btn-primary">
                     Guardar pedido
                 </button>
 
@@ -514,32 +573,46 @@
 
         </form>
 
-    </aside>
+    </div>
 
-
-    <!-- DETALLE -->
+    <!-- =====================================================
+         DETALLE DEL PEDIDO
+    ====================================================== -->
 
     <dialog id="dialogPedidoDetalle">
 
-        <div class="detail-header">
+        <div class="dialog-header">
 
-            <div>
-                <h2>Detalle del pedido</h2>
-                <p id="detallePedidoNumero"></p>
-            </div>
+            <h2>
+                Detalle del pedido
+            </h2>
 
-            <button id="btnCerrarDetalle">×</button>
+            <button
+                type="button"
+                id="cerrarDetallePedido">
+                ×
+            </button>
 
         </div>
 
-        <div id="detallePedidoContenido"></div>
+        <div
+            id="detallePedidoContenido"
+            class="dialog-body">
+        </div>
 
     </dialog>
 
+    <!-- =====================================================
+         TOAST
+    ====================================================== -->
 
-    <div class="toast" id="toast"></div>
+    <div
+        id="toast"
+        class="toast">
+    </div>
 
-    <script src="pedidos.js"></script>
+    <script src="./pedidos.js"></script>
 
 </body>
+
 </html>
