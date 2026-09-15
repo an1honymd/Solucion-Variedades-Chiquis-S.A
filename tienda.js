@@ -42,7 +42,7 @@ const productos = [
     {
         id: 4,
         nombre: 'Mouse',
-        precio: 250,
+        precio: 150,
         categoria: 'accesorios',
         descripcion: 'Ergonómico y ligero.'
     },
