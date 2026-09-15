@@ -4,9 +4,70 @@
 
 'use strict';
 
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
 const STORAGE_CLIENTES = 'clientesChiquis';
 const STORAGE_PEDIDOS = 'pedidosChiquis';
 const STORAGE_TEMA = 'temaChiquis';
+
+
+
+/* =========================================================
+   IMÁGENES DE LOS PRODUCTOS
+   =========================================================
+
+   AQUÍ PODÉS CAMBIAR MANUALMENTE LAS IMÁGENES.
+
+   Ejemplo:
+
+   1: 'tieenda/otra-imagen.jfif'
+
+   Solo cambiá el nombre de la imagen.
+
+   IMPORTANTE:
+   La carpeta debe llamarse exactamente "tieenda"
+   si así la tenés en tu proyecto.
+========================================================= */
+
+const imagenesProductos = {
+
+    1: 'tieenda/blusa deportiva.jfif',
+
+    2: 'tieenda/acomodador de sartenes.jfif',
+
+    3: 'tieenda/audifonos.jfif',
+
+    4: 'tieenda/raton.jfif',
+
+    5: 'tieenda/calzado deportivo f.jfif',
+
+    6: 'tieenda/camisola del cr7.jfif',
+
+    7: 'tieenda/bocinas.jfif',
+
+    8: 'tieenda/calsado casual f.jfif',
+
+    9: 'tieenda/calzado m.jfif',
+
+    10: 'tieenda/deportivo mujer 2.jfif',
+
+    11: 'tieenda/Pc gamer.jfif',
+
+    12: '',
+
+    13: 'tieenda/repisas.jfif',
+
+    14: 'tieenda/ropa de basket.jfif',
+
+    15: 'tieenda/sala familiar.jfif',
+
+    16: 'tieenda/telefono.jfif'
+
+};
+
 
 
 /* =========================================================
@@ -23,21 +84,24 @@ const productos = [
         descripcion: 'Ideal para trabajo y estudio.'
     },
 
+
     {
         id: 2,
         nombre: 'Acomodador de Sartenes',
         precio: 300,
         categoria: 'hogar',
-        descripcion: 'acomodador que le ayuda a tener mas espacio en la cocina.'
+        descripcion: 'Acomodador que le ayuda a tener mas espacio en la cocina.'
     },
+
 
     {
         id: 3,
         nombre: 'audifonos',
         precio: 250,
-        categoria: 'Tecnologuia',
+        categoria: 'accesorios',
         descripcion: 'Audio Envolvente.'
     },
+
 
     {
         id: 4,
@@ -47,6 +111,7 @@ const productos = [
         descripcion: 'Ergonómico y ligero.'
     },
 
+
     {
         id: 5,
         nombre: 'Tenis',
@@ -54,6 +119,7 @@ const productos = [
         categoria: 'deportivo',
         descripcion: 'Impresión rápida en casa u oficina.'
     },
+
 
     {
         id: 6,
@@ -63,6 +129,7 @@ const productos = [
         descripcion: 'Camisola de portugal.'
     },
 
+
     {
         id: 7,
         nombre: 'Bocinas',
@@ -70,6 +137,7 @@ const productos = [
         categoria: 'accesorios',
         descripcion: 'Audio potente para tu espacio.'
     },
+
 
     {
         id: 8,
@@ -79,6 +147,7 @@ const productos = [
         descripcion: 'Comodidad para largas jornadas.'
     },
 
+
     {
         id: 9,
         nombre: 'calsado casual',
@@ -86,6 +155,7 @@ const productos = [
         categoria: 'deportivo',
         descripcion: 'Más velocidad y comodidad.'
     },
+
 
     {
         id: 10,
@@ -95,6 +165,7 @@ const productos = [
         descripcion: 'Más comodidad.'
     },
 
+
     {
         id: 11,
         nombre: 'Pc Gamer',
@@ -102,6 +173,7 @@ const productos = [
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
     },
+
 
     {
         id: 12,
@@ -111,6 +183,7 @@ const productos = [
         descripcion: 'Más velocidad para tu equipo.'
     },
 
+
     {
         id: 13,
         nombre: 'repisas',
@@ -119,21 +192,24 @@ const productos = [
         descripcion: 'Más espacio.'
     },
 
+
     {
         id: 14,
         nombre: 'ropa de basquet',
         precio: 450,
         categoria: 'deportivo',
-        descripcion: 'Más velocidad .'
+        descripcion: 'Más velocidad.'
     },
+
 
     {
         id: 15,
         nombre: 'sala familiar',
         precio: 1750,
         categoria: 'hogar',
-        descripcion: 'Más comodida.'
+        descripcion: 'Más comodidad.'
     },
+
 
     {
         id: 16,
@@ -141,10 +217,10 @@ const productos = [
         precio: 2750,
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
-    },
+    }
 
-  
 ];
+
 
 
 /* =========================================================
@@ -152,6 +228,7 @@ const productos = [
 ========================================================= */
 
 const $ = id => document.getElementById(id);
+
 
 
 function escaparHTML(texto) {
@@ -162,17 +239,23 @@ function escaparHTML(texto) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+
 }
+
 
 
 function formatearMoneda(valor) {
 
-    return 'Q' + Number(valor || 0).toLocaleString('es-GT', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
+    return 'Q' + Number(valor || 0).toLocaleString(
+        'es-GT',
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
 
 }
+
 
 
 function generarId() {
@@ -183,6 +266,7 @@ function generarId() {
 }
 
 
+
 function generarNumeroPedido(pedidos) {
 
     let mayor = 0;
@@ -190,11 +274,13 @@ function generarNumeroPedido(pedidos) {
     pedidos.forEach(pedido => {
 
         const coincidencia =
-            String(pedido.numero || '').match(/PED-(\d+)/i);
+            String(pedido.numero || '')
+                .match(/PED-(\d+)/i);
 
         if (coincidencia) {
 
-            const valor = Number(coincidencia[1]);
+            const valor =
+                Number(coincidencia[1]);
 
             if (valor > mayor) {
                 mayor = valor;
@@ -204,9 +290,11 @@ function generarNumeroPedido(pedidos) {
 
     });
 
-    return 'PED-' + String(mayor + 1).padStart(4, '0');
+    return 'PED-' +
+        String(mayor + 1).padStart(4, '0');
 
 }
+
 
 
 /* =========================================================
@@ -214,8 +302,11 @@ function generarNumeroPedido(pedidos) {
 ========================================================= */
 
 let carrito = [];
+
 let categoriaActual = 'todos';
+
 let toastTimer = null;
+
 
 
 /* =========================================================
@@ -226,17 +317,26 @@ function obtenerClientes() {
 
     try {
 
-        const datos = localStorage.getItem(STORAGE_CLIENTES);
+        const datos =
+            localStorage.getItem(
+                STORAGE_CLIENTES
+            );
 
         if (!datos) return [];
 
-        const clientes = JSON.parse(datos);
+        const clientes =
+            JSON.parse(datos);
 
-        return Array.isArray(clientes) ? clientes : [];
+        return Array.isArray(clientes)
+            ? clientes
+            : [];
 
     } catch (error) {
 
-        console.error('Error cargando clientes:', error);
+        console.error(
+            'Error cargando clientes:',
+            error
+        );
 
         return [];
 
@@ -245,9 +345,11 @@ function obtenerClientes() {
 }
 
 
+
 function clienteSeleccionado() {
 
-    const id = $('clienteTienda')?.value;
+    const id =
+        $('clienteTienda')?.value;
 
     if (!id) return null;
 
@@ -258,172 +360,246 @@ function clienteSeleccionado() {
 }
 
 
+
 function cargarClientesSelect() {
 
-    const select = $('clienteTienda');
+    const select =
+        $('clienteTienda');
 
     if (!select) return;
 
-    const valorAnterior = select.value;
+    const valorAnterior =
+        select.value;
 
     select.innerHTML =
         '<option value="">Selecciona un cliente</option>';
 
     obtenerClientes().forEach(cliente => {
 
-        const option = document.createElement('option');
+        const option =
+            document.createElement('option');
 
-        option.value = cliente.id;
+        option.value =
+            cliente.id;
 
         option.textContent =
             cliente.nombre +
-            (cliente.telefono
-                ? ' - ' + cliente.telefono
-                : '');
+            (
+                cliente.telefono
+                    ? ' - ' + cliente.telefono
+                    : ''
+            );
 
         select.appendChild(option);
 
     });
 
+
     if (valorAnterior) {
         select.value = valorAnterior;
     }
+
 
     mostrarInfoCliente();
 
 }
 
 
+
 function mostrarInfoCliente() {
 
-    const contenedor = $('clienteInfo');
+    const contenedor =
+        $('clienteInfo');
 
     if (!contenedor) return;
 
-    const cliente = clienteSeleccionado();
+    const cliente =
+        clienteSeleccionado();
+
 
     if (!cliente) {
 
         contenedor.innerHTML =
             '<span>👤 Selecciona un cliente</span>';
 
+        actualizarTotales();
+
         return;
 
     }
+
 
     const tipo =
         cliente.tipo === 'mayorista'
             ? 'Mayorista'
             : 'Minorista';
 
+
     const descuento =
         Number(cliente.descuento) || 0;
+
 
     contenedor.innerHTML = `
 
         <span>
+
             <strong>
                 ${escaparHTML(cliente.nombre)}
             </strong>
+
         </span>
 
+
         <span>
+
             ${escaparHTML(
-                cliente.telefono || 'Sin teléfono'
+                cliente.telefono ||
+                'Sin teléfono'
             )}
+
         </span>
 
+
         <span>
+
             ${tipo}
+
             ${
                 descuento > 0
                     ? ' · ' + descuento + '% descuento'
                     : ''
             }
+
         </span>
 
     `;
+
 
     actualizarTotales();
 
 }
 
 
+
 /* =========================================================
    CATÁLOGO
 ========================================================= */
 
+
+
 function obtenerCantidadEnCarrito(id) {
 
-    const item = carrito.find(p => p.id === id);
-
-    return item ? item.cantidad : 0;
-
-}
-
-
-function obtenerImagenProducto(id) {
-
-    const imagen =
-        document.querySelector(
-            `.imagen-producto[data-producto-id="${id}"]`
+    const item =
+        carrito.find(
+            p => p.id === id
         );
 
-    if (!imagen) return '';
-
-    return imagen.outerHTML;
+    return item
+        ? item.cantidad
+        : 0;
 
 }
+
+
+
+/*
+   Devuelve el HTML de la imagen del producto.
+
+   Si no existe una imagen configurada,
+   se muestra un espacio vacío.
+*/
+
+function obtenerImagenProducto(id, nombre) {
+
+    const ruta =
+        imagenesProductos[id];
+
+    if (!ruta) {
+
+        return `
+            <div
+                class="imagen-producto"
+                data-producto-id="${id}"
+                aria-label="Sin imagen"
+            >
+                📦
+            </div>
+        `;
+
+    }
+
+
+    return `
+
+        <img
+            class="imagen-producto"
+            data-producto-id="${id}"
+            src="${escaparHTML(ruta)}"
+            alt="${escaparHTML(nombre)}"
+            loading="lazy"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        >
+
+        <div
+            class="imagen-fallback"
+            style="display:none;"
+        >
+            📦
+        </div>
+
+    `;
+
+}
+
 
 
 function mostrarProductos() {
 
-    const contenedor = $('catalogo');
+    const contenedor =
+        $('catalogo');
 
     if (!contenedor) return;
 
+
     const texto =
-        ($('buscarProductos')?.value || '')
+        (
+            $('buscarProductos')?.value ||
+            ''
+        )
         .toLowerCase()
         .trim();
 
-    const filtrados = productos.filter(producto => {
 
-        const coincideCategoria =
-            categoriaActual === 'todos' ||
-            producto.categoria === categoriaActual;
+    const filtrados =
+        productos.filter(producto => {
 
-        const coincideBusqueda =
-            !texto ||
-            producto.nombre
-                .toLowerCase()
-                .includes(texto);
 
-        return coincideCategoria &&
-            coincideBusqueda;
+            const coincideCategoria =
+                categoriaActual === 'todos' ||
+                producto.categoria ===
+                    categoriaActual;
 
-    });
 
-    /*
-       Guardamos las imágenes que están en el HTML
-       antes de reconstruir las tarjetas.
-    */
+            const coincideBusqueda =
+                !texto ||
+                producto.nombre
+                    .toLowerCase()
+                    .includes(texto) ||
+                producto.descripcion
+                    .toLowerCase()
+                    .includes(texto);
 
-    const imagenesHTML = {};
 
-    contenedor
-        .querySelectorAll('.imagen-producto')
-        .forEach(imagen => {
-
-            const id = imagen.dataset.productoId;
-
-            if (id) {
-                imagenesHTML[id] = imagen.outerHTML;
-            }
+            return coincideCategoria &&
+                coincideBusqueda;
 
         });
 
+
+
     contenedor.innerHTML = '';
+
+
 
     if (!filtrados.length) {
 
@@ -431,7 +607,9 @@ function mostrarProductos() {
 
             <div class="vacio">
 
-                <div>🔎</div>
+                <div>
+                    🔎
+                </div>
 
                 <p>
                     No encontramos productos con ese criterio.
@@ -445,82 +623,126 @@ function mostrarProductos() {
 
     }
 
+
+
     filtrados.forEach(producto => {
 
+
         const cantidad =
-            obtenerCantidadEnCarrito(producto.id);
+            obtenerCantidadEnCarrito(
+                producto.id
+            );
+
 
         const tarjeta =
             document.createElement('div');
 
-        tarjeta.className = 'producto';
 
-        const imagen =
-            imagenesHTML[producto.id]
-                ? imagenesHTML[producto.id]
-                : `
-                    <div
-                        class="imagen-producto"
-                        data-producto-id="${producto.id}"
-                    >
-                    </div>
-                `;
+        tarjeta.className =
+            'producto';
+
+
+        tarjeta.dataset.id =
+            producto.id;
+
+
+        tarjeta.dataset.categoria =
+            producto.categoria;
+
+
+        tarjeta.dataset.nombre =
+            producto.nombre;
+
 
         tarjeta.innerHTML = `
 
+
             <div class="producto-imagen">
 
-                ${imagen}
+                ${obtenerImagenProducto(
+                    producto.id,
+                    producto.nombre
+                )}
 
             </div>
+
 
             <h3>
-                ${escaparHTML(producto.nombre)}
+
+                ${escaparHTML(
+                    producto.nombre
+                )}
+
             </h3>
 
+
             <p>
+
                 ${escaparHTML(
-                    producto.descripcion || ''
+                    producto.descripcion ||
+                    ''
                 )}
+
             </p>
 
+
             <div class="precio">
-                ${formatearMoneda(producto.precio)}
+
+                ${formatearMoneda(
+                    producto.precio
+                )}
+
             </div>
+
 
             <button
                 type="button"
                 class="btn-agregar-producto"
                 data-id="${producto.id}"
             >
+
                 ${
                     cantidad > 0
                         ? `🛒 En tu pedido (${cantidad})`
                         : '+ Agregar al carrito'
                 }
+
             </button>
 
         `;
 
-        contenedor.appendChild(tarjeta);
+
+        contenedor.appendChild(
+            tarjeta
+        );
 
     });
 
+
+
     contenedor
-        .querySelectorAll('.btn-agregar-producto')
+        .querySelectorAll(
+            '.btn-agregar-producto'
+        )
         .forEach(boton => {
 
-            boton.addEventListener('click', () => {
+            boton.addEventListener(
+                'click',
+                () => {
 
-                agregarAlCarrito(
-                    Number(boton.dataset.id)
-                );
+                    agregarAlCarrito(
+                        Number(
+                            boton.dataset.id
+                        )
+                    );
 
-            });
+                }
+            );
 
         });
 
 }
+
 
 
 /* =========================================================
@@ -530,12 +752,19 @@ function mostrarProductos() {
 function agregarAlCarrito(id) {
 
     const producto =
-        productos.find(p => p.id === id);
+        productos.find(
+            p => p.id === id
+        );
+
 
     if (!producto) return;
 
+
     const existente =
-        carrito.find(item => item.id === id);
+        carrito.find(
+            item => item.id === id
+        );
+
 
     if (existente) {
 
@@ -557,9 +786,11 @@ function agregarAlCarrito(id) {
 
     }
 
+
     actualizarCarrito();
 
     mostrarProductos();
+
 
     mostrarToast(
         'Producto agregado al carrito.'
@@ -568,50 +799,70 @@ function agregarAlCarrito(id) {
 }
 
 
-function cambiarCantidadCarrito(id, delta) {
+
+function cambiarCantidadCarrito(
+    id,
+    delta
+) {
 
     const item =
-        carrito.find(p => p.id === id);
+        carrito.find(
+            p => p.id === id
+        );
+
 
     if (!item) return;
 
+
     item.cantidad += delta;
+
 
     if (item.cantidad <= 0) {
 
         carrito =
-            carrito.filter(p => p.id !== id);
+            carrito.filter(
+                p => p.id !== id
+            );
 
     }
+
 
     actualizarCarrito();
 
     mostrarProductos();
 
 }
+
 
 
 function eliminarDelCarrito(id) {
 
     carrito =
-        carrito.filter(item => item.id !== id);
+        carrito.filter(
+            item => item.id !== id
+        );
+
 
     actualizarCarrito();
 
     mostrarProductos();
 
 }
+
 
 
 function calcularSubtotal() {
 
     return carrito.reduce(
         (total, item) =>
-            total + item.precio * item.cantidad,
+            total +
+            item.precio *
+            item.cantidad,
         0
     );
 
 }
+
 
 
 function calcularDescuento() {
@@ -619,10 +870,15 @@ function calcularDescuento() {
     const cliente =
         clienteSeleccionado();
 
+
     if (!cliente) return 0;
 
+
     const porcentaje =
-        Number(cliente.descuento) || 0;
+        Number(
+            cliente.descuento
+        ) || 0;
+
 
     return calcularSubtotal() *
         (porcentaje / 100);
@@ -630,39 +886,56 @@ function calcularDescuento() {
 }
 
 
+
 function actualizarTotales() {
 
     const subtotal =
         calcularSubtotal();
 
+
     const descuento =
         calcularDescuento();
 
+
     const total =
-        subtotal - descuento;
+        subtotal -
+        descuento;
+
 
     if ($('subtotalCarrito')) {
 
-        $('subtotalCarrito').textContent =
-            formatearMoneda(subtotal);
+        $('subtotalCarrito')
+            .textContent =
+                formatearMoneda(
+                    subtotal
+                );
 
     }
+
 
     if ($('descuentoCarrito')) {
 
-        $('descuentoCarrito').textContent =
-            formatearMoneda(descuento);
+        $('descuentoCarrito')
+            .textContent =
+                formatearMoneda(
+                    descuento
+                );
 
     }
 
+
     if ($('totalCarrito')) {
 
-        $('totalCarrito').textContent =
-            formatearMoneda(total);
+        $('totalCarrito')
+            .textContent =
+                formatearMoneda(
+                    total
+                );
 
     }
 
 }
+
 
 
 function actualizarBadgeCarrito() {
@@ -670,27 +943,33 @@ function actualizarBadgeCarrito() {
     const cantidadTotal =
         carrito.reduce(
             (total, item) =>
-                total + item.cantidad,
+                total +
+                item.cantidad,
             0
         );
 
+
     if ($('contadorCarrito')) {
 
-        $('contadorCarrito').textContent =
-            cantidadTotal;
+        $('contadorCarrito')
+            .textContent =
+                cantidadTotal;
 
     }
 
+
     if ($('cantidadCarrito')) {
 
-        $('cantidadCarrito').textContent =
-            cantidadTotal === 1
-                ? '1 producto'
-                : `${cantidadTotal} productos`;
+        $('cantidadCarrito')
+            .textContent =
+                cantidadTotal === 1
+                    ? '1 producto'
+                    : `${cantidadTotal} productos`;
 
     }
 
 }
+
 
 
 function renderizarCarrito() {
@@ -698,9 +977,13 @@ function renderizarCarrito() {
     const contenedor =
         $('carritoContenido');
 
+
     if (!contenedor) return;
 
+
     contenedor.innerHTML = '';
+
+
 
     if (!carrito.length) {
 
@@ -708,7 +991,9 @@ function renderizarCarrito() {
 
             <div class="vacio">
 
-                <div>🛒</div>
+                <div>
+                    🛒
+                </div>
 
                 <p>
                     Tu carrito está vacío.
@@ -722,83 +1007,125 @@ function renderizarCarrito() {
 
     }
 
+
+
     carrito.forEach(item => {
 
+
         const fila =
-            document.createElement('div');
+            document.createElement(
+                'div'
+            );
+
 
         fila.className =
             'carrito-item';
 
+
         fila.innerHTML = `
+
 
             <div>
 
                 <h4>
-                    ${escaparHTML(item.nombre)}
+
+                    ${escaparHTML(
+                        item.nombre
+                    )}
+
                 </h4>
 
+
                 <small>
-                    ${formatearMoneda(item.precio)} c/u
+
+                    ${formatearMoneda(
+                        item.precio
+                    )}
+                    c/u
+
                 </small>
 
+
                 <div class="cantidad">
+
 
                     <button
                         type="button"
                         class="btn-restar"
                         data-id="${item.id}"
                     >
+
                         −
+
                     </button>
 
+
                     <span>
+
                         ${item.cantidad}
+
                     </span>
+
 
                     <button
                         type="button"
                         class="btn-sumar"
                         data-id="${item.id}"
                     >
+
                         +
+
                     </button>
+
 
                 </div>
 
             </div>
 
+
+
             <div>
 
                 <strong>
-                    ${
-                        formatearMoneda(
-                            item.precio *
-                            item.cantidad
-                        )
-                    }
+
+                    ${formatearMoneda(
+                        item.precio *
+                        item.cantidad
+                    )}
+
                 </strong>
 
+
                 <br>
+
 
                 <button
                     type="button"
                     class="eliminar"
                     data-id="${item.id}"
                 >
+
                     Quitar
+
                 </button>
 
             </div>
 
         `;
 
-        contenedor.appendChild(fila);
+
+        contenedor.appendChild(
+            fila
+        );
 
     });
 
+
+
     contenedor
-        .querySelectorAll('.btn-restar')
+        .querySelectorAll(
+            '.btn-restar'
+        )
         .forEach(boton => {
 
             boton.addEventListener(
@@ -806,7 +1133,9 @@ function renderizarCarrito() {
                 () => {
 
                     cambiarCantidadCarrito(
-                        Number(boton.dataset.id),
+                        Number(
+                            boton.dataset.id
+                        ),
                         -1
                     );
 
@@ -815,8 +1144,12 @@ function renderizarCarrito() {
 
         });
 
+
+
     contenedor
-        .querySelectorAll('.btn-sumar')
+        .querySelectorAll(
+            '.btn-sumar'
+        )
         .forEach(boton => {
 
             boton.addEventListener(
@@ -824,7 +1157,9 @@ function renderizarCarrito() {
                 () => {
 
                     cambiarCantidadCarrito(
-                        Number(boton.dataset.id),
+                        Number(
+                            boton.dataset.id
+                        ),
                         1
                     );
 
@@ -833,8 +1168,12 @@ function renderizarCarrito() {
 
         });
 
+
+
     contenedor
-        .querySelectorAll('.eliminar')
+        .querySelectorAll(
+            '.eliminar'
+        )
         .forEach(boton => {
 
             boton.addEventListener(
@@ -842,7 +1181,9 @@ function renderizarCarrito() {
                 () => {
 
                     eliminarDelCarrito(
-                        Number(boton.dataset.id)
+                        Number(
+                            boton.dataset.id
+                        )
                     );
 
                 }
@@ -851,6 +1192,7 @@ function renderizarCarrito() {
         });
 
 }
+
 
 
 function actualizarCarrito() {
@@ -864,22 +1206,28 @@ function actualizarCarrito() {
 }
 
 
+
 function abrirCarritoPanel() {
 
     renderizarCarrito();
 
+
     $('carritoPanel')
-        ?.classList.add('show');
+        ?.classList
+        .add('show');
 
 }
+
 
 
 function cerrarCarritoPanel() {
 
     $('carritoPanel')
-        ?.classList.remove('show');
+        ?.classList
+        .remove('show');
 
 }
+
 
 
 /* =========================================================
@@ -888,6 +1236,7 @@ function cerrarCarritoPanel() {
 
 function abrirModalPedido() {
 
+
     if (!carrito.length) {
 
         mostrarToast(
@@ -895,14 +1244,18 @@ function abrirModalPedido() {
             'warning'
         );
 
+
         abrirCarritoPanel();
 
         return;
 
     }
 
+
+
     const cliente =
         clienteSeleccionado();
+
 
     if (!cliente) {
 
@@ -911,95 +1264,150 @@ function abrirModalPedido() {
             'warning'
         );
 
-        $('clienteTienda')?.focus();
+
+        $('clienteTienda')
+            ?.focus();
+
 
         return;
 
     }
 
+
+
     const subtotal =
         calcularSubtotal();
+
 
     const descuento =
         calcularDescuento();
 
+
     const total =
-        subtotal - descuento;
+        subtotal -
+        descuento;
+
 
     const resumen =
         $('resumenPedido');
+
+
 
     if (resumen) {
 
         resumen.innerHTML = `
 
+
             <div class="resumen-linea">
 
-                <span>Cliente</span>
+                <span>
+                    Cliente
+                </span>
 
                 <strong>
-                    ${escaparHTML(cliente.nombre)}
+
+                    ${escaparHTML(
+                        cliente.nombre
+                    )}
+
                 </strong>
 
             </div>
 
+
+
             <div class="resumen-linea">
 
-                <span>Teléfono</span>
+                <span>
+                    Teléfono
+                </span>
 
                 <strong>
+
                     ${
                         escaparHTML(
                             cliente.telefono ||
                             'Sin teléfono'
                         )
                     }
+
                 </strong>
 
             </div>
 
+
+
             <div class="resumen-linea">
 
-                <span>Productos</span>
+                <span>
+                    Productos
+                </span>
 
                 <strong>
+
                     ${
                         carrito.reduce(
                             (t, i) =>
-                                t + i.cantidad,
+                                t +
+                                i.cantidad,
                             0
                         )
                     }
+
                 </strong>
 
             </div>
 
+
+
             <div class="resumen-linea">
 
-                <span>Subtotal</span>
+                <span>
+                    Subtotal
+                </span>
 
                 <strong>
-                    ${formatearMoneda(subtotal)}
+
+                    ${formatearMoneda(
+                        subtotal
+                    )}
+
                 </strong>
 
             </div>
 
+
+
             <div class="resumen-linea">
 
-                <span>Descuento</span>
+                <span>
+                    Descuento
+                </span>
 
                 <strong>
-                    ${formatearMoneda(descuento)}
+
+                    ${formatearMoneda(
+                        descuento
+                    )}
+
                 </strong>
 
             </div>
 
+
+
             <div class="resumen-linea">
 
-                <span>Total</span>
+                <span>
+                    Total
+                </span>
 
                 <strong>
-                    ${formatearMoneda(total)}
+
+                    ${formatearMoneda(
+                        total
+                    )}
+
                 </strong>
 
             </div>
@@ -1008,28 +1416,38 @@ function abrirModalPedido() {
 
     }
 
+
+
     if (
         $('direccionPedido') &&
         !$('direccionPedido').value
     ) {
 
-        $('direccionPedido').value =
-            cliente.direccion || '';
+        $('direccionPedido')
+            .value =
+                cliente.direccion ||
+                '';
 
     }
 
+
+
     $('modalPedido')
-        ?.classList.add('show');
+        ?.classList
+        .add('show');
 
 }
+
 
 
 function cerrarModalPedido() {
 
     $('modalPedido')
-        ?.classList.remove('show');
+        ?.classList
+        .remove('show');
 
 }
+
 
 
 function confirmarPedido() {
@@ -1037,7 +1455,11 @@ function confirmarPedido() {
     const cliente =
         clienteSeleccionado();
 
-    if (!cliente || !carrito.length) {
+
+    if (
+        !cliente ||
+        !carrito.length
+    ) {
 
         cerrarModalPedido();
 
@@ -1045,23 +1467,34 @@ function confirmarPedido() {
 
     }
 
+
+
     const pedidos =
         obtenerPedidos();
 
+
     const numero =
-        generarNumeroPedido(pedidos);
+        generarNumeroPedido(
+            pedidos
+        );
+
 
     const ahora =
         new Date().toISOString();
 
+
+
     const productosPedido =
         carrito.map(item => ({
 
-            nombre: item.nombre,
+            nombre:
+                item.nombre,
 
-            cantidad: item.cantidad,
+            cantidad:
+                item.cantidad,
 
-            precio: item.precio,
+            precio:
+                item.precio,
 
             subtotal:
                 item.precio *
@@ -1069,84 +1502,134 @@ function confirmarPedido() {
 
         }));
 
+
+
     const subtotal =
         calcularSubtotal();
+
 
     const descuento =
         calcularDescuento();
 
+
     const total =
-        subtotal - descuento;
+        subtotal -
+        descuento;
+
+
 
     const pedido = {
 
-        id: generarId(),
+        id:
+            generarId(),
 
-        numero,
+        numero:
 
-        fecha: ahora,
+            numero,
 
-        clienteId: cliente.id,
+        fecha:
+
+            ahora,
+
+        clienteId:
+
+            cliente.id,
 
         clienteNombre:
+
             cliente.nombre,
 
         clienteTelefono:
-            cliente.telefono || '',
+
+            cliente.telefono ||
+            '',
 
         origen:
+
             'Tienda / Autoservicio',
 
         estado:
+
             'pendiente',
 
         productos:
+
             productosPedido,
 
-        subtotal,
+        subtotal:
 
-        descuento,
+            subtotal,
 
-        total,
+        descuento:
+
+            descuento,
+
+        total:
+
+            total,
 
         direccion:
+
             $('direccionPedido')
                 ?.value
                 .trim() ||
+
             cliente.direccion ||
+
             '',
 
         notas:
+
             $('notasPedido')
                 ?.value
                 .trim() ||
+
             '',
 
         actualizado:
+
             ahora
 
     };
 
-    pedidos.push(pedido);
+
+
+    pedidos.push(
+        pedido
+    );
+
+
 
     localStorage.setItem(
         STORAGE_PEDIDOS,
-        JSON.stringify(pedidos)
+        JSON.stringify(
+            pedidos
+        )
     );
+
+
 
     carrito = [];
 
+
+
     if ($('direccionPedido')) {
 
-        $('direccionPedido').value = '';
+        $('direccionPedido')
+            .value = '';
 
     }
+
+
 
     if ($('notasPedido')) {
 
-        $('notasPedido').value = '';
+        $('notasPedido')
+            .value = '';
 
     }
+
+
 
     cerrarModalPedido();
 
@@ -1156,12 +1639,19 @@ function confirmarPedido() {
 
     mostrarProductos();
 
+
+
     mostrarToast(
         '¡Pedido enviado correctamente!'
     );
 
 }
 
+
+
+/* =========================================================
+   PEDIDOS
+========================================================= */
 
 function obtenerPedidos() {
 
@@ -1172,10 +1662,13 @@ function obtenerPedidos() {
                 STORAGE_PEDIDOS
             );
 
+
         if (!datos) return [];
+
 
         const pedidos =
             JSON.parse(datos);
+
 
         return Array.isArray(pedidos)
             ? pedidos
@@ -1188,11 +1681,13 @@ function obtenerPedidos() {
             error
         );
 
+
         return [];
 
     }
 
 }
+
 
 
 /* =========================================================
@@ -1206,11 +1701,15 @@ function cargarTema() {
             STORAGE_TEMA
         );
 
+
     if (tema === 'oscuro')
         tema = 'dark';
 
+
     if (tema === 'claro')
         tema = 'light';
+
+
 
     if (tema === 'dark') {
 
@@ -1226,9 +1725,11 @@ function cargarTema() {
 
     }
 
+
     actualizarIconoTema();
 
 }
+
 
 
 function cambiarTema() {
@@ -1238,14 +1739,19 @@ function cambiarTema() {
             'dark'
         );
 
+
     localStorage.setItem(
         STORAGE_TEMA,
-        oscuro ? 'dark' : 'light'
+        oscuro
+            ? 'dark'
+            : 'light'
     );
+
 
     actualizarIconoTema();
 
 }
+
 
 
 function actualizarIconoTema() {
@@ -1253,47 +1759,79 @@ function actualizarIconoTema() {
     const boton =
         $('btnTema');
 
+
     if (!boton) return;
 
+
     boton.textContent =
-        document.body.classList.contains('dark')
+        document.body.classList.contains(
+            'dark'
+        )
             ? '☀️'
             : '🌙';
 
 }
 
 
+
 /* =========================================================
    TOAST
 ========================================================= */
 
-function mostrarToast(mensaje) {
+function mostrarToast(
+    mensaje
+) {
 
     const toast =
         $('toast');
 
+
     if (!toast) return;
 
-    toast.querySelector('span')
-        ? (
-            toast.querySelector('span')
-                .textContent = mensaje
-        )
-        : (
-            toast.textContent = mensaje
+
+    const span =
+        toast.querySelector(
+            'span'
         );
 
-    toast.classList.add('show');
 
-    clearTimeout(toastTimer);
+    if (span) {
 
-    toastTimer = setTimeout(() => {
+        span.textContent =
+            mensaje;
 
-        toast.classList.remove('show');
+    } else {
 
-    }, 3000);
+        toast.textContent =
+            mensaje;
+
+    }
+
+
+    toast.classList.add(
+        'show'
+    );
+
+
+    clearTimeout(
+        toastTimer
+    );
+
+
+    toastTimer =
+        setTimeout(
+            () => {
+
+                toast.classList.remove(
+                    'show'
+                );
+
+            },
+            3000
+        );
 
 }
+
 
 
 /* =========================================================
@@ -1304,14 +1842,42 @@ document.addEventListener(
     'DOMContentLoaded',
     () => {
 
+
+        /* -----------------------------------------------
+           TEMA
+        ------------------------------------------------ */
+
         cargarTema();
+
+
+
+        /* -----------------------------------------------
+           CLIENTES
+        ------------------------------------------------ */
 
         cargarClientesSelect();
 
+
+
+        /* -----------------------------------------------
+           PRODUCTOS
+        ------------------------------------------------ */
+
         mostrarProductos();
+
+
+
+        /* -----------------------------------------------
+           CARRITO
+        ------------------------------------------------ */
 
         actualizarCarrito();
 
+
+
+        /* -----------------------------------------------
+           BUSCADOR
+        ------------------------------------------------ */
 
         $('buscarProductos')
             ?.addEventListener(
@@ -1320,40 +1886,63 @@ document.addEventListener(
             );
 
 
+
+        /* -----------------------------------------------
+           CATEGORÍAS
+        ------------------------------------------------ */
+
         document
-            .querySelectorAll('.categoria')
-            .forEach(boton => {
+            .querySelectorAll(
+                '.categoria'
+            )
+            .forEach(
+                boton => {
 
-                boton.addEventListener(
-                    'click',
-                    () => {
+                    boton.addEventListener(
+                        'click',
+                        () => {
 
-                        document
-                            .querySelectorAll(
-                                '.categoria'
-                            )
-                            .forEach(b => {
 
-                                b.classList.remove(
-                                    'activo'
+                            document
+                                .querySelectorAll(
+                                    '.categoria'
+                                )
+                                .forEach(
+                                    b => {
+
+                                        b.classList.remove(
+                                            'activo'
+                                        );
+
+                                    }
                                 );
 
-                            });
 
-                        boton.classList.add(
-                            'activo'
-                        );
 
-                        categoriaActual =
-                            boton.dataset.categoria;
+                            boton.classList.add(
+                                'activo'
+                            );
 
-                        mostrarProductos();
 
-                    }
-                );
 
-            });
+                            categoriaActual =
+                                boton.dataset.categoria;
 
+
+
+                            mostrarProductos();
+
+                        }
+                    );
+
+                }
+            );
+
+
+
+        /* -----------------------------------------------
+           CLIENTE
+        ------------------------------------------------ */
 
         $('clienteTienda')
             ?.addEventListener(
@@ -1362,12 +1951,22 @@ document.addEventListener(
             );
 
 
+
+        /* -----------------------------------------------
+           ABRIR CARRITO
+        ------------------------------------------------ */
+
         $('abrirCarrito')
             ?.addEventListener(
                 'click',
                 abrirCarritoPanel
             );
 
+
+
+        /* -----------------------------------------------
+           CERRAR CARRITO
+        ------------------------------------------------ */
 
         $('cerrarCarrito')
             ?.addEventListener(
@@ -1376,12 +1975,22 @@ document.addEventListener(
             );
 
 
+
+        /* -----------------------------------------------
+           FINALIZAR PEDIDO
+        ------------------------------------------------ */
+
         $('btnFinalizar')
             ?.addEventListener(
                 'click',
                 abrirModalPedido
             );
 
+
+
+        /* -----------------------------------------------
+           CERRAR MODAL
+        ------------------------------------------------ */
 
         $('cerrarModal')
             ?.addEventListener(
@@ -1390,12 +1999,22 @@ document.addEventListener(
             );
 
 
+
+        /* -----------------------------------------------
+           CANCELAR PEDIDO
+        ------------------------------------------------ */
+
         $('cancelarPedido')
             ?.addEventListener(
                 'click',
                 cerrarModalPedido
             );
 
+
+
+        /* -----------------------------------------------
+           CONFIRMAR PEDIDO
+        ------------------------------------------------ */
 
         $('confirmarPedido')
             ?.addEventListener(
@@ -1404,10 +2023,16 @@ document.addEventListener(
             );
 
 
+
+        /* -----------------------------------------------
+           CERRAR MODAL AL HACER CLICK AFUERA
+        ------------------------------------------------ */
+
         $('modalPedido')
             ?.addEventListener(
                 'click',
                 evento => {
+
 
                     if (
                         evento.target ===
@@ -1422,6 +2047,11 @@ document.addEventListener(
             );
 
 
+
+        /* -----------------------------------------------
+           CAMBIAR TEMA
+        ------------------------------------------------ */
+
         $('btnTema')
             ?.addEventListener(
                 'click',
@@ -1429,14 +2059,24 @@ document.addEventListener(
             );
 
 
+
+        /* -----------------------------------------------
+           ESCAPE
+        ------------------------------------------------ */
+
         document.addEventListener(
             'keydown',
             evento => {
 
+
                 if (
                     evento.key !==
                     'Escape'
-                ) return;
+                ) {
+                    return;
+                }
+
+
 
                 if (
                     $('modalPedido')
@@ -1449,6 +2089,8 @@ document.addEventListener(
                     return;
 
                 }
+
+
 
                 if (
                     $('carritoPanel')
@@ -1464,9 +2106,15 @@ document.addEventListener(
         );
 
 
+
+        /* -----------------------------------------------
+           STORAGE
+        ------------------------------------------------ */
+
         window.addEventListener(
             'storage',
             evento => {
+
 
                 if (
                     evento.key ===
@@ -1476,6 +2124,8 @@ document.addEventListener(
                     cargarClientesSelect();
 
                 }
+
+
 
                 if (
                     evento.key ===
@@ -1488,6 +2138,7 @@ document.addEventListener(
 
             }
         );
+
 
     }
 );
