@@ -25,18 +25,18 @@ const productos = [
 
     {
         id: 2,
-        nombre: 'Tenis',
-        precio: 1800,
-        categoria: 'tecnologia',
-        descripcion: 'Pantalla nítida y cómoda.'
+        nombre: 'Acomodador de Sartenes',
+        precio: 300,
+        categoria: 'hogar',
+        descripcion: 'acomodador que le ayuda a tener mas espacio en la cocina.'
     },
 
     {
         id: 3,
-        nombre: 'Teclado',
-        precio: 450,
-        categoria: 'accesorios',
-        descripcion: 'Respuesta rápida y precisa.'
+        nombre: 'audifonos',
+        precio: 250,
+        categoria: 'Tecnologuia',
+        descripcion: 'Audio Envolvente.'
     },
 
     {
@@ -49,18 +49,18 @@ const productos = [
 
     {
         id: 5,
-        nombre: 'Impresora',
-        precio: 1200,
-        categoria: 'tecnologia',
+        nombre: 'Tenis',
+        precio: 200,
+        categoria: 'deportivo',
         descripcion: 'Impresión rápida en casa u oficina.'
     },
 
     {
         id: 6,
-        nombre: 'Audífonos',
-        precio: 1000,
+        nombre: 'Camisola',
+        precio: 100,
         categoria: 'accesorios',
-        descripcion: 'Sonido envolvente.'
+        descripcion: 'Camisola de portugal.'
     },
 
     {
@@ -73,32 +73,32 @@ const productos = [
 
     {
         id: 8,
-        nombre: 'Silla Gamer',
-        precio: 1000,
-        categoria: 'hogar',
+        nombre: 'calsado deportivo',
+        precio: 100,
+        categoria: 'deportivo',
         descripcion: 'Comodidad para largas jornadas.'
     },
 
     {
         id: 9,
-        nombre: 'SSD',
+        nombre: 'calsado casual',
         precio: 750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
+        categoria: 'deportivo',
+        descripcion: 'Más velocidad y comodidad.'
     },
 
     {
         id: 10,
-        nombre: 'SSD',
-        precio: 750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
+        nombre: 'Traje deportivo de mujer',
+        precio: 350,
+        categoria: 'deportivo',
+        descripcion: 'Más comodidad.'
     },
 
     {
         id: 11,
-        nombre: 'SSD',
-        precio: 750,
+        nombre: 'Pc Gamer',
+        precio: 11750,
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
     },
@@ -113,44 +113,37 @@ const productos = [
 
     {
         id: 13,
-        nombre: 'SSD',
-        precio: 750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
+        nombre: 'repisas',
+        precio: 350,
+        categoria: 'hogar',
+        descripcion: 'Más espacio.'
     },
 
     {
         id: 14,
-        nombre: 'SSD',
-        precio: 750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
+        nombre: 'ropa de basquet',
+        precio: 450,
+        categoria: 'deportivo',
+        descripcion: 'Más velocidad .'
     },
 
     {
         id: 15,
-        nombre: 'SSD',
-        precio: 750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
+        nombre: 'sala familiar',
+        precio: 1750,
+        categoria: 'hogar',
+        descripcion: 'Más comodida.'
     },
 
     {
         id: 16,
-        nombre: 'SSD',
-        precio: 750,
+        nombre: 'telefono',
+        precio: 2750,
         categoria: 'tecnologia',
         descripcion: 'Más velocidad para tu equipo.'
     },
 
-    {
-        id: 17,
-        nombre: 'SSD',
-        precio: 750,
-        categoria: 'tecnologia',
-        descripcion: 'Más velocidad para tu equipo.'
-    },
-
+  
 ];
 
 
